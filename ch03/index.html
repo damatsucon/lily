@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第3章 基本モデル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* 設計: 方眼紙に書いた講義プリント。黒インクの本文、青ペンの強調、朱ペンの書き込み、黄色の蛍光ペン。上部に固定ヘッダーとパートのタブ、左からメニューが出る */
+:root{
+  --paper:#fdfdfb;
+  --grid:#e9eef3;
+  --ink:#22252b;
+  --sub:#5e6470;
+  --line:#c9cfd8;
+  --blue:#1f4e9c;
+  --red:#c8361f;
+  --teal:#0b6b5d;
+  --marker:#fff1a6;
+  --note:#fffbe3;
+  --font-body:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --font-hand:"Klee One","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --font-math:"Times New Roman",Times,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.95;
+  -webkit-text-size-adjust:100%;
+}
+a{color:var(--blue)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ヘッダー */
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid var(--ink)}
+.bar-in{max-width:960px;margin:0 auto;padding:10px 16px 0;display:flex;align-items:center;gap:12px}
+.burger{width:42px;height:42px;border:1.5px solid var(--ink);background:var(--paper);border-radius:6px;display:grid;place-items:center;cursor:pointer;flex:none}
+.burger span{display:block;width:20px;height:2px;background:var(--ink);box-shadow:0 -6px 0 var(--ink),0 6px 0 var(--ink)}
+.course{line-height:1.35;min-width:0}
+.course small{display:block;color:var(--sub);font-size:.78rem}
+.course b{font-size:1.05rem}
+.tabs{max-width:960px;margin:8px auto 0;padding:0 16px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1.5px solid var(--ink);border-bottom:none;background:#eef1f5;border-radius:8px 8px 0 0;padding:6px 14px 5px;cursor:pointer;font-size:.92rem;line-height:1.5;color:var(--sub);position:relative;top:2px}
+.tab .n{font-family:var(--font-math);font-weight:700;margin-right:6px;color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);font-weight:700;border-bottom:2px solid var(--paper);z-index:1}
+
+/* ドロワー */
+.scrim{position:fixed;inset:0;background:rgba(20,24,32,.35);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(340px,86vw);background:var(--paper);z-index:31;border-right:2px solid var(--ink);transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto;padding:16px 18px 40px}
+body.menu-open .scrim{opacity:1;pointer-events:auto}
+body.menu-open .drawer{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
+.drawer-head b{font-size:1rem}
+.close{border:1.5px solid var(--ink);background:none;border-radius:6px;width:36px;height:36px;cursor:pointer;font-size:1.2rem;line-height:1}
+.drawer h4{margin:14px 0 2px;font-size:.95rem}
+.drawer h4 button{background:none;border:none;padding:0;cursor:pointer;text-align:left;font-weight:700}
+.drawer h4 .n{font-family:var(--font-math);margin-right:6px}
+.drawer ul{list-style:none;margin:0;padding:0 0 0 12px;border-left:1.5px solid var(--line)}
+.drawer li button{background:none;border:none;padding:3px 0;cursor:pointer;color:var(--sub);text-align:left;font-size:.9rem;line-height:1.5}
+.drawer li button:hover{color:var(--blue)}
+.drawer .cur>button{color:var(--blue)}
+
+/* 本文 */
+main{max-width:960px;margin:0 auto;padding:22px 16px 80px}
+.part{display:none}
+.part.on{display:block}
+.part-head{background:var(--paper);border:1.5px solid var(--ink);border-radius:4px;padding:16px 20px;margin-bottom:26px}
+.part-head .pn{font-family:var(--font-math);font-size:.95rem;color:var(--sub)}
+.part-head h1{font-size:clamp(1.5rem,3.6vw,2rem);line-height:1.4;margin:2px 0 6px;text-wrap:balance}
+.part-head p{margin:0;color:var(--sub);max-width:42em}
+.toc-mini{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9rem}
+.toc-mini button{background:none;border:none;padding:0;cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+
+section{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 22px 24px;margin-bottom:22px;scroll-margin-top:120px}
+@media (max-width:560px){section{padding:4px 14px 18px}}
+h2{font-size:1.4rem;line-height:1.5;margin:18px 0 12px;padding-bottom:6px;border-bottom:3px double var(--ink);text-wrap:balance}
+h2 .sn{display:inline-block;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;border:1.5px solid var(--ink);border-radius:50%;font-family:var(--font-math);font-size:1rem;margin-right:10px;vertical-align:.12em}
+h3{font-size:1.1rem;margin:24px 0 6px;text-wrap:balance}
+h3::before{content:"";display:inline-block;width:10px;height:10px;background:var(--blue);margin-right:8px;vertical-align:.05em}
+p{margin:0 0 1em;max-width:44em}
+.mk{background:linear-gradient(transparent 58%,var(--marker) 58%);font-weight:700}
+.v{font-family:var(--font-math);font-style:italic;font-size:1.1em;white-space:nowrap}
+.plus{color:var(--teal);font-weight:700}
+.minus{color:var(--red);font-weight:700}
+ul.dots,ol.steps{margin:0 0 1em;padding-left:1.4em;max-width:44em}
+ul.dots li,ol.steps li{margin:3px 0}
+
+/* 数式ボックス（教科書風に式番号を右寄せ） */
+.eq{border:1.5px solid var(--ink);background:#fff;padding:12px 18px;margin:16px 0 6px;max-width:44rem;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.eq .f{font-family:var(--font-math);font-size:1.45rem;font-style:italic}
+.eq .f sub{font-size:.65em}
+.eq .no{margin-left:auto;font-size:.85rem;color:var(--sub)}
+.eq-read{max-width:44rem;margin:0 0 16px;padding-left:20px;font-size:.95rem;color:var(--sub)}
+.eq-read::before{content:"読み方　";color:var(--blue);font-weight:700}
+
+/* 先生のメモ */
+.memo{font-family:var(--font-hand);background:var(--note);border-left:4px solid var(--red);padding:12px 16px 12px 18px;margin:16px 0;max-width:44rem;font-size:1.05rem;line-height:1.85}
+.memo .who{display:block;color:var(--red);font-weight:600;font-size:.9rem}
+/* ポイント */
+.point{border:2px solid var(--blue);border-radius:2px;padding:10px 16px;margin:20px 0 4px;max-width:44rem;position:relative}
+.point::before{content:"ポイント";position:absolute;top:-.85em;left:12px;background:var(--paper);padding:0 6px;color:var(--blue);font-weight:700;font-size:.85rem}
+.point p{margin:0}
+
+/* 帯グラフ */
+.bars{background:#fff;border:1px solid var(--line);padding:14px 16px 10px;margin:14px 0 18px;max-width:44rem}
+.bars .sw{display:flex;gap:0;margin-bottom:12px;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content}
+.bars .sw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.bars .sw button+button{border-left:1.5px solid var(--ink)}
+.bars .sw button[aria-selected="true"]{background:var(--ink);color:#fff}
+.brow{display:grid;grid-template-columns:7.2em 1fr;align-items:center;gap:10px;margin:8px 0}
+.brow .lab{font-size:.88rem;line-height:1.35}
+.track{position:relative;height:34px}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;border:1.5px solid var(--ink);white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.seg.y{background:#dfe8f6}
+.seg.c{background:#f3f4f6}.seg.i{background:#e7eaee}.seg.g{background:#d9dde3}
+.seg.gap-p{background:repeating-linear-gradient(45deg,#d6efe9,#d6efe9 5px,#fff 5px,#fff 10px);color:var(--teal);font-weight:700;border-color:var(--teal);border-style:dashed}
+.seg.gap-m{background:repeating-linear-gradient(45deg,#f8ddd7,#f8ddd7 5px,#fff 5px,#fff 10px);color:var(--red);font-weight:700;border-color:var(--red);border-style:dashed}
+.seg.b{background:#e7eaee}.seg.ri{background:#fde9a8}.seg.nx{background:#d6efe9}
+.seg-lab{position:absolute;top:0;bottom:0;display:flex;align-items:center;font-size:.85rem;white-space:nowrap}
+.bars .cap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+
+/* 表 */
+.tw{overflow-x:auto;margin:12px 0 18px}
+table{border-collapse:collapse;background:#fff;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--ink);padding:7px 12px;text-align:left;vertical-align:top;line-height:1.6}
+thead th{background:#eef1f5}
+td.c{text-align:center;white-space:nowrap}
+td.r{text-align:right}
+table.calc-t td{border:none;border-bottom:1px dotted var(--line);padding:3px 14px 3px 0}
+table.calc-t tr:last-child td{border-bottom:2px solid var(--ink);font-weight:700}
+
+/* 図 */
+figure{margin:14px 0 20px}
+figcaption{font-size:.85rem;color:var(--sub);margin-top:4px}
+.figbox{background:#fff;border:1px solid var(--line);padding:8px;overflow-x:auto}
+svg text{font-family:var(--font-body);fill:var(--ink)}
+svg .m{font-family:var(--font-math);font-style:italic}
+
+/* シミュレーター */
+.sim{background:#fff;border:1.5px solid var(--ink);padding:14px;margin:16px 0;display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:860px){.sim{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.grp{margin-bottom:10px}
+.grp .gl{font-size:.78rem;color:var(--sub);display:block;margin-bottom:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips button{border:1.5px solid var(--ink);background:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.85rem;line-height:1.6}
+.chips button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.explain{border-top:1px dashed var(--line);padding-top:10px;margin-top:6px}
+.explain .t{font-weight:700;margin:0}
+.explain .x{font-size:.95rem;margin:4px 0}
+.explain .f{font-size:.8rem;color:var(--sub);margin:0}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);margin:10px 0}
+.meter div{padding:6px 8px;text-align:center}
+.meter div+div{border-left:1px solid var(--ink)}
+.meter small{display:block;font-size:.75rem;color:var(--sub);line-height:1.3}
+.meter strong{font-size:1.3rem;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:7.4em 1fr 3.6em;gap:8px;align-items:center;font-size:.88rem}
+.sl input{width:100%;accent-color:var(--blue)}
+.sl output{text-align:right;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sm{font-size:.8rem;color:var(--sub);margin:6px 0 0}
+
+/* 内部タブ（ケース別） */
+.itabs{display:flex;gap:0;border-bottom:1.5px solid var(--ink);margin:14px 0 0;overflow-x:auto}
+.itabs button{border:none;background:none;padding:6px 14px;cursor:pointer;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.itabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--blue)}
+.ipanel{padding:12px 0 0}
+.ipanel[hidden]{display:none}
+.case{border-left:3px solid var(--line);padding:2px 0 2px 14px;margin:0 0 16px;max-width:44rem}
+.case b{display:block}
+.case .res{font-size:.9rem;margin:2px 0}
+.case p{margin:2px 0 0;font-size:.97rem}
+
+/* 手順 */
+.flow{display:grid;grid-template-columns:1fr;gap:8px;max-width:44rem;margin:12px 0 16px;counter-reset:f}
+@media (min-width:700px){.flow{grid-template-columns:repeat(3,1fr)}}
+.flow div{border:1.5px solid var(--ink);background:#fff;padding:10px 12px;font-size:.93rem;line-height:1.7;counter-increment:f}
+.flow div::before{content:"手順" counter(f);display:block;font-weight:700;color:var(--blue);font-size:.82rem}
+
+/* 計算機 */
+.calc{background:#fff;border:1.5px solid var(--ink);padding:14px 16px;margin:14px 0;max-width:44rem}
+.calc .out{font-size:.98rem;margin-top:10px}
+.calc .chk{color:var(--sub);font-size:.88rem}
+
+/* 確認問題 */
+.q{border:1px solid var(--ink);background:#fff;margin:10px 0;max-width:46rem}
+.q .qq{padding:10px 14px;display:flex;gap:10px}
+.q .qn{font-family:var(--font-math);font-weight:700;color:var(--blue)}
+.q button.show{margin:0 14px 10px;border:1.5px solid var(--ink);background:#fff;border-radius:4px;padding:2px 12px;cursor:pointer;font-size:.85rem}
+.q .ans{border-top:1px dashed var(--line);padding:8px 14px 10px;font-family:var(--font-hand);font-size:1.05rem;background:var(--note)}
+.q .ans[hidden]{display:none}
+.q .ans::before{content:"解答　";color:var(--red);font-weight:600}
+
+/* 前後ナビ */
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:28px;flex-wrap:wrap}
+.pager button{border:1.5px solid var(--ink);background:#fff;padding:10px 16px;cursor:pointer;border-radius:4px;text-align:left;line-height:1.4;max-width:48%}
+.pager button small{display:block;color:var(--sub);font-size:.78rem}
+.pager .next{margin-left:auto;text-align:right}
+.src{font-size:.82rem;color:var(--sub);margin-top:30px;border-top:1px solid var(--line);padding-top:10px}
+
+/* キャラクター */
+.talk{display:flex;align-items:flex-end;gap:12px;margin:14px 0 18px;max-width:44rem}
+.talk img{width:118px;height:auto;flex:none}
+.talk .bubble{position:relative;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:10px 16px;font-family:var(--font-hand);font-size:1.08rem;line-height:1.75;margin-bottom:30px}
+.talk .bubble::before{content:"";position:absolute;left:-12px;bottom:16px;border:6px solid transparent;border-right:8px solid var(--ink)}
+.talk .bubble::after{content:"";position:absolute;left:-8px;bottom:17px;border:5px solid transparent;border-right:7px solid #fff}
+.talk.r{flex-direction:row-reverse;margin-left:auto}
+.talk.r .bubble::before{left:auto;right:-12px;border-right-color:transparent;border-left:8px solid var(--ink)}
+.talk.r .bubble::after{left:auto;right:-8px;border-right-color:transparent;border-left:7px solid #fff}
+.part-head{display:flex;gap:16px;align-items:flex-end}
+.part-head .ph-main{flex:1;min-width:0}
+.part-head .ph-fig{flex:none;width:150px;text-align:center;margin:-6px 0 -16px}
+.part-head .ph-say{font-family:var(--font-hand);font-size:.88rem;line-height:1.5;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:5px 8px;margin-bottom:6px;text-align:left;position:relative}
+.part-head .ph-say::after{content:"";position:absolute;left:50%;bottom:-7px;width:10px;height:10px;background:#fff;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+.part-head .ph-fig img{width:100%;height:auto;display:block}
+@media (max-width:560px){.talk img{width:86px}.part-head .ph-fig{width:96px}.talk .bubble{font-size:1rem}}
+.memo.withfig{display:flex;gap:14px;align-items:center}
+.memo.withfig img{width:104px;height:auto;flex:none}
+@media (max-width:560px){.memo.withfig img{width:78px}}
+
+/* 課題パート */
+.dl{margin:10px 0 16px}
+.dlbtn{display:inline-flex;align-items:center;gap:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);text-decoration:none;padding:8px 16px 8px 10px;border-radius:6px;line-height:1.4;box-shadow:3px 3px 0 var(--ink)}
+.dlbtn:hover{background:#eef2fa}
+.dlbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.dlbtn .dlico{width:34px;height:40px;background:#2b579a;color:#fff;font-weight:700;display:grid;place-items:center;border-radius:3px;font-family:var(--font-math);font-size:1.2rem}
+.dlbtn b{display:block}
+.dlbtn small{display:block;color:var(--sub);font-size:.8rem}
+
+.xref{font-size:.9rem;margin:6px 0 12px;max-width:44em}
+.xref::before{content:"→ ";color:var(--blue);font-weight:700}
+.xref a,.dots a{color:var(--blue);cursor:pointer}
+.kq{border:2px solid var(--ink);background:#fff;padding:12px 16px;margin:12px 0 14px;max-width:46rem}
+.kq .lab{display:inline-block;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px;margin-bottom:4px}
+.kq p{margin:4px 0}
+.memo.hint{border-left-color:var(--blue)}
+.memo.hint .who{color:var(--blue)}
+.locked{display:none;border:1.5px dashed var(--line);color:var(--sub);padding:8px 14px;max-width:44rem;font-size:.92rem;background:#fff}
+body.ans-off .locked{display:block}
+body.ans-off .sol{display:none}
+.solbtn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:4px;padding:6px 16px;cursor:pointer;margin:6px 0 10px}
+.solbtn[aria-expanded="true"]{background:#fff;color:var(--ink)}
+.step{border-top:1px dashed var(--line);padding-top:6px;margin-top:10px}
+h3.stp::before{display:none}
+h3.stp .st{display:inline-block;font-size:.8rem;background:var(--blue);color:#fff;padding:0 9px;border-radius:3px;margin-right:8px;vertical-align:.12em}
+.ansSwitch{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;border:2px solid var(--ink);background:#fff;padding:10px 14px;margin:14px 0 16px;max-width:46rem}
+.sw-l{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700}
+.sw-l input{position:absolute;opacity:0;width:1px;height:1px}
+.sw-ui{width:46px;height:26px;border-radius:13px;background:#c9cfd8;position:relative;flex:none;transition:background .15s}
+.sw-ui::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}
+.sw-l input:checked+.sw-ui{background:var(--teal)}
+.sw-l input:checked+.sw-ui::after{left:23px}
+.sw-l input:focus-visible+.sw-ui{outline:2px solid var(--blue);outline-offset:2px}
+.sw-note{font-size:.88rem;color:var(--sub)}
+.gwrap{background:#fff;border:1.5px solid var(--ink);padding:12px;margin:14px 0 6px;max-width:46rem}
+.gsw{display:flex;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content;max-width:100%;margin-bottom:8px;flex-wrap:wrap}
+.gsw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.gsw button+button{border-left:1.5px solid var(--ink)}
+.gsw button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.gwrap svg{width:100%;max-width:560px;height:auto;display:block}
+.gcap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+.howto{font-size:.93rem;max-width:44rem;margin:6px 0 16px;padding-left:1.3em}
+.trap{border:2px dashed var(--red);padding:10px 16px;margin:16px 0;max-width:44rem;background:#fff}
+.trap b{color:var(--red)}
+.point.ketsu::before{content:"結論"}
+.answer{border:1.5px solid var(--ink);background:#fff;padding:14px 18px 6px;margin:20px 0 16px;max-width:46rem;position:relative}
+.answer::before{content:"答案の書き方の例";position:absolute;top:-.8em;left:12px;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px}
+.answer p{font-size:.97rem}
+.num{background:#fff;border:1px solid var(--line);padding:10px 16px;margin:14px 0;max-width:44rem}
+.num .h{font-size:.82rem;color:var(--sub);display:block}
+#kadai .brow{grid-template-columns:5.5em 1fr}
+#kadai .seg.g{background:#fde9a8}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* 数式（分数・Σ/Π/∫ の上下添字）— 全章共通 */
+.mx{font-family:var(--font-math);display:inline-flex;align-items:center;gap:.12em;vertical-align:middle;white-space:nowrap;font-size:1.08em}
+.mx i{font-style:italic}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.25}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .25em}
+.frac>span:last-child{padding:0 .25em}
+.bop{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 .12em}
+.bop .s{font-size:1.7em;line-height:1}
+.bop small{font-size:.62em;line-height:1.1}
+.eq .mx{font-size:1.25rem}
+.eq.mxeq .f{font-style:normal}
+.mxblock{display:block;overflow-x:auto;padding:4px 0}
+</style>
+</head>
+<body>
+
+<div class="scrim" id="scrim"></div>
+<nav class="drawer" id="drawer" aria-label="全体の目次" aria-hidden="true">
+  <div class="drawer-head"><b>目次</b><button class="close" id="closeBtn" aria-label="目次を閉じる">×</button></div>
+  <div id="drawerList"></div>
+</nav>
+
+<header class="bar">
+  <div class="bar-in">
+    <button class="burger" id="menuBtn" aria-label="目次を開く" aria-controls="drawer" aria-expanded="false"><span></span></button>
+    <div class="course"><small>経済原論 I　マクロ経済学入門</small><b>第3章　基本モデル　解説プリントと課題</b></div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="パート" id="tabs"></div>
+</header>
+
+<main>
+<style>.pair{display:grid;grid-template-columns:1fr;gap:4px}.pair>div+div{margin-top:6px}</style>
+
+<!-- ===================== パート1 ===================== -->
+<div class="part" id="youso" data-title="古典派モデルと生産要素市場" data-desc="長い目で見た経済（完全雇用の経済）を考える「古典派の基本モデル」の全体像をつかみ、労働と資本の市場で賃金と利子率がどう決まるかを見ます。">
+
+<section id="s1" data-t="古典派の基本モデルとは">
+<h2><span class="sn">1</span>古典派の基本モデルとは</h2>
+<p>この章では、<b>長い目で見た経済</b>を考えます。短い期間なら、景気が悪くて失業が増えることもあります（ケインズ的な状況）。しかし長い期間で見れば、市場がうまく働き、働きたい人がみな働ける<b>完全雇用</b>の状態に落ち着くと考えられます。この考え方に立つのが<b>古典派</b>のモデルです。</p>
+<p>もう1つの単純化として、外国との取引（輸出・輸入）は考えません。これを<b>閉鎖経済</b>と呼びます。</p>
+<h3>モデルの部品</h3>
+<p>第2章の経済循環図を思い出しましょう。家計は労働 <span class="v">L</span> と資本 <span class="v">K</span> を企業に提供し、企業はそれで生産し、作ったものは財市場で消費・投資・政府支出として買われます。この章では、それぞれの市場で<span class="mk">何がどう決まるのか</span>を、順に組み立てていきます。</p>
+<div class="tw"><table>
+<thead><tr><th>部品</th><th>決まること</th><th>この解説の場所</th></tr></thead>
+<tbody>
+<tr><td>生産要素市場（労働・資本）</td><td>賃金 <span class="v">w</span>、資本コスト <span class="v">r</span>、使われる <span class="v">L</span> と <span class="v">K</span></td><td><a href="#s2" data-goto="s2">第2節</a>・<a href="#s3" data-goto="s3">第3節</a></td></tr>
+<tr><td>生産関数</td><td>生産量（＝財の供給） <span class="v">Y</span></td><td><a href="#s4" data-goto="s4">第4〜6節</a></td></tr>
+<tr><td>消費関数・投資関数</td><td>財の需要（<span class="v">C</span> と <span class="v">I</span>）</td><td><a href="#s7" data-goto="s7">第7節</a>・<a href="#s8" data-goto="s8">第8節</a></td></tr>
+<tr><td>財市場・貸付資金市場</td><td>利子率 <span class="v">r</span></td><td><a href="#s9" data-goto="s9">第9節</a>・<a href="#s10" data-goto="s10">第10節</a></td></tr>
+</tbody></table></div>
+<h3>外生変数と内生変数</h3>
+<p>モデルの外から与えられる値を<b>外生変数</b>、モデルの中で決まる値を<b>内生変数</b>と呼びます。この章では、政府支出 <span class="v">G</span> と税 <span class="v">T</span>、家計の持つ労働と資本の量は外生変数です。生産量、消費、投資、利子率は内生変数です。第4パートでは、外生変数（<span class="v">G</span> や <span class="v">T</span>）を動かすと内生変数がどう変わるかを調べます。</p>
+<div class="memo"><span class="who">メモ：記号の違い</span>完全雇用のときの量を、テキストは L̄、K̄、Ȳ（上に横棒）、講義スライドは L*、K*、Y*（右上に星）で表しています。意味は同じです。この解説ではテキストに合わせて横棒を使います。</div>
+<div class="point"><p>古典派の基本モデル＝長期（完全雇用）・閉鎖経済のモデル。生産要素市場→生産関数→消費・投資→財市場の順に組み立てる。</p></div>
+</section>
+
+<section id="s2" data-t="労働市場">
+<h2><span class="sn">2</span>労働市場：賃金が動いて失業が消える</h2>
+<p>縦軸に賃金 <span class="v">w</span>、横軸に労働の量 <span class="v">L</span> をとります。ここでの賃金は、モノで測った<b>実質賃金</b>（1時間働くとモノが何個買えるか）です。</p>
+<ul class="dots">
+  <li><b>労働需要 D（右下がり）</b>：賃金が高いと、企業は人を減らし、代わりに機械（資本）を多く使う。賃金が安いと、人を多く雇う。</li>
+  <li><b>労働供給 S（垂直）</b>：家計は賃金に関係なく、決まった量 <span class="v">L̄</span> だけ働くと単純化する。</li>
+</ul>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="賃金の水準"><button type="button" data-g="gLab" data-s="0" aria-pressed="false">賃金が高い</button><button type="button" data-g="gLab" data-s="1" aria-pressed="true">均衡</button><button type="button" data-g="gLab" data-s="2" aria-pressed="false">賃金が低い</button></div>
+  <svg id="gLab" viewBox="0 0 520 330" role="img" aria-label="労働市場の均衡のグラフ"></svg>
+  <p class="gcap" id="gLab-cap"></p>
+</div>
+<p>賃金が <span class="v">w*</span> より高いと、働きたい人が雇われる人より多く、<b>失業</b>（超過供給）が生まれます。仕事のない人は、少し安い賃金でも働こうとするので、賃金は下がります。逆に賃金が低すぎると人手不足（超過需要）になり、賃金は上がります。こうして、<span class="mk">賃金が動くことで、失業は自然に解消される</span>というのが古典派の考え方です。</p>
+<div class="memo"><span class="who">メモ：ケインズ経済学との違い</span>ケインズ経済学では、短期には何らかの理由で賃金が下がらず、失業が残り続けると考えます。そのときは、政府が需要を増やして生産と雇用を増やす必要がある、という発想になります。この違いは第7章以降で学びます。</div>
+<div class="point"><p>労働需要は右下がり、労働供給は L̄ で垂直。賃金が上下して、労働の需要と供給が一致する（完全雇用）。</p></div>
+</section>
+
+<section id="s3" data-t="資本市場">
+<h2><span class="sn">3</span>資本市場：資本コストは利子率に等しい</h2>
+<p>資本市場も、労働市場と同じ形で考えます。縦軸は<b>資本コスト</b>（資本1単位を1期間使う費用）で、これは<b>利子率 <span class="v">r</span></b> に等しくなります。</p>
+<ul class="dots">
+  <li><b>資本需要（右下がり）</b>：資本コストが高いと、企業は資本を控えて人を多く使う。安いと資本を多く使う。</li>
+  <li><b>資本供給（垂直）</b>：ある時点で経済にある資本（工場や機械）の量は <span class="v">K̄</span> で決まっている。</li>
+</ul>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="資本コストの水準"><button type="button" data-g="gCap" data-s="0" aria-pressed="false">資本コストが高い</button><button type="button" data-g="gCap" data-s="1" aria-pressed="true">均衡</button><button type="button" data-g="gCap" data-s="2" aria-pressed="false">資本コストが低い</button></div>
+  <svg id="gCap" viewBox="0 0 520 330" role="img" aria-label="資本市場の均衡のグラフ"></svg>
+  <p class="gcap" id="gCap-cap"></p>
+</div>
+<div class="memo"><span class="who">メモ：なぜ資本コスト＝利子率なのか</span>家計から見ると、お金を貸す（資本を提供する）ことは、今使えたお金をがまんすること。そのお礼が利子です。企業から見ると、借りたお金で機械を買えば、利子を払わなければなりません。どちらの側から見ても、資本1単位の値段は利子率で測れます（厳密には、機械が古くなる分の費用も加わります）。</div>
+<p>今期の投資は、来期の資本を増やします。時間がたつにつれて資本がどう増え、生産がどう伸びるかは、第13章「経済成長」で扱います。この章では、資本の量は <span class="v">K̄</span> で一定とします。</p>
+<div class="point"><p>資本需要は右下がり、資本供給は K̄ で垂直。資本コスト（＝利子率）が動いて需給が一致する。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート2 ===================== -->
+<div class="part" id="seisan" data-title="生産関数と要素の需要" data-desc="労働と資本を使って、どれだけ生産できるかを表すのが生産関数です。限界生産物の逓減と、企業が利潤を最大にする雇い方（MPL = w）を学びます。">
+
+<section id="s4" data-t="生産関数と規模に関する収穫">
+<h2><span class="sn">4</span>生産関数と規模に関する収穫</h2>
+<p>企業がどんな技術で生産しているかは、ここでは「中身の見えない箱」として扱います。入れた資本と労働（投入量）と、出てくる生産量（産出量）の関係だけを式で表します。これが<b>生産関数</b>です。</p>
+<div class="eq"><span class="f">Y = F(K, L)</span><span class="no">テキスト (3.1)</span></div>
+<p class="eq-read">生産量 Y は、資本 K と労働 L の量で決まる</p>
+<p>長期には、家計の持つ資本 <span class="v">K̄</span> と労働 <span class="v">L̄</span> がすべて使われます（第2・3節）。だから生産量も一定の値 <span class="v">Ȳ = F(K̄, L̄)</span> になります。<span class="mk">財の供給は、完全雇用に対応する Ȳ で決まっている</span>のです。</p>
+<h3>規模に関する収穫：全部を同時に増やすと？</h3>
+<p>資本と労働を<b>両方とも</b>2倍にしたら、生産量は何倍になるでしょうか。これを<b>規模に関する収穫</b>と呼びます。</p>
+<div class="tw"><table>
+<thead><tr><th>名前</th><th>式（λ &gt; 1）</th><th>意味</th></tr></thead>
+<tbody>
+<tr><td>収穫一定（不変）</td><td><span class="v">F(λK, λL) = λF(K, L)</span></td><td>2倍に増やすと、生産もちょうど2倍</td></tr>
+<tr><td>収穫逓減</td><td><span class="v">F(λK, λL) &lt; λF(K, L)</span></td><td>2倍に増やしても、生産は2倍未満</td></tr>
+<tr><td>収穫逓増</td><td><span class="v">F(λK, λL) &gt; λF(K, L)</span></td><td>2倍に増やすと、生産は2倍より多い</td></tr>
+</tbody></table></div>
+<div class="num"><span class="h">数値例（架空の生産関数 Y = √(K × L)）</span>
+<table class="calc-t">
+<tr><td>K = 4、L = 9 のとき Y ＝ √36</td><td class="r">6</td></tr>
+<tr><td>両方2倍：K = 8、L = 18 のとき Y ＝ √144</td><td class="r">12（2倍）</td></tr>
+<tr><td>両方3倍：K = 12、L = 27 のとき Y ＝ √324</td><td class="r">18（3倍）</td></tr>
+</table></div>
+<div class="memo"><span class="who">メモ：同じ工場をもう1つ建てる</span>まったく同じ工場を、同じ人数でもう1つ建てれば、生産は2倍になるはずです。だから通常のモデルでは<b>収穫一定</b>を仮定します。現実に2倍にならないように見えるのは、土地の質や経営者の力など、増やしきれていない要素があるからかもしれません。</div>
+<div class="point"><p>生産関数 Y = F(K, L)。長期には Ȳ = F(K̄, L̄) で供給が決まる。ふつうは「規模に関する収穫一定」を仮定する。</p></div>
+</section>
+
+<section id="s5" data-t="限界生産物の逓減">
+<h2><span class="sn">5</span>限界生産物の逓減：1つだけ増やすと？</h2>
+<p>今度は、資本はそのままで、<b>労働だけ</b>を増やしてみます。人を増やせば生産は増えますが、機械の数は変わらないので、増え方はだんだん小さくなるはずです。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>MPL</i> = <span class="frac"><span>Δ<i>Y</i></span><span>Δ<i>L</i></span></span>　　<i>MPK</i> = <span class="frac"><span>Δ<i>Y</i></span><span>Δ<i>K</i></span></span></span></span><span class="no">テキスト p.69</span></div>
+<p class="eq-read">MPL（労働の限界生産物）：労働を1単位増やしたとき、生産が何単位増えるか。MPK（資本の限界生産物）も同じ。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="増やす生産要素"><button type="button" data-g="gProd" data-s="0" aria-pressed="true">労働 L を増やす</button><button type="button" data-g="gProd" data-s="1" aria-pressed="false">資本 K を増やす</button></div>
+  <svg id="gProd" viewBox="0 0 520 330" role="img" aria-label="生産関数のグラフ。投入を増やすほど産出の増え方が小さくなる"></svg>
+  <p class="gcap" id="gProd-cap"></p>
+</div>
+<p>MPL は正（増やせば生産は増える）ですが、L が増えるほど小さくなります。これを<b>限界生産物逓減の法則</b>と呼びます（講義スライドでは「限界生産力逓減」）。資本についても同じです。「法則」と呼ばれますが、実際には<span class="mk">モデルの仮定</span>です。</p>
+<div class="memo"><span class="who">メモ：厨房の料理人</span>コンロが4つの厨房に、料理人を1人、2人と増やしていく。最初の数人は作れる料理を大きく増やすが、5人目、6人目になると、コンロの順番待ちや通路の混雑で、1人増えたときの増え方は小さくなっていく。</div>
+<p>「規模に関する収穫一定」と「限界生産物の逓減」は、矛盾しません。前者は<b>全部を同時に</b>増やす話、後者は<b>1つだけ</b>増やす話だからです。</p>
+<div class="point"><p>1つの生産要素だけを増やすと、生産の増え方（限界生産物）はだんだん小さくなる（MPL・MPK の逓減）。</p></div>
+</section>
+
+<section id="s6" data-t="生産要素の需要">
+<h2><span class="sn">6</span>生産要素の需要：MPL ＝ w まで雇う</h2>
+<p>第2節で「労働需要は右下がり」と直感的に説明しました。生産関数を使うと、そのわけがはっきりします。生産物の価格を1とすると、企業の利潤 π は次の式です。</p>
+<div class="eq"><span class="f">π = F(K, L) − wL − rK</span><span class="no">テキスト p.70</span></div>
+<p class="eq-read">利潤 ＝ 売上（生産量）− 賃金の支払い − 資本コストの支払い</p>
+<p>資本を固定して、労働を ΔL だけ増やすと、利潤は次のように変わります。</p>
+<div class="eq"><span class="f">Δπ = MPL·ΔL − w·ΔL = (MPL − w)ΔL</span><span class="no">テキスト p.71</span></div>
+<p class="eq-read">1人増やすと、生産が MPL 増え、賃金 w が出ていく。差し引きが利潤の変化</p>
+<ul class="dots">
+  <li><span class="v">MPL &gt; w</span> なら、雇うほどもうかる → 人を増やす。</li>
+  <li><span class="v">MPL &lt; w</span> なら、雇うほど損をする → 人を減らす。</li>
+  <li>だから、利潤が最大になるのは <span class="mk">MPL ＝ w</span> のとき。</li>
+</ul>
+<p>スライドでは、利潤を L で微分してゼロとおく形 <span class="v">F′(L) − w = 0</span> で同じ条件を導いています。<span class="v">F′(L)</span> が MPL です。</p>
+<div class="sim">
+  <div>
+    <svg id="gMpl" viewBox="0 0 520 320" role="img" aria-label="MPL曲線と賃金の線の交点で最適な雇用量が決まるグラフ"></svg>
+  </div>
+  <div>
+    <div class="sl"><label for="wSl">実質賃金 w</label><input type="range" id="wSl" min="1" max="3" step="0.1" value="1.5"><output id="wOut" for="wSl"></output></div>
+    <div class="meter"><div><small>賃金 w</small><strong id="mplW"></strong></div><div><small>最適な雇用 L*</small><strong id="mplL"></strong></div><div><small>生産量 Y</small><strong id="mplY"></strong></div></div>
+    <p class="sm">架空の生産関数 Y = 12√L（K は一定）では MPL = 6/√L。賃金を上げ下げすると、MPL と w が等しくなる L* が動きます。<span class="mk">賃金が高いほど L* は小さい</span>。この関係が右下がりの労働需要曲線です。緑の部分は、L* まで雇ったときに MPL が w を上回っていた分（利潤への上乗せ）です。</p>
+  </div>
+</div>
+<p>資本についても同じで、企業は <span class="v">MPK ＝ r</span> となるまで資本を使います。資本コストが高いほど資本の需要は小さくなります。</p>
+<p class="xref">この考え方は、第8節の投資関数（MPK ＝ r）でもう一度使います</p>
+<div class="point"><p>企業は MPL ＝ w（MPK ＝ r）となるまで雇う（使う）。MPL が逓減するので、賃金が高いほど雇う量は少ない＝労働需要は右下がり。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート3 ===================== -->
+<div class="part" id="kinkou" data-title="財市場と貸付資金市場" data-desc="財の需要を決める消費関数と投資関数を学び、財市場の均衡で利子率が決まるしくみを見ます。財市場の均衡は、貸付資金市場の均衡 S = I と同じことを表しています。">
+
+<section id="s7" data-t="消費関数">
+<h2><span class="sn">7</span>消費関数：可処分所得の一定割合を使う</h2>
+<p>財の需要は、消費 <span class="v">C</span>、投資 <span class="v">I</span>、政府支出 <span class="v">G</span> の3つです。<span class="v">G</span> は政府が政策として決める外生変数なので、<span class="v">C</span> と <span class="v">I</span> がどう決まるかを考えます。</p>
+<p>家計の所得 <span class="v">Y</span> から税 <span class="v">T</span> を引いた残りが、自由に使える<b>可処分所得</b> <span class="v">Y − T</span> です。家計はこれを、今使う（消費）か、将来のためにとっておく（貯蓄）かに分けます。いちばん単純な考え方は、「消費は可処分所得だけで決まる」とすることです。</p>
+<div class="eq"><span class="f">C = C(Y − T) = c · (Y − T)</span><span class="no">テキスト (3.2)</span></div>
+<p class="eq-read">消費は可処分所得の c 倍（0 &lt; c &lt; 1）。c を<b>消費性向</b>と呼ぶ</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="消費性向"><button type="button" data-g="gCons" data-s="0" aria-pressed="false">c = 0.6</button><button type="button" data-g="gCons" data-s="1" aria-pressed="true">c = 0.75</button><button type="button" data-g="gCons" data-s="2" aria-pressed="false">c = 0.9</button></div>
+  <svg id="gCons" viewBox="0 0 520 320" role="img" aria-label="原点を通る直線の消費関数のグラフ"></svg>
+  <p class="gcap" id="gCons-cap"></p>
+</div>
+<div class="memo"><span class="who">メモ：給料の使い道</span>手取りの給料が20万円の人が、毎月15万円を使い、5万円を貯金に回す。この人の消費性向は 15 ÷ 20 ＝ 0.75。古典派の基本モデルでは、この割合がいつも同じだと考えます。</div>
+<p>この章では、消費は利子率の影響を受けないと考えています。現在の主流の考え方では、消費は将来の所得の見通しや利子率にも左右されます。それは第4章で扱います（課題の <a href="#s23" data-goto="s23">問5</a> は、この仮定を変えた問題です）。</p>
+<div class="point"><p>消費関数 C = c(Y − T)。消費性向 c は、可処分所得のうち消費に回す割合。</p></div>
+</section>
+
+<section id="s8" data-t="投資関数">
+<h2><span class="sn">8</span>投資関数：利子率が高いと投資は減る</h2>
+<p>企業は、工場や機械を増やす（投資する）ためにお金を借ります。投資をすれば将来の生産が増えますが、借りたお金には利子がかかります。投資するかどうかは、<span class="mk">増える生産（MPK）と利子の支払い（r）を比べて</span>決まります。</p>
+<ul class="dots">
+  <li><span class="v">MPK &gt; r</span> なら、もっと投資するほうが得。だから、<span class="v">MPK ＝ r</span> となる資本の量 <span class="v">K*</span> まで資本を増やしたい。</li>
+  <li>今期の投資は、その目標 <span class="v">K*</span> と今ある資本 <span class="v">K̄</span> の差を埋める分：<span class="v">I = K* − K̄</span>。</li>
+  <li>利子率が高いと <span class="v">K*</span> は小さく、投資も小さい。利子率が低いと投資は大きい。</li>
+</ul>
+<div class="eq"><span class="f">I = I(r)</span><span class="no">テキスト (3.3)</span></div>
+<p class="eq-read">投資は利子率の減少関数（利子率が上がると投資が減る）</p>
+<div class="sim">
+  <div><svg id="gInv" viewBox="0 0 520 320" role="img" aria-label="右下がりの投資関数のグラフ"></svg></div>
+  <div>
+    <div class="sl"><label for="rSl">利子率 r</label><input type="range" id="rSl" min="1" max="10" step="0.5" value="4"><output id="rOut" for="rSl"></output></div>
+    <div class="meter" style="grid-template-columns:1fr"><div><small>投資 I ＝ 120 − 10r</small><strong id="invI"></strong></div></div>
+    <p class="sm">架空の投資関数。利子率を上げると、採算のとれる投資計画が減り、投資が小さくなります。</p>
+  </div>
+</div>
+<div class="memo"><span class="who">メモ：お店の2号店</span>2号店を出せば、年に50万円もうけが増えるとします。1,000万円を借りて出店するとき、利子率が3%なら利子は30万円で、出す価値があります。利子率が8%なら利子は80万円で、赤字になります。利子率が上がるほど、「やめておこう」という計画が増えるのです。</div>
+<div class="point"><p>投資関数 I = I(r)。利子率は投資の費用なので、利子率が上がると投資は減る（右下がり）。</p></div>
+</section>
+
+<section id="s9" data-t="財市場の均衡">
+<h2><span class="sn">9</span>財市場の均衡：利子率が動いて需要と供給がそろう</h2>
+<p>部品がそろいました。財の<b>供給</b>は完全雇用の生産量で一定です。</p>
+<div class="eq"><span class="f">Yˢ = Ȳ = F(K̄, L̄)</span><span class="no">テキスト (3.4)</span></div>
+<p class="eq-read">財の供給は、完全雇用に対応する一定の値</p>
+<p>財の<b>需要</b>は C ＋ I ＋ G です。Y は Ȳ で一定、税も T̄ で一定なので、可処分所得も一定で、消費も一定の値 <span class="v">C̄</span> に決まります。需要の中で動くのは、利子率で決まる投資だけです。</p>
+<div class="eq"><span class="f">Yᵈ = C(Ȳ − T̄) + I(r) + Ḡ = C̄ + I(r) + Ḡ</span><span class="no">テキスト (3.5)</span></div>
+<p class="eq-read">財の需要 ＝ 一定の消費 ＋ 利子率で決まる投資 ＋ 一定の政府支出</p>
+<div class="eq"><span class="f">Ȳ = C̄ + I(r) + Ḡ</span><span class="no">テキスト (3.7)</span></div>
+<p class="eq-read">財市場の均衡（Yˢ ＝ Yᵈ）：この式を満たすように、利子率 r が決まる</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="利子率の水準"><button type="button" data-g="gGM" data-s="0" aria-pressed="false">r = 6%</button><button type="button" data-g="gGM" data-s="1" aria-pressed="true">均衡 r = 4%</button><button type="button" data-g="gGM" data-s="2" aria-pressed="false">r = 2%</button></div>
+  <svg id="gGM" viewBox="0 0 520 330" role="img" aria-label="財市場の均衡のグラフ。垂直な供給と右下がりの需要"></svg>
+  <p class="gcap" id="gGM-cap"></p>
+</div>
+<div class="num"><span class="h">数値例（説明のための架空の値。第4パートでも使います）</span>
+<table class="calc-t">
+<tr><td>完全雇用の生産量 Ȳ、政府支出 G、税 T</td><td class="r">400、80、80</td></tr>
+<tr><td>消費 C ＝ 0.75 × (400 − 80)</td><td class="r">240</td></tr>
+<tr><td>投資関数</td><td class="r">I ＝ 120 − 10r</td></tr>
+<tr><td>均衡：400 ＝ 240 ＋ (120 − 10r) ＋ 80 を解く</td><td class="r">r ＝ 4%</td></tr>
+<tr><td>そのときの投資 I ＝ 120 − 40</td><td class="r">80</td></tr>
+</table></div>
+<p>グラフの横軸は生産量、縦軸は利子率です。需要 Yᵈ は、利子率が下がると投資が増えるので<b>右下がり</b>、供給 Yˢ は Ȳ で<b>垂直</b>です。超過供給なら利子率が下がって投資が増え、超過需要なら利子率が上がって投資が減ります。<span class="mk">財市場で「価格」の役割を果たすのは利子率</span>です。</p>
+<p class="xref">この計算は <a href="#s19" data-goto="s19">課題 問1</a> で使います</p>
+<div class="point"><p>財の供給は Ȳ で垂直、需要は投資を通じて右下がり。利子率が動いて Ȳ ＝ C̄ ＋ I(r) ＋ Ḡ が成り立つ。</p></div>
+</section>
+
+<section id="s10" data-t="貸付資金市場との関係">
+<h2><span class="sn">10</span>貸付資金市場との関係：S ＝ I は同じことを言っている</h2>
+<p>第2章で学んだように、<b>国民貯蓄</b> <span class="v">S</span> は、家計の貯蓄（民間貯蓄）と政府の貯蓄（政府貯蓄）の合計です。</p>
+<div class="eq"><span class="f">S ≡ S<sub>P</sub> + S<sub>G</sub> = (Y − T − C) + (T − G) = Y − C − G</span><span class="no">スライド p.17</span></div>
+<p class="eq-read">国民貯蓄 ＝ 民間貯蓄（手取りのうち使わなかった分）＋ 政府貯蓄（税収のうち使わなかった分）</p>
+<p>財市場の均衡 <span class="v">Y = C + I + G</span> を移項すると <span class="v">Y − C − G = I</span>、左辺は国民貯蓄なので <span class="v">S = I</span> です。逆に <span class="v">S = I</span> に定義を入れて移項すれば財市場の均衡に戻ります。<span class="mk">財市場の均衡と貸付資金市場の均衡は同値</span>です。</p>
+<div class="eq"><span class="f">S̄ = I(r)</span><span class="no">テキスト (3.8)</span></div>
+<p class="eq-read">貸付資金市場の均衡：一定の国民貯蓄（貸したいお金）＝ 投資（借りたいお金）</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="利子率の水準"><button type="button" data-g="gLF" data-s="0" aria-pressed="false">r = 6%</button><button type="button" data-g="gLF" data-s="1" aria-pressed="true">均衡 r = 4%</button><button type="button" data-g="gLF" data-s="2" aria-pressed="false">r = 2%</button></div>
+  <svg id="gLF" viewBox="0 0 520 330" role="img" aria-label="貸付資金市場の均衡のグラフ。垂直な貯蓄と右下がりの投資"></svg>
+  <p class="gcap" id="gLF-cap"></p>
+</div>
+<div class="bars">
+  <div class="brow"><span class="lab">所得の行方</span><div class="track"><div class="seg c" style="left:0;width:60%">消費 C　240</div><div class="seg g" style="left:60%;width:20%">G　80</div><div class="seg ri" style="left:80%;width:20%">貯蓄 S　80</div></div></div>
+  <div class="brow"><span class="lab">需要の中身</span><div class="track"><div class="seg c" style="left:0;width:60%">消費 C　240</div><div class="seg g" style="left:60%;width:20%">G　80</div><div class="seg i" style="left:80%;width:20%">投資 I　80</div></div></div>
+  <p class="cap">第9節の数値例（架空の値）。生産 400 のうち、消費と政府支出に使われなかった 80 が国民貯蓄。財市場が均衡すれば、その 80 がちょうど投資として使われる。</p>
+</div>
+<div class="memo"><span class="who">メモ：利子率は「今と将来の交換レート」</span>今の消費を1単位増やすと、来期の消費は 1 ＋ r 単位減らさなければなりません（貯金していれば利子がついたはずだから）。利子率は、今お金を使うことの費用です。だから、今の財への需要と供給を合わせる「価格」として、利子率が働くのです。</div>
+<p class="xref">この関係は <a href="#s20" data-goto="s20">課題 問2</a>・<a href="#s21" data-goto="s21">問3</a> で使います</p>
+<div class="point"><p>国民貯蓄 S ＝ Y − C − G。財市場の均衡 Y ＝ C ＋ I ＋ G と、貸付資金市場の均衡 S ＝ I は同値。どちらも利子率で調整される。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート4 ===================== -->
+<div class="part" id="seisaku" data-title="政策の効果" data-desc="政府支出の増加、減税、投資優遇策、貯蓄率の低下。4つの変化が起きたとき、生産量・消費・投資・利子率がどう変わるかを、財市場と貸付資金市場の2つの図で確かめます。">
+
+<section id="s11" data-t="政府支出の増加">
+<h2><span class="sn">11</span>政府支出の増加：投資が押しのけられる</h2>
+<p>税 T はそのままで、政府支出 G だけを増やします。足りないお金は国債（政府の借金）で賄います。第9節の数値例で、G を 80 から 90 に増やしてみましょう。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の前後"><button type="button" data-g="pg" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="pg" data-s="1" aria-pressed="false">変化後</button></div>
+  <div class="pair">
+    <div><svg id="gPgY" viewBox="0 0 520 330" role="img" aria-label="財市場：政府支出の増加で需要の線が右へ動く"></svg><p class="gcap" id="gPgY-cap"></p></div>
+    <div><svg id="gPgS" viewBox="0 0 520 330" role="img" aria-label="貸付資金市場：国民貯蓄が減り利子率が上がる"></svg><p class="gcap" id="gPgS-cap"></p></div>
+  </div>
+</div>
+<ol class="steps">
+  <li>G が増える → どの利子率でも需要 Yᵈ が10増える（右へシフト）。</li>
+  <li>しかし供給は Ȳ で動かない → 財市場で超過需要 → 利子率が上がる。</li>
+  <li>利子率が上がると投資が減る → 投資が10減ったところで、再び需要 ＝ 供給。</li>
+</ol>
+<div class="tw"><table>
+<thead><tr><th></th><th>Y</th><th>C</th><th>I</th><th>G</th><th>r</th><th>国民貯蓄 S</th></tr></thead>
+<tbody>
+<tr><td>変化前</td><td class="r">400</td><td class="r">240</td><td class="r">80</td><td class="r">80</td><td class="r">4%</td><td class="r">80</td></tr>
+<tr><td>変化後</td><td class="r">400</td><td class="r">240</td><td class="r minus">70</td><td class="r plus">90</td><td class="r">5%</td><td class="r minus">70</td></tr>
+</tbody></table></div>
+<p>G が増えても Y は変わらず、増えた G の分だけ投資が減りました。財政赤字を伴う政府支出は、<b>投資をクラウド・アウト（押しのけ）</b>するのです。貸付資金市場で見ると、政府貯蓄 T − G が減って国民貯蓄が減り、資金が足りなくなって利子率が上がっています。</p>
+<div class="memo"><span class="who">メモ：将来へのつけ</span>今期の投資が減ると、来期の工場や機械（資本）が、減らなかった場合より少なくなります。だから、国債で賄う政府支出の増加は、将来の生産を小さくするおそれがあります。</div>
+<p class="xref">課題 <a href="#s22" data-goto="s22">問4 (1)・(3)</a> で、スライドの数値を使って確かめます</p>
+<div class="point"><p>政府支出の増加：Y 不変、C 不変、I は G の増加分だけ減る、r 上昇（100%のクラウディング・アウト）。</p></div>
+</section>
+
+<section id="s12" data-t="減税">
+<h2><span class="sn">12</span>減税：消費が増えた分だけ投資が減る</h2>
+<p>今度は G はそのままで、税 T を 80 から 60 に20減らします。手取り（可処分所得）が20増え、消費性向 0.75 なら消費が15増えます。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の前後"><button type="button" data-g="pt" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="pt" data-s="1" aria-pressed="false">変化後</button></div>
+  <div class="pair">
+    <div><svg id="gPtY" viewBox="0 0 520 330" role="img" aria-label="財市場：減税で消費が増え需要の線が右へ動く"></svg><p class="gcap" id="gPtY-cap"></p></div>
+    <div><svg id="gPtS" viewBox="0 0 520 330" role="img" aria-label="貸付資金市場：国民貯蓄が減り利子率が上がる"></svg><p class="gcap" id="gPtS-cap"></p></div>
+  </div>
+</div>
+<ol class="steps">
+  <li>T が減る → 可処分所得 Y − T が増える → 消費 C が増える → Yᵈ が右へシフト。</li>
+  <li>供給は Ȳ のまま → 超過需要 → 利子率が上がる → 投資が減る。</li>
+  <li>消費の増加（15）と同じだけ投資が減って、均衡に戻る。</li>
+</ol>
+<div class="num"><span class="h">貸付資金市場で見ると（数値は架空の値）</span>
+<table class="calc-t">
+<tr><td>政府貯蓄 S<sub>G</sub> ＝ T − G：0 → −20</td><td class="r minus">−20</td></tr>
+<tr><td>民間貯蓄 S<sub>P</sub> ＝ Y − T − C：80 → 340 − 255 ＝ 85</td><td class="r plus">＋5（＝ (1 − c) × 20）</td></tr>
+<tr><td>国民貯蓄 S：80 → 65</td><td class="r minus">−15（＝ c × 20）</td></tr>
+<tr><td>新しい均衡：120 − 10r ＝ 65</td><td class="r">r ＝ 5.5%</td></tr>
+</table></div>
+<p>減税分のうち、家計は一部（1 − c）を貯蓄に回しますが、政府の貯蓄はまるまる減ります。だから国民貯蓄は <span class="mk">c × 減税額</span> だけ減り、貸付資金市場の S の線がその分だけ左へ動きます。</p>
+<div class="point"><p>減税：Y 不変、C 増加、I は C の増加分だけ減る、r 上昇。国民貯蓄は c × 減税額だけ減る。</p></div>
+</section>
+
+<section id="s13" data-t="投資優遇策">
+<h2><span class="sn">13</span>投資優遇策：投資は結局増えない</h2>
+<p>投資減税などで、どの利子率でも企業が投資を増やそうとする場合を考えます。投資関数 I(r) が右へ動きます（ここでは 120 − 10r → 130 − 10r）。税 T は変えません。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の前後"><button type="button" data-g="pi" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="pi" data-s="1" aria-pressed="false">変化後</button></div>
+  <div class="pair">
+    <div><svg id="gPiY" viewBox="0 0 520 330" role="img" aria-label="財市場：投資の増加で需要の線が右へ動く"></svg><p class="gcap" id="gPiY-cap"></p></div>
+    <div><svg id="gPiS" viewBox="0 0 520 330" role="img" aria-label="貸付資金市場：投資の線が右へ動くが貯蓄は変わらず利子率だけが上がる"></svg><p class="gcap" id="gPiS-cap"></p></div>
+  </div>
+</div>
+<p>投資の線が右へ動くと、資金を借りたい企業が増えて利子率が上がります。しかし、貸す側の国民貯蓄は変わっていません。利子率が上がると投資計画の一部があきらめられ、<span class="mk">投資は元の水準（80）に戻ります</span>。Y も C も変わらず、上がったのは利子率だけです。</p>
+<div class="memo"><span class="who">メモ：1つのパイの取り合い</span>投資に使えるお金は、国民貯蓄という大きさの決まったパイです。全員が「もっと食べたい」と言っても、パイが大きくならなければ、値段（利子率）が上がるだけ。テキストはこれを「一種のパラドックス」と呼んでいます。</div>
+<div class="point"><p>投資優遇策：Y・C・I・G はすべて不変、r だけが上がる。国民貯蓄が増えない限り、投資は増えない。</p></div>
+</section>
+
+<section id="s14" data-t="貯蓄率の低下">
+<h2><span class="sn">14</span>貯蓄率の低下：消費が増え、投資が減る</h2>
+<p>将来の見通しが明るくなった、年金が充実して老後の備えがいらなくなった、などの理由で、家計が貯蓄を減らしたとします。消費性向が上がる（0.75 → 0.8）のと同じです。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の前後"><button type="button" data-g="ps" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="ps" data-s="1" aria-pressed="false">変化後</button></div>
+  <div class="pair">
+    <div><svg id="gPsY" viewBox="0 0 520 330" role="img" aria-label="財市場：消費の増加で需要の線が右へ動く"></svg><p class="gcap" id="gPsY-cap"></p></div>
+    <div><svg id="gPsS" viewBox="0 0 520 330" role="img" aria-label="貸付資金市場：貯蓄が減り利子率が上がる"></svg><p class="gcap" id="gPsS-cap"></p></div>
+  </div>
+</div>
+<p>消費が 240 → 256 と16増え、その分だけ国民貯蓄が減ります。利子率が 5.6% に上がり、投資は 64 に減ります。結果は減税とよく似ています。違いは、政府ではなく家計の行動の変化がきっかけだという点です。</p>
+<div class="point"><p>貯蓄率の低下：Y 不変、C 増加、I は同じだけ減る、r 上昇。</p></div>
+</section>
+
+<section id="s15" data-t="4つの政策の比較">
+<h2><span class="sn">15</span>4つの変化を比べる</h2>
+<p>講義スライド p.27 の表を、記号の意味を添えて整理します（＋は増加、−は減少、0は不変）。</p>
+<div class="tw"><table>
+<thead><tr><th>変化</th><th>r</th><th>Y</th><th>C</th><th>I</th><th>G</th><th>きっかけ</th></tr></thead>
+<tbody>
+<tr><td>政府支出の増加</td><td class="c plus">＋</td><td class="c">0</td><td class="c">0</td><td class="c minus">−</td><td class="c plus">＋</td><td>G が増え、政府貯蓄が減る</td></tr>
+<tr><td>減税</td><td class="c plus">＋</td><td class="c">0</td><td class="c plus">＋</td><td class="c minus">−</td><td class="c">0</td><td>手取りが増え、消費が増える</td></tr>
+<tr><td>投資優遇策</td><td class="c plus">＋</td><td class="c">0</td><td class="c">0</td><td class="c">0</td><td class="c">0</td><td>投資の線が右へ動く</td></tr>
+<tr><td>貯蓄率の低下</td><td class="c plus">＋</td><td class="c">0</td><td class="c plus">＋</td><td class="c minus">−</td><td class="c">0</td><td>消費性向が上がる</td></tr>
+</tbody></table></div>
+<div class="num"><span class="h">説明用の数値例のまとめ（架空の値。変化前は r = 4%、C = 240、I = 80）</span>
+<table class="calc-t">
+<tr><td>G：80 → 90</td><td class="r">r 5%、C 240、I 70</td></tr>
+<tr><td>T：80 → 60</td><td class="r">r 5.5%、C 255、I 65</td></tr>
+<tr><td>I(r)：120 − 10r → 130 − 10r</td><td class="r">r 5%、C 240、I 80</td></tr>
+<tr><td>c：0.75 → 0.8</td><td class="r">r 5.6%、C 256、I 64</td></tr>
+</table></div>
+<h3>古典派モデルの結論</h3>
+<p>4つの変化は、どれも需要を増やす方向に働きます。しかし、<span class="mk">生産量 Y（GDP）はまったく増えません</span>。生産は完全雇用の Ȳ で決まっていて、需要の増加は利子率の上昇によって、投資の減少で100%打ち消される（クラウド・アウトされる）からです。変わるのは、生産したものを消費・投資・政府支出にどう分けるか（支出の構成比）だけです。</p>
+<div class="memo"><span class="who">メモ：ケインズのモデルとは結論が逆</span>第7章で学ぶケインズの短期モデルでは、政府支出の増加や減税で生産量が増えます。どちらのモデルが正しいかではなく、「完全雇用が成り立つ長期」と「失業がありうる短期」で、見ている時間の長さが違うのです。</div>
+<p class="xref">課題 <a href="#s22" data-goto="s22">問4</a> で、5つの変化をスライドの数値で計算します</p>
+<div class="point"><p>古典派の基本モデルでは、需要を増やす政策は Y を増やさず、利子率を上げて投資を押しのけるだけ。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート5 ===================== -->
+<div class="part" id="matome" data-title="まとめと演習" data-desc="章全体の要点を振り返り、確認問題で理解を確かめます。理解できたら、次のタブで課題に挑戦しましょう。">
+<section id="s16" data-t="まとめ">
+<h2><span class="sn">16</span>まとめ</h2>
+<div class="tw"><table>
+<thead><tr><th>テーマ</th><th>要点</th><th>式</th></tr></thead>
+<tbody>
+<tr><td>生産要素市場</td><td>需要は右下がり、供給は垂直。賃金・資本コストが動いて完全雇用</td><td><span class="v">L = L̄</span>、<span class="v">K = K̄</span></td></tr>
+<tr><td>生産関数</td><td>収穫一定を仮定。1つだけ増やすと限界生産物は逓減</td><td><span class="v">Y = F(K, L)</span></td></tr>
+<tr><td>要素の需要</td><td>利潤最大化の条件</td><td><span class="v">MPL = w</span>、<span class="v">MPK = r</span></td></tr>
+<tr><td>消費関数</td><td>可処分所得の一定割合を消費</td><td><span class="v">C = c(Y − T)</span></td></tr>
+<tr><td>投資関数</td><td>利子率の減少関数</td><td><span class="v">I = I(r)</span></td></tr>
+<tr><td>財市場の均衡</td><td>利子率が動いて需要と供給が一致</td><td><span class="v">Ȳ = C̄ + I(r) + Ḡ</span></td></tr>
+<tr><td>貸付資金市場</td><td>財市場の均衡と同値</td><td><span class="v">S = Y − C − G = I(r)</span></td></tr>
+<tr><td>政策の効果</td><td>Y は不変。需要の増加は r の上昇で100%クラウド・アウト</td><td></td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s17" data-t="確認問題">
+<h2><span class="sn">17</span>確認問題</h2>
+<p>答えを考えてから「解答を見る」を押してください。Q5・Q6 はテキストの復習問題1・2をもとにしています。</p>
+<div class="q"><div class="qq"><span class="qn">Q1</span><span>労働供給曲線が垂直なのはなぜか。</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>家計は全体として決まった量の労働 L̄ を持ち、賃金がいくらでもその量だけ働くと単純化しているから。個々の人は賃金で労働時間を変えるかもしれないが、右上がりにしても結論はほとんど変わらない。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q2</span><span>MPL が 3、実質賃金 w が 2 のとき、企業は雇う人数を増やすべきか減らすべきか。</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>増やすべき。1人増やすと生産が3増え、賃金は2しか増えないので、利潤が (3 − 2) ＝ 1 増える。MPL が下がって 2 に等しくなるまで増やす。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q3</span><span>Y = 300、T = 50、消費性向 c = 0.8 のとき、消費と民間貯蓄はいくら？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>可処分所得 300 − 50 ＝ 250。消費 0.8 × 250 ＝ 200。民間貯蓄 250 − 200 ＝ 50。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q4</span><span>古典派の基本モデルで、財市場の「価格」の役割を果たすのは何か。</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>利子率 r。供給は Ȳ で一定、消費も一定なので、需要のうち動くのは投資だけ。利子率が動いて投資が変わり、需要と供給が一致する。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q5</span><span>（復習問題1）家計の持つ労働と資本の量が一定で、完全雇用されるとき、財の供給量はどう決まるか。</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>生産関数に完全雇用の投入量を入れた値 Ȳ ＝ F(K̄, L̄) に決まる。需要や利子率には左右されず、グラフでは垂直な線になる。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q6</span><span>（復習問題2 (e)）財市場が均衡すれば貸付資金市場が均衡し、その逆も成り立つことを示せ。</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>Y ＝ C ＋ I ＋ G を移項すると Y − C − G ＝ I。国民貯蓄の定義 S ＝ (Y − T − C) ＋ (T − G) ＝ Y − C − G より、左辺は S なので S ＝ I。逆に S ＝ I の S に Y − C − G を入れて移項すれば Y ＝ C ＋ I ＋ G。</div></div>
+</section>
+<p class="src">出典：麻生良文『マクロ経済学入門』第3章「基本モデル」（pp.63–87）、講義スライド第3章（近藤春生）をもとに、初学者向けに再構成しました。数値例は、特に断りのないものは説明のための架空の値です。</p>
+</div>
+
+<!-- ===================== パート6 ===================== -->
+<div class="part" id="kadai" data-title="課題に挑戦" data-desc="講義スライドの「古典派モデル 練習問題(1)〜(3)」と、テキスト p.86–87 の復習問題3（発展）を、ヒントから順に解いていきます。解説と答案例は、表示スイッチがオンのときだけ見られます。">
+
+<section id="s18" data-t="課題の設定と準備">
+<h2><span class="sn">18</span>課題の設定と準備</h2>
+<div class="ansSwitch">
+  <label class="sw-l" for="ansToggle"><input type="checkbox" id="ansToggle" role="switch"><span class="sw-ui" aria-hidden="true"></span><span>解説と答案例を表示する</span></label>
+  <span class="sw-note" id="ansNote">オフ：問題とヒントだけを表示しています。</span>
+</div>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch3.docx" download="第3章課題_解答例.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+<div class="kq"><span class="lab">課題（講義スライド「古典派モデル 練習問題(1)」p.29）</span>
+<p>次のモデルを考える（r は 5% なら 5 をとるような変数）。</p>
+<p><span class="v">Ȳ = 500、Y = C + I + G、C(Y − T) = 0.8(Y − T)、I = 100 − 5r、G = T = 100</span></p>
+<p><b>問1</b>　財市場を均衡させる Y、r、C、I を求めよ。</p>
+<p><b>問2</b>　民間貯蓄、公的貯蓄、国民貯蓄を求め、国民貯蓄と投資が等しいことを確かめよ。</p>
+<p><b>問3</b>　貸付資金市場の均衡条件から、均衡における r、S、I を求めよ。</p>
+</div>
+<div class="kq"><span class="lab">課題（練習問題(2)・(3)、スライド p.30–31）</span>
+<p><b>問4</b>　次のような変化が起きた。新しい均衡を求めよ。(1) G が 100 から 110 に増加（T は 100 のまま）。(2) T が 100 から 75 に減少（G は 100 のまま）。(3) G が 100 から 85 へ減少（T は 100 のまま）。(4) 投資優遇政策の導入：投資関数 I = 110 − 5r。(5) 消費性向の上昇：消費関数 C = 0.8125(Y − T)（0.8125 ＝ 325/400）。</p>
+<p><b>問5</b>　消費関数が利子率にも依存するものとする：C = C(Y − T, r)。ただし C は利子率 r の減少関数である（r の上昇は消費 C を抑制させ、貯蓄 S を増加させる）。財市場の均衡、貸付資金市場の均衡を表すグラフはどのように変化するだろうか。また、政府支出の増加、減税の効果はどうなるだろうか。</p>
+</div>
+<div class="kq"><span class="lab">発展（テキスト p.86–87 復習問題3）</span>
+<p><b>問6</b>　完全雇用に対応する産出量 Ȳ が 500（兆円）、政府支出 G と税負担 T はともに 100（兆円）。消費関数は C = 0.75(Y − T)、投資関数は I(r) = 140 − 10r（r の単位は %）。(a) 投資関数のグラフを描け。(b) 縦軸に利子率、横軸に Yᵈ をとり、財の需要曲線を描け。(c) Yᵈ = Yˢ を実現させる利子率を求めよ。(d) T は 100 のままで G を 120 に増加した。新しい均衡での Y、C、I、r を求めよ。(e) T を 20 減税して 80 にした（G は 100 のまま）。新しい均衡での Y、C、I、r を求めよ。</p>
+</div>
+<h3>問題文の言葉を確かめる</h3>
+<div class="tw"><table>
+<thead><tr><th>言葉</th><th>意味</th></tr></thead>
+<tbody>
+<tr><td>Ȳ = 500</td><td>完全雇用のときの生産量（財の供給）。どの問題でも 500 のまま変わらない</td></tr>
+<tr><td>r は 5% なら 5</td><td>利子率をパーセントの数字のまま式に入れる。r = 4 は「4%」</td></tr>
+<tr><td>公的貯蓄</td><td>政府貯蓄 S<sub>G</sub> ＝ T − G のこと</td></tr>
+<tr><td>消費性向</td><td>可処分所得 Y − T のうち消費に回す割合 c。問4(5) では 0.8 → 0.8125</td></tr>
+<tr><td>投資優遇政策</td><td>投資減税などで、どの利子率でも投資が増えること。式では定数が 100 → 110</td></tr>
+<tr><td>C は r の減少関数</td><td>利子率が上がると、消費を減らして貯蓄を増やすということ。問5だけの新しい仮定</td></tr>
+</tbody></table></div>
+<div class="memo"><span class="who">テキストと違う点</span>テキストのモデルでは、消費は可処分所得だけで決まり、利子率の影響は受けません（p.78）。問5はこの仮定を変えています。また、問1〜4の数字（c = 0.8、I = 100 − 5r）は、テキストの復習問題3（c = 0.75、I = 140 − 10r）とは違います。</div>
+<h3>この課題で使う道具</h3>
+<div class="tw"><table>
+<thead><tr><th>問題</th><th>使う道具</th><th>復習</th></tr></thead>
+<tbody>
+<tr><td>問1・問6</td><td>財市場の均衡 Ȳ ＝ C ＋ I(r) ＋ G</td><td><a href="#s9" data-goto="s9">第9節</a></td></tr>
+<tr><td>問2・問3</td><td>国民貯蓄 S ＝ S<sub>P</sub> ＋ S<sub>G</sub> ＝ Y − C − G、S ＝ I</td><td><a href="#s10" data-goto="s10">第10節</a></td></tr>
+<tr><td>問4</td><td>政策の効果（需要の線と貯蓄の線の動き）</td><td><a href="#s11" data-goto="s11">第11〜15節</a></td></tr>
+<tr><td>問5</td><td>消費関数・投資関数とグラフの傾き</td><td><a href="#s7" data-goto="s7">第7節</a>・<a href="#s8" data-goto="s8">第8節</a></td></tr>
+</tbody></table></div>
+<h3>課題のモデルの数字（変化前）</h3>
+<p>問1〜5はスライドの数字で解きます。問5の消費関数だけは、問題に式がないので、<b>説明のための架空の例</b>を使います。</p>
+<div class="tw"><table>
+<thead><tr><th>項目</th><th>値</th></tr></thead>
+<tbody>
+<tr><td>完全雇用の生産量 <span class="v">Ȳ</span></td><td class="r">500</td></tr>
+<tr><td>政府支出 <span class="v">G</span>、税 <span class="v">T</span></td><td class="r">100、100</td></tr>
+<tr><td>消費関数</td><td class="r">C ＝ 0.8(Y − T)</td></tr>
+<tr><td>投資関数</td><td class="r">I ＝ 100 − 5r</td></tr>
+<tr><td>問5の消費関数（架空の例）</td><td class="r">C ＝ 0.8(Y − T) ＋ 20 − 5r</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s19" data-t="問1 財市場の均衡を求める">
+<h2><span class="sn">19</span>問1：財市場を均衡させる Y、r、C、I</h2>
+<div class="kq"><span class="lab">問題</span><p>財市場を均衡させる Y、r、C、I を求めよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>Y は完全雇用で 500 に決まっています。消費は Y と T が決まれば計算できます。残る未知数は r だけなので、500 = 0.8(500 − 100) + (100 − 5r) + 100 を r について解きましょう（スライドのヒント）。</div>
+<p class="xref">復習：<a href="#s9" data-goto="s9">パート3「財市場の均衡」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>決まっているもの、求めるもの</h3>
+<div class="tw"><table>
+<thead><tr><th>変数</th><th>決まり方</th></tr></thead>
+<tbody>
+<tr><td>Y</td><td>完全雇用の Ȳ ＝ 500（供給）。需要がどうであっても変わらない</td></tr>
+<tr><td>C</td><td>Y と T が決まれば計算できる</td></tr>
+<tr><td>I</td><td>利子率 r で決まる</td></tr>
+<tr><td>r</td><td>財市場の需要と供給を一致させるように決まる（求める）</td></tr>
+</tbody></table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>計算する</h3>
+<div class="num"><span class="h">数値例</span>
+<table class="calc-t">
+<tr><td>Y ＝ Ȳ</td><td class="r">500</td></tr>
+<tr><td>C ＝ 0.8 × (500 − 100)</td><td class="r">320</td></tr>
+<tr><td>500 ＝ 320 ＋ (100 − 5r) ＋ 100 → 5r ＝ 20</td><td class="r">r ＝ 4（4%）</td></tr>
+<tr><td>I ＝ 100 − 5 × 4</td><td class="r">80</td></tr>
+<tr><td>確かめ：C ＋ I ＋ G ＝ 320 ＋ 80 ＋ 100</td><td class="r">500</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフで確かめる</h3>
+<p>需要は Yᵈ ＝ 320 ＋ (100 − 5r) ＋ 100 ＝ 520 − 5r。利子率が高いと需要は供給より少なく、利子率が下がって投資が増えると需要が増えます。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="k1" data-s="0" aria-pressed="true">r = 8% のとき</button><button type="button" data-g="k1" data-s="1" aria-pressed="false">均衡</button></div>
+  <svg id="gK1" viewBox="0 0 520 330" role="img" aria-label="財市場の均衡。需要の線と供給500の線が利子率4%で交わる"></svg>
+  <p class="gcap" id="gK1-cap"></p>
+</div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　Y を未知数として「Y = C + I + G を Y について解く」こと。古典派のモデルでは Y は完全雇用で 500 に決まっていて、財市場で調整されるのは利子率です。</div>
+<div class="point ketsu"><p>Y ＝ 500、r ＝ 4（%）、C ＝ 320、I ＝ 80。</p></div>
+<div class="answer">
+<p>古典派モデルでは、財の供給は完全雇用の産出量で決まるので Y ＝ Ȳ ＝ 500 である。このとき消費は C ＝ 0.8 × (500 − 100) ＝ 320 となる。</p>
+<p>財市場の均衡条件 500 ＝ 320 ＋ (100 − 5r) ＋ 100 を r について解くと、5r ＝ 20 より r ＝ 4（%）。このとき投資は I ＝ 100 − 5 × 4 ＝ 80 である。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s20" data-t="問2 貯蓄と投資を確かめる">
+<h2><span class="sn">20</span>問2：民間貯蓄・公的貯蓄・国民貯蓄</h2>
+<div class="kq"><span class="lab">問題</span><p>民間貯蓄、公的貯蓄、国民貯蓄を求め、国民貯蓄と投資が等しいことを確かめよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>民間貯蓄は「手取り − 消費」（Y − T − C）、公的貯蓄は「税収 − 政府支出」（T − G）。国民貯蓄はその合計で、Y − C − G とも書けます。問1の答えを使いましょう。</div>
+<p class="xref">復習：<a href="#s10" data-goto="s10">パート3「貸付資金市場との関係」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>3つの貯蓄の定義</h3>
+<div class="eq"><span class="f">S = S<sub>P</sub> + S<sub>G</sub> = (Y − T − C) + (T − G) = Y − C − G</span><span class="no">スライド p.17</span></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>計算する</h3>
+<div class="num"><span class="h">数値例</span>
+<table class="calc-t">
+<tr><td>民間貯蓄 S<sub>P</sub> ＝ 500 − 100 − 320</td><td class="r">80</td></tr>
+<tr><td>公的貯蓄 S<sub>G</sub> ＝ 100 − 100</td><td class="r">0</td></tr>
+<tr><td>国民貯蓄 S ＝ 80 ＋ 0（＝ 500 − 320 − 100）</td><td class="r">80</td></tr>
+<tr><td>投資 I（問1）</td><td class="r">80</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>帯グラフで確かめる</h3>
+<div class="bars">
+  <div class="brow"><span class="lab">所得の行方</span><div class="track"><div class="seg c" style="left:0;width:64%">消費 C　320</div><div class="seg g" style="left:64%;width:20%">G　100</div><div class="seg ri" style="left:84%;width:16%">S　80</div></div></div>
+  <div class="brow"><span class="lab">需要の中身</span><div class="track"><div class="seg c" style="left:0;width:64%">消費 C　320</div><div class="seg g" style="left:64%;width:20%">G　100</div><div class="seg i" style="left:84%;width:16%">I　80</div></div></div>
+  <p class="cap">生産 500 のうち、消費と政府支出に使われなかった 80 が国民貯蓄。需要の側で投資に使われるのも 80。</p>
+</div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　民間貯蓄を Y − C ＝ 180 と計算すること。家計が自由に使えるのは税を引いた後の Y − T です。</div>
+<div class="point ketsu"><p>民間貯蓄 80、公的貯蓄 0、国民貯蓄 80。投資も 80 で、国民貯蓄と投資は等しい。</p></div>
+<div class="answer">
+<p>民間貯蓄は S<sub>P</sub> ＝ Y − T − C ＝ 500 − 100 − 320 ＝ 80、公的貯蓄は S<sub>G</sub> ＝ T − G ＝ 100 − 100 ＝ 0 である。国民貯蓄は S ＝ S<sub>P</sub> ＋ S<sub>G</sub> ＝ 80 となる。</p>
+<p>問1より投資は I ＝ 80 なので、S ＝ I ＝ 80 が成り立つ。これは、財市場の均衡 Y ＝ C ＋ I ＋ G を移項した Y − C − G ＝ I の左辺が国民貯蓄に等しいことから当然の結果である。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s21" data-t="問3 貸付資金市場から求める">
+<h2><span class="sn">21</span>問3：貸付資金市場の均衡から r、S、I を求める</h2>
+<div class="kq"><span class="lab">問題</span><p>貸付資金市場の均衡条件から、均衡における r、S、I を求めよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>国民貯蓄は S ＝ Y − C − G ＝ 500 − 0.8(500 − 100) − 100 ＝ 80 で、利子率によらず一定です（スライドのヒント）。これが投資 I ＝ 100 − 5r と等しくなる r を求めます。</div>
+<p class="xref">復習：<a href="#s10" data-goto="s10">パート3「貸付資金市場との関係」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>貸す側と借りる側</h3>
+<p>貸付資金市場で、お金を貸す側は国民貯蓄 S、借りる側は投資 I です。S は利子率によらず一定（垂直な線）、I は利子率が上がると減ります（右下がり）。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>計算する</h3>
+<div class="num"><span class="h">数値例</span>
+<table class="calc-t">
+<tr><td>S ＝ 500 − 0.8 × (500 − 100) − 100</td><td class="r">80</td></tr>
+<tr><td>S ＝ I：80 ＝ 100 − 5r → 5r ＝ 20</td><td class="r">r ＝ 4（4%）</td></tr>
+<tr><td>I ＝ 100 − 5 × 4</td><td class="r">80</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフで確かめる</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="k3" data-s="0" aria-pressed="true">r = 8% のとき</button><button type="button" data-g="k3" data-s="1" aria-pressed="false">均衡</button></div>
+  <svg id="gK3" viewBox="0 0 520 330" role="img" aria-label="貸付資金市場の均衡。貯蓄80の線と投資の線が利子率4%で交わる"></svg>
+  <p class="gcap" id="gK3-cap"></p>
+</div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="point ketsu"><p>r ＝ 4（%）、S ＝ I ＝ 80。問1（財市場）と同じ答えになる。</p></div>
+<div class="answer">
+<p>国民貯蓄は S ＝ Y − C − G ＝ 500 − 320 − 100 ＝ 80 で、利子率に依存しない。貸付資金市場の均衡条件 S ＝ I より 80 ＝ 100 − 5r、これを解くと r ＝ 4（%）であり、S ＝ I ＝ 80 となる。</p>
+<p>この結果は問1で財市場の均衡から求めた値と一致する。財市場の均衡条件と貸付資金市場の均衡条件は同値だからである。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s22" data-t="問4 5つの変化と新しい均衡">
+<h2><span class="sn">22</span>問4：5つの変化と新しい均衡</h2>
+<div class="kq"><span class="lab">問題</span><p>次のような変化が起きた。新しい均衡を求めよ。(1) G が 100 から 110 に増加（T は 100 のまま）。(2) T が 100 から 75 に減少（G は 100 のまま）。(3) G が 100 から 85 へ減少（T は 100 のまま）。(4) 投資関数 I = 110 − 5r。(5) 消費関数 C = 0.8125(Y − T)。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>どの場合も Y は 500 のままです。まず「C がいくらになるか」を計算し、500 ＝ C ＋ I(r) ＋ G を r について解きます。最後に S ＝ Y − C − G を計算して、S ＝ I を確かめましょう。</div>
+<p class="xref">復習：<a href="#s11" data-goto="s11">パート4「政策の効果」</a>、<a href="#s15" data-goto="s15">4つの変化の比較</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>何が変わり、何が変わらないか</h3>
+<div class="tw"><table>
+<thead><tr><th>変化</th><th>変わるもの</th><th>変わらないもの</th></tr></thead>
+<tbody>
+<tr><td>(1) G 増加</td><td>G、政府貯蓄</td><td>Y、T、C、投資関数</td></tr>
+<tr><td>(2) 減税</td><td>T → 可処分所得 → C、政府貯蓄</td><td>Y、G、投資関数</td></tr>
+<tr><td>(3) G 減少</td><td>G、政府貯蓄</td><td>Y、T、C、投資関数</td></tr>
+<tr><td>(4) 投資優遇</td><td>投資関数（どの r でも投資が10多い）</td><td>Y、T、G、C、国民貯蓄</td></tr>
+<tr><td>(5) 消費性向の上昇</td><td>C、民間貯蓄</td><td>Y、T、G、投資関数</td></tr>
+</tbody></table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>どの線が動くか</h3>
+<p>(1)(2)(4)(5) は需要 Yᵈ を右へ、(3) は左へ動かします。供給 Ȳ ＝ 500 は動きません。貸付資金市場では、(1)(2)(5) で貯蓄 S が左へ、(3) で右へ、(4) では投資の線が右へ動きます。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフと数値で読み取る</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の選択"><button type="button" data-g="k4" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="k4" data-s="1" aria-pressed="false">(1) G↑</button><button type="button" data-g="k4" data-s="2" aria-pressed="false">(2) 減税</button><button type="button" data-g="k4" data-s="3" aria-pressed="false">(3) G↓</button><button type="button" data-g="k4" data-s="4" aria-pressed="false">(4) 投資優遇</button><button type="button" data-g="k4" data-s="5" aria-pressed="false">(5) 消費性向↑</button></div>
+  <div class="pair">
+    <div><svg id="gK4Y" viewBox="0 0 520 330" role="img" aria-label="財市場：変化による需要の線の動き"></svg></div>
+    <div><svg id="gK4S" viewBox="0 0 520 330" role="img" aria-label="貸付資金市場：変化による貯蓄と投資の線の動き"></svg></div>
+  </div>
+  <p class="gcap" id="gK4Y-cap"></p>
+  <div class="tw" style="max-width:30rem"><table class="calc-t" id="k4tbl"></table></div>
+</div>
+<div class="num"><span class="h">計算（どの場合も Y ＝ 500）</span>
+<table class="calc-t">
+<tr><td>(1) 500 ＝ 320 ＋ (100 − 5r) ＋ 110</td><td class="r">r ＝ 6、C ＝ 320、I ＝ 70</td></tr>
+<tr><td>(2) C ＝ 0.8 × 425 ＝ 340、500 ＝ 340 ＋ (100 − 5r) ＋ 100</td><td class="r">r ＝ 8、C ＝ 340、I ＝ 60</td></tr>
+<tr><td>(3) 500 ＝ 320 ＋ (100 − 5r) ＋ 85</td><td class="r">r ＝ 1、C ＝ 320、I ＝ 95</td></tr>
+<tr><td>(4) 500 ＝ 320 ＋ (110 − 5r) ＋ 100</td><td class="r">r ＝ 6、C ＝ 320、I ＝ 80</td></tr>
+<tr><td>(5) C ＝ 0.8125 × 400 ＝ 325、500 ＝ 325 ＋ (100 − 5r) ＋ 100</td><td class="r">r ＝ 5、C ＝ 325、I ＝ 75</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　(4) で「投資優遇で投資が 90 に増える」と答えること。r ＝ 4 のままなら 110 − 20 ＝ 90 ですが、貯蓄が 80 のままなので利子率が 6% に上がり、投資は 80 に戻ります。また (2) で、消費の増加を減税額の25とするのも誤り。増えるのは 0.8 × 25 ＝ 20 です。</div>
+<div class="point ketsu"><p>どの場合も Y ＝ 500 は不変。(1) r ＝ 6、I ＝ 70　(2) r ＝ 8、C ＝ 340、I ＝ 60　(3) r ＝ 1、I ＝ 95　(4) r ＝ 6、I ＝ 80（不変）　(5) r ＝ 5、C ＝ 325、I ＝ 75。</p></div>
+<div class="answer">
+<p>いずれの場合も、財の供給は完全雇用の産出量で決まるので Y ＝ 500 のままであり、財市場の均衡 500 ＝ C ＋ (投資) ＋ G を満たすように利子率が調整される。</p>
+<p>(1) C ＝ 320 は不変で、500 ＝ 320 ＋ 100 − 5r ＋ 110 より r ＝ 6、I ＝ 70。政府支出の増加分 10 だけ投資が減少する（S ＝ 500 − 320 − 110 ＝ 70 ＝ I）。(2) 可処分所得が 425 となり C ＝ 340。500 ＝ 340 ＋ 100 − 5r ＋ 100 より r ＝ 8、I ＝ 60。消費の増加分 20 だけ投資が減少する。(3) 500 ＝ 320 ＋ 100 − 5r ＋ 85 より r ＝ 1、I ＝ 95。政府支出の減少分 15 だけ投資が増加する。</p>
+<p>(4) 500 ＝ 320 ＋ 110 − 5r ＋ 100 より r ＝ 6。投資は I ＝ 110 − 30 ＝ 80 で変わらない。国民貯蓄が 80 のまま変わらないため、利子率が上昇するだけである。(5) C ＝ 0.8125 × 400 ＝ 325。500 ＝ 325 ＋ 100 − 5r ＋ 100 より r ＝ 5、I ＝ 75。消費の増加分 5 だけ投資が減少する。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s23" data-t="問5 消費が利子率にも依存する場合">
+<h2><span class="sn">23</span>問5：消費が利子率にも依存するとき</h2>
+<div class="kq"><span class="lab">問題</span><p>消費関数が利子率にも依存するものとする：C = C(Y − T, r)。ただし C は r の減少関数である。財市場の均衡、貸付資金市場の均衡を表すグラフはどのように変化するだろうか。また、政府支出の増加、減税の効果はどうなるだろうか。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>利子率が上がったとき、これまでは投資だけが減りました。今度は消費も減ります。すると、需要 Yᵈ の線の傾きはどうなるでしょうか。また、消費が減ると貯蓄 S ＝ Y − C − G は増えるので、S の線は垂直のままでしょうか。</div>
+<p class="xref">復習：<a href="#s7" data-goto="s7">消費関数</a>、<a href="#s11" data-goto="s11">政府支出の増加</a>、<a href="#s12" data-goto="s12">減税</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>何が変わり、何が変わらないか</h3>
+<p>変わるのは「利子率が上がると消費が減る（貯蓄が増える）」という1点だけです。Y が Ȳ で一定であることは変わりません。考えやすいように、問1と同じ均衡（r ＝ 4、C ＝ 320）を通る<b>架空の消費関数</b>を使います。</p>
+<div class="eq"><span class="f">C = 0.8(Y − T) + 20 − 5r</span><span class="no">説明用の例</span></div>
+<p class="eq-read">r ＝ 4 なら 0.8 × 400 ＋ 20 − 20 ＝ 320 で、問1と同じ。利子率が1ポイント上がると消費が5減る</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>グラフの形がどう変わるか</h3>
+<div class="tw"><table>
+<thead><tr><th>グラフ</th><th>元のモデル</th><th>消費が r に依存するモデル</th></tr></thead>
+<tbody>
+<tr><td>財の需要 Yᵈ</td><td>右下がり（r が上がると I だけ減る）：520 − 5r</td><td><b>よりなだらかな</b>右下がり（I と C の両方が減る）：540 − 10r</td></tr>
+<tr><td>財の供給 Yˢ</td><td>Ȳ ＝ 500 で垂直</td><td>変わらない</td></tr>
+<tr><td>国民貯蓄 S</td><td>80 で垂直</td><td><b>右上がり</b>（r が上がると C が減り S が増える）：60 ＋ 5r</td></tr>
+<tr><td>投資 I</td><td>100 − 5r</td><td>変わらない</td></tr>
+</tbody></table></div>
+<p>利子率が少し動くだけで需要が大きく変わるようになるので、需要の線はなだらか（横に寝た形）になります。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>政府支出の増加と減税の効果</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の選択"><button type="button" data-g="k5" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="k5" data-s="1" aria-pressed="false">G：100 → 110</button><button type="button" data-g="k5" data-s="2" aria-pressed="false">T：100 → 75</button></div>
+  <div class="pair">
+    <div><svg id="gK5Y" viewBox="0 0 520 330" role="img" aria-label="財市場：元のモデルと消費が利子率に依存するモデルの比較"></svg></div>
+    <div><svg id="gK5S" viewBox="0 0 520 330" role="img" aria-label="貸付資金市場：貯蓄の線が右上がりになる"></svg></div>
+  </div>
+  <p class="gcap" id="gK5Y-cap"></p>
+</div>
+<div class="num"><span class="h">数値例（架空の消費関数を使った計算）</span>
+<table class="calc-t">
+<tr><td>G ＝ 110：500 ＝ (340 − 5r) ＋ (100 − 5r) ＋ 110 → 10r ＝ 50</td><td class="r">r ＝ 5、C ＝ 315、I ＝ 75</td></tr>
+<tr><td>　（元のモデルでは）</td><td class="r">r ＝ 6、C ＝ 320、I ＝ 70</td></tr>
+<tr><td>T ＝ 75：C ＝ 0.8 × 425 ＋ 20 − 5r ＝ 360 − 5r、500 ＝ (360 − 5r) ＋ (100 − 5r) ＋ 100</td><td class="r">r ＝ 6、C ＝ 330、I ＝ 70</td></tr>
+<tr><td>　（元のモデルでは）</td><td class="r">r ＝ 8、C ＝ 340、I ＝ 60</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「消費が利子率に反応するので、政府支出を増やすと生産量が増える」と考えること。供給は完全雇用の Ȳ のままなので、Y は変わりません。変わるのは、利子率の上がり方と、押しのけられるのが投資だけか、消費と投資の両方か、という点です。</div>
+<div class="point ketsu"><p>Yᵈ はなだらかに、S は右上がりになる。G の増加や減税で Y は変わらず r は上がるが、上がり方は小さい。押しのけられるのは投資だけでなく消費も含むので、投資の減り方は小さくなる。</p></div>
+<div class="answer">
+<p>消費が利子率の減少関数になると、利子率の上昇は投資だけでなく消費も減らす。そのため財の需要曲線 Yᵈ ＝ C(Ȳ − T, r) ＋ I(r) ＋ G は、元のモデルよりなだらかな右下がりになる。また国民貯蓄 S ＝ Ȳ − C(Ȳ − T, r) − G は利子率の増加関数となり、貸付資金市場の貯蓄曲線は垂直ではなく右上がりになる。供給 Ȳ と投資関数は変わらない。</p>
+<p>政府支出の増加は Yᵈ を右に、貯蓄曲線を左にシフトさせる。Y は Ȳ で不変だが、需要曲線がなだらかなので利子率の上昇幅は元のモデルより小さい。政府支出の増加分は、投資の減少と消費の減少の両方で打ち消される（例：G を 10 増やすと r が 4 → 5、C が 5、I が 5 減少）。</p>
+<p>減税は消費を増やして Yᵈ を右にシフトさせ、国民貯蓄を減らす。Y は不変で利子率は上昇するが、上昇幅は小さい。利子率の上昇が消費を一部抑えるため、消費の増加は元のモデルより小さく、投資の減少も小さくなる（例：T を 25 減らすと r が 4 → 6、C が 10 増加、I が 10 減少）。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s24" data-t="問6 発展 テキストの復習問題3">
+<h2><span class="sn">24</span>問6（発展）：テキストの復習問題3</h2>
+<div class="kq"><span class="lab">問題</span><p>Ȳ ＝ 500、G ＝ T ＝ 100、C ＝ 0.75(Y − T)、I(r) ＝ 140 − 10r。(a) 投資関数のグラフ (b) 財の需要曲線 (c) 均衡利子率 (d) G を 120 に増加したときの Y、C、I、r (e) T を 80 に減税したときの Y、C、I、r。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>問1・問4と同じ手順です。消費性向と投資関数の数字が違うだけ。(a) の投資関数は、r ＝ 0 で I ＝ 140、r ＝ 14 で I ＝ 0 を結ぶ右下がりの直線です。</div>
+<p class="xref">復習：<a href="#s8" data-goto="s8">投資関数</a>、<a href="#s9" data-goto="s9">財市場の均衡</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>需要曲線の式を作る（(a)(b)）</h3>
+<p>C ＝ 0.75 × (500 − 100) ＝ 300。需要は Yᵈ ＝ 300 ＋ (140 − 10r) ＋ 100 ＝ 540 − 10r。投資関数は r ＝ 0 で 140、r ＝ 14 で 0 の右下がりの直線、需要曲線はそれを 400（C ＋ G）だけ右にずらした直線です。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>計算する（(c)(d)(e)）</h3>
+<div class="num"><span class="h">数値例</span>
+<table class="calc-t">
+<tr><td>(c) 540 − 10r ＝ 500</td><td class="r">r ＝ 4（I ＝ 100）</td></tr>
+<tr><td>(d) 300 ＋ (140 − 10r) ＋ 120 ＝ 500</td><td class="r">Y ＝ 500、C ＝ 300、I ＝ 80、r ＝ 6</td></tr>
+<tr><td>(e) C ＝ 0.75 × 420 ＝ 315、315 ＋ (140 − 10r) ＋ 100 ＝ 500</td><td class="r">Y ＝ 500、C ＝ 315、I ＝ 85、r ＝ 5.5</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフで確かめる</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の選択"><button type="button" data-g="k6" data-s="0" aria-pressed="true">(c) 変化前</button><button type="button" data-g="k6" data-s="1" aria-pressed="false">(d) G = 120</button><button type="button" data-g="k6" data-s="2" aria-pressed="false">(e) T = 80</button></div>
+  <svg id="gK6" viewBox="0 0 520 330" role="img" aria-label="テキスト復習問題3の財市場の均衡"></svg>
+  <p class="gcap" id="gK6-cap"></p>
+</div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="point ketsu"><p>(c) r ＝ 4　(d) Y ＝ 500、C ＝ 300、I ＝ 80、r ＝ 6　(e) Y ＝ 500、C ＝ 315、I ＝ 85、r ＝ 5.5。</p></div>
+<div class="answer">
+<p>消費は C ＝ 0.75 × (500 − 100) ＝ 300 なので、財の需要曲線は Yᵈ ＝ 300 ＋ 140 − 10r ＋ 100 ＝ 540 − 10r となる。Yᵈ ＝ Yˢ ＝ 500 より r ＝ 4（%）。</p>
+<p>(d) G ＝ 120 のとき 300 ＋ 140 − 10r ＋ 120 ＝ 500 より r ＝ 6。Y ＝ 500、C ＝ 300、I ＝ 80 で、政府支出の増加分 20 だけ投資が減る。(e) T ＝ 80 のとき C ＝ 0.75 × 420 ＝ 315 となり、315 ＋ 140 − 10r ＋ 100 ＝ 500 より r ＝ 5.5。Y ＝ 500、I ＝ 85 で、消費の増加分 15 だけ投資が減る。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s25" data-t="課題のまとめ">
+<h2><span class="sn">25</span>課題のまとめ</h2>
+<p class="locked">まとめは、解説の公開後に表示されます。</p>
+<div class="sol open-when-on">
+<div class="tw"><table>
+<thead><tr><th>問題</th><th>答え</th><th>使った関係</th></tr></thead>
+<tbody>
+<tr><td>問1 財市場の均衡</td><td>Y ＝ 500、r ＝ 4、C ＝ 320、I ＝ 80</td><td>Ȳ ＝ C ＋ I(r) ＋ G</td></tr>
+<tr><td>問2 貯蓄</td><td>S<sub>P</sub> ＝ 80、S<sub>G</sub> ＝ 0、S ＝ 80 ＝ I</td><td>S ＝ (Y − T − C) ＋ (T − G)</td></tr>
+<tr><td>問3 貸付資金市場</td><td>r ＝ 4、S ＝ I ＝ 80（問1と同じ）</td><td>S ＝ I(r)</td></tr>
+<tr><td>問4 5つの変化</td><td>Y は常に 500。r は (1) 6 (2) 8 (3) 1 (4) 6 (5) 5、I は 70、60、95、80、75</td><td>需要の増加は投資の減少で相殺</td></tr>
+<tr><td>問5 C が r に依存</td><td>Yᵈ はなだらかに、S は右上がりに。r の上昇は小さく、消費と投資の両方が押しのけられる</td><td>C ＝ C(Y − T, r)</td></tr>
+<tr><td>問6 発展</td><td>(c) r ＝ 4 (d) r ＝ 6、I ＝ 80 (e) r ＝ 5.5、C ＝ 315、I ＝ 85</td><td>Ȳ ＝ C ＋ I(r) ＋ G</td></tr>
+</tbody></table></div>
+<h3>解くときの3つの問い</h3>
+<ol class="steps">
+  <li><b>Y は決まっているか？</b>　古典派のモデルでは Y ＝ Ȳ。財市場で動くのは利子率。</li>
+  <li><b>消費はいくらか？</b>　T や c が変わったら、可処分所得から消費を計算し直す。</li>
+  <li><b>貯蓄と投資は一致しているか？</b>　S ＝ Y − C − G を計算して、答えの I と同じか確かめる。</li>
+</ol>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch3.docx" download="第3章課題_解答例.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+</div>
+</section>
+<p class="src">課題：講義スライド第3章「古典派モデル 練習問題(1)〜(3)」（p.29–31）、テキスト p.86–87 の復習問題3。問5の消費関数は説明のための架空の例です。</p>
+</div>
+
+<div class="pager" id="pager"></div>
+</main>
+
+<script>
+/* 解説と答案例を最初から表示するときは true に変える */
+const ANSWERS_DEFAULT_ON=false;
+
+/* 第3章：グラフとシミュレーター */
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const K={ink:"#22252b",sub:"#5e6470",grid:"#e3e7ed",blue:"#1f4e9c",teal:"#0b6b5d",red:"#c8361f",base:"#a9b0bb"};
+  const $=id=>document.getElementById(id);
+  const f1=v=>(Math.round(v*10)/10).toString();
+  const f2=v=>(Math.round(v*100)/100).toString();
+
+  function plot(id,o){
+    const svg=$(id);while(svg.firstChild)svg.removeChild(svg.firstChild);
+    const vb=svg.viewBox.baseVal,W=vb.width,H=vb.height;
+    const L=o.left||56,R=W-(o.right||24),T=o.top||28,B=H-(o.bottom||40);
+    const X=v=>L+(v-o.xmin)/(o.xmax-o.xmin)*(R-L), Y=v=>B-(v-o.ymin)/(o.ymax-o.ymin)*(B-T);
+    const el=(t,a,txt,fill)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;if(fill)e.style.fill=fill;svg.appendChild(e);return e;};
+    (o.xt||[]).forEach(v=>{el("line",{x1:X(v),x2:X(v),y1:T,y2:B,stroke:K.grid});el("text",{x:X(v),y:B+16,"text-anchor":"middle","font-size":11},String(v),K.sub);});
+    (o.yt||[]).forEach(v=>{el("line",{x1:L,x2:R,y1:Y(v),y2:Y(v),stroke:K.grid});el("text",{x:L-8,y:Y(v)+4,"text-anchor":"end","font-size":11},String(v)+(o.yu||""),K.sub);});
+    el("line",{x1:L,y1:B,x2:R,y2:B,stroke:K.ink,"stroke-width":1.5});
+    el("line",{x1:L,y1:B,x2:L,y2:T-8,stroke:K.ink,"stroke-width":1.5});
+    el("text",{x:L-8,y:T-12,"text-anchor":"end","font-size":14,class:o.ylabM===false?"":"m"},o.ylab||"y");
+    el("text",{x:R,y:B+32,"text-anchor":"end","font-size":13,class:o.xlabM===false?"":"m"},o.xlab||"x");
+    const g={X,Y,el,L,R,T,B,
+      line:(x1,y1,x2,y2,c,w,d)=>el("line",{x1:X(x1),y1:Y(y1),x2:X(x2),y2:Y(y2),stroke:c||K.ink,"stroke-width":w||2.5,"stroke-dasharray":d||""}),
+      path:(pts,c,w,d)=>el("polyline",{points:pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" "),fill:"none",stroke:c||K.ink,"stroke-width":w||2.5,"stroke-dasharray":d||""}),
+      area:(pts,f,s)=>el("polygon",{points:pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" "),fill:f,stroke:s||"none","stroke-width":1.5}),
+      dot:(x,y,c,r)=>el("circle",{cx:X(x),cy:Y(y),r:r||4.5,fill:c||K.ink}),
+      txt:(x,y,s,a)=>{a=a||{};return el("text",{x:X(x)+(a.dx||0),y:Y(y)+(a.dy||0),"text-anchor":a.anchor||"start","font-size":a.size||13,"font-weight":a.bold?700:400,class:a.m?"m":""},s,a.color);}
+    };
+    g.arrow=(x1,y1,x2,y2,c,lab,la)=>{c=c||K.red;const X1=X(x1),Y1=Y(y1),X2=X(x2),Y2=Y(y2),a=Math.atan2(Y2-Y1,X2-X1),h=10;
+      el("line",{x1:X1,y1:Y1,x2:X2-6*Math.cos(a),y2:Y2-6*Math.sin(a),stroke:c,"stroke-width":2.2});
+      el("polygon",{points:[X2,Y2,X2-h*Math.cos(a-0.42),Y2-h*Math.sin(a-0.42),X2-h*Math.cos(a+0.42),Y2-h*Math.sin(a+0.42)].map(v=>v.toFixed(1)).join(" "),fill:c});
+      if(lab){la=la||{};el("text",{x:(X1+X2)/2+(la.dx||0),y:(Y1+Y2)/2+(la.dy===undefined?-8:la.dy),"text-anchor":la.anchor||"middle","font-size":12,"font-weight":700},lab,c);}};
+    return g;
+  }
+  const state={},R={};
+  const caption=(id,t)=>{const e=$(id+"-cap");if(e)e.innerHTML=t;};
+  document.querySelectorAll(".gsw button").forEach(b=>b.addEventListener("click",()=>{const g=b.dataset.g;state[g]=+b.dataset.s;document.querySelectorAll('.gsw button[data-g="'+g+'"]').forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));if(R[g])R[g]();}));
+  document.querySelectorAll(".gsw").forEach(box=>{const on=box.querySelector('[aria-pressed="true"]');if(on)state[on.dataset.g]=+on.dataset.s;});
+
+  /* 利子率 r を縦軸にした市場の図（財市場・貸付資金市場で共通）
+     lines: {f:r→横軸の値, c, w, d, lab, lr（ラベルを付ける r）, la:{dx,dy,anchor}} */
+  function market(id,o){
+    const g=plot(id,{xmin:o.xmin,xmax:o.xmax,ymin:0,ymax:o.ymax,xt:o.xt,yt:o.yt,yu:"%",xlab:o.xlab,ylab:"r",xlabM:false,left:50,bottom:40});
+    o.lines.forEach(l=>{const pts=[];for(let k=0;k<=60;k++){const r=k/60*o.ymax;const x=l.f(r);if(x>=o.xmin-1e-9&&x<=o.xmax+1e-9)pts.push([x,r]);}
+      g.path(pts,l.c||K.ink,l.w||3,l.d);
+      if(l.lab){const r=l.lr,la=l.la||{};g.txt(l.f(r),r,l.lab,{dx:la.dx===undefined?6:la.dx,dy:la.dy||0,anchor:la.anchor,color:l.c||K.ink,bold:true,size:12});}});
+    (o.pts||[]).forEach(p=>{g.line(o.xmin,p.r,p.x,p.r,K.sub,1.2,"4 4");g.line(p.x,0,p.x,p.r,K.sub,1.2,"4 4");g.dot(p.x,p.r,p.c||K.ink);if(p.lab)g.txt(p.x,p.r,p.lab,{dx:p.dx===undefined?8:p.dx,dy:p.dy===undefined?-8:p.dy,anchor:p.anchor,bold:true,size:13,color:p.c||K.ink,m:true});});
+    return g;
+  }
+
+  /* ---------- 労働市場・資本市場 ---------- */
+  function factor(id,kind){
+    const s=state[id]===undefined?1:state[id],isL=kind==="L";
+    const p=[12,8,4][s],D=v=>100-5*v;
+    const g=plot(id,{xmin:0,xmax:100,ymin:0,ymax:20,xt:[20,40,60,80],yt:[4,8,12,16],xlab:isL?"L（労働の量）":"K（資本の量）",ylab:isL?"w":"r",xlabM:false,left:46});
+    g.line(D(19),19,D(0.5),0.5,K.ink,3);g.txt(D(16),16,"需要 D",{dx:10,dy:-4,bold:true,size:12});
+    g.line(60,0,60,19.5,K.blue,3);g.txt(60,19.5,isL?"供給 S（L̄ で一定）":"供給 S（K̄ で一定）",{dx:6,dy:6,color:K.blue,bold:true,size:12});
+    g.line(0,8,60,8,K.sub,1.2,"4 4");g.dot(60,8,K.ink);g.txt(60,8,"E",{dx:8,dy:16,bold:true,m:true});
+    const nm=isL?"w":"r";
+    if(s!==1){
+      g.line(0,p,Math.max(60,D(p)),p,K.red,2);
+      const a=Math.min(60,D(p)),b=Math.max(60,D(p));
+      g.area([[a,p-0.35],[b,p-0.35],[b,p+0.35],[a,p+0.35]],"rgba(200,54,31,.35)");
+      g.txt((a+b)/2,p,s===0?"超過供給":"超過需要",{anchor:"middle",dy:s===0?-10:18,color:K.red,bold:true,size:12});
+      g.arrow(s===0?84:36,p,s===0?84:36,s===0?8.8:7.2,K.red,s===0?nm+" が下がる":nm+" が上がる",{dx:s===0?10:-10,anchor:s===0?"start":"end",dy:4});
+    }
+    const what=isL?["賃金","労働者","失業"]:["資本コスト（利子率）","資本の貸し手","使われない資本"];
+    const cap=[ (isL?"賃金が w* より高いと、企業が雇いたい人数（40）が働きたい人数（60）より少なく、<b>失業</b>（超過供給）が出る。働きたい人が少し安い賃金でも働こうとするので、賃金は下がっていく。":"資本コストが r* より高いと、企業が使いたい資本（40）が家計の持つ資本（60）より少ない（超過供給）。資本コストは下がっていく。"),
+      (isL?"均衡点 E：賃金 w* のとき、雇いたい人数と働きたい人数が L̄ = 60 で一致する。":"均衡点 E：資本コスト r* のとき、使いたい資本と持っている資本が K̄ = 60 で一致する。"),
+      (isL?"賃金が w* より低いと、企業が雇いたい人数（80）に働き手が足りない（超過需要）。少し高い賃金を出す企業に人が移るので、賃金は上がっていく。":"資本コストが r* より低いと、企業が使いたい資本（80）が足りない（超過需要）。資本コストは上がっていく。")][s];
+    caption(id,cap+"（数値は説明のための架空の値）");
+  }
+  R.gLab=()=>factor("gLab","L");R.gCap=()=>factor("gCap","K");
+
+  /* ---------- 生産関数 ---------- */
+  R.gProd=function(){
+    const s=state.gProd||0,v=s?"K":"L",o=s?"L":"K";
+    const F=x=>12*Math.sqrt(x);
+    const g=plot("gProd",{xmin:0,xmax:42,ymin:0,ymax:84,xt:[4,12,20,28,36],yt:[20,40,60,80],xlab:v+"（"+o+" は一定）",ylab:"Y",xlabM:false,left:46});
+    const pts=[];for(let k=0;k<=84;k++){const x=k/2;pts.push([x,F(x)]);}g.path(pts,K.blue,3);
+    g.txt(40,F(40),"Y = F("+(s?"K, L̄":"K̄, L")+")",{anchor:"end",dy:-12,color:K.blue,bold:true,size:13,m:true});
+    const xs=[4,12,20,28,36];
+    for(let i=0;i<xs.length-1;i++){const a=xs[i],b=xs[i+1];g.line(a,F(a),b,F(a),K.ink,1.5);g.line(b,F(a),b,F(b),K.red,2.5);
+      g.txt(b,(F(a)+F(b))/2,"+"+f1(F(b)-F(a)),{dx:6,dy:4,color:K.red,bold:true,size:12});}
+    g.txt(8,F(4),"Δ"+v+" = 8",{anchor:"middle",dy:16,size:12});
+    xs.forEach(x=>g.dot(x,F(x),K.ink,3.5));
+    caption("gProd",(s?"資本 K":"労働 L")+"を8ずつ増やしていく（"+o+" は一定）。産出量 Y は増えるが、増え方（赤い縦線 ΔY）は 17.6 → 12.1 → 9.8 → 8.5 と小さくなる。これが限界生産物の逓減。図は Y = 12√"+v+" という架空の例。");
+  };
+
+  /* ---------- 労働需要（MPL = w） ---------- */
+  R.mpl=function(){
+    const w=+$("wSl").value,Ls=36/(w*w),MPL=L=>6/Math.sqrt(L);
+    $("wOut").textContent=w.toFixed(1);
+    const g=plot("gMpl",{xmin:0,xmax:40,ymin:0,ymax:4,xt:[10,20,30,40],yt:[1,2,3,4],xlab:"L（労働の量）",ylab:"MPL, w",xlabM:false,left:46});
+    const pts=[];for(let k=0;k<=80;k++){const L=2.25+k/80*37.75;pts.push([L,MPL(L)]);}g.path(pts,K.ink,3);g.txt(39,MPL(39),"MPL",{anchor:"end",dy:-10,bold:true,size:12,m:true});
+    if(Ls>4){g.area([[2.25,w],...pts.filter(p=>p[0]<=Ls),[Ls,w]],"rgba(11,107,93,.14)");}
+    g.line(0,w,40,w,K.blue,2.5);g.txt(40,w,"実質賃金 w",{anchor:"end",dy:-8,color:K.blue,bold:true,size:12});
+    g.line(Ls,0,Ls,w,K.sub,1.2,"4 4");g.dot(Ls,w,K.red);g.txt(Ls,0,"L* = "+f1(Ls),{anchor:"middle",dy:-6,dx:Ls<8?18:0,color:K.red,bold:true,size:12});
+    $("mplL").textContent=f1(Ls);$("mplY").textContent=f1(12*Math.sqrt(Ls));$("mplW").textContent=w.toFixed(1);
+  };
+  $("wSl").addEventListener("input",R.mpl);
+
+  /* ---------- 消費関数 ---------- */
+  R.gCons=function(){
+    const s=state.gCons===undefined?1:state.gCons,c=[0.6,0.75,0.9][s];
+    const g=plot("gCons",{xmin:0,xmax:400,ymin:0,ymax:360,xt:[100,200,300,400],yt:[100,200,300],xlab:"Y − T（可処分所得）",ylab:"C",xlabM:false,left:50});
+    [0.6,0.75,0.9].forEach((cc,k)=>{if(k!==s)g.line(0,0,400,400*cc,K.base,1.5,"5 5");});
+    g.line(0,0,400,400*c,K.blue,3);g.txt(400,400*c,"C = "+c+"(Y − T)",{anchor:"end",dy:-10,color:K.blue,bold:true,size:12});
+    g.line(320,0,320,320*c,K.sub,1.2,"4 4");g.line(0,320*c,320,320*c,K.sub,1.2,"4 4");g.dot(320,320*c,K.red);
+    g.txt(320,320*c,"C = "+f1(320*c),{dx:-8,dy:-8,anchor:"end",color:K.red,bold:true,size:12});
+    caption("gCons","消費性向 c = "+c+"。可処分所得が320のとき、消費は "+f1(320*c)+"、貯蓄（民間貯蓄）は "+f1(320*(1-c))+"。c が大きいほど線は急になる（架空の値）。");
+  };
+
+  /* ---------- 投資関数 ---------- */
+  R.inv=function(){
+    const r=+$("rSl").value,I=120-10*r;$("rOut").textContent=f1(r)+"%";
+    const g=plot("gInv",{xmin:0,xmax:130,ymin:0,ymax:12,xt:[20,40,60,80,100,120],yt:[2,4,6,8,10],yu:"%",xlab:"I（投資）",ylab:"r",xlabM:false,left:50});
+    g.line(0,12,120,0,K.ink,3);g.txt(10,11,"I = 120 − 10r",{dx:8,dy:-2,bold:true,size:12});
+    g.line(0,r,I,r,K.blue,1.5,"4 4");g.line(I,0,I,r,K.blue,1.5,"4 4");g.dot(I,r,K.red);
+    g.txt(I,r,"I = "+f1(I),{dx:10,dy:-6,color:K.red,bold:true,size:13});
+    $("invI").textContent=f1(I);
+  };
+  $("rSl").addEventListener("input",R.inv);
+
+  /* ---------- 説明用モデル（架空の値）
+     Ȳ = 400、G = T = 80、C = 0.75(Y − T)、I = 120 − 10r ---------- */
+  const EX={xmin:330,xmax:480,ymax:10,xt:[360,400,440],yt:[2,4,6,8],xlab:"Yᵈ, Yˢ"};
+  const EF={xmin:0,xmax:140,ymax:10,xt:[20,40,60,80,100,120],yt:[2,4,6,8],xlab:"S, I"};
+
+  R.gGM=function(){
+    const s=state.gGM===undefined?1:state.gGM,r=[6,4,2][s],Yd=r=>440-10*r;
+    const g=market("gGM",Object.assign({},EX,{lines:[{f:()=>400,c:K.blue,lab:"Yˢ = Ȳ",lr:9.6,la:{dx:6}},{f:Yd,c:K.ink,lab:"Yᵈ = C + I(r) + G",lr:1,la:{dx:-6,dy:-8,anchor:"end"}}],pts:[{x:400,r:4,lab:"E"}]}));
+    if(s!==1){const y=Yd(r);g.line(Math.min(y,400),r,Math.max(y,400),r,K.red,3);g.dot(y,r,K.red,4);
+      g.txt((y+400)/2,r,s===0?"超過供給 20":"超過需要 20",{anchor:"middle",dy:-8,color:K.red,bold:true,size:12});
+      g.arrow(470,r,470,s===0?4.4:3.6,K.red,s===0?"r が下がる":"r が上がる",{dx:-8,anchor:"end",dy:4});}
+    caption("gGM",["r = 6% のとき、需要は 240 + 60 + 80 = 380 で、供給 400 より少ない（超過供給）。利子率が下がると投資が増え、需要が増える。","均衡 E：r = 4% のとき、需要 240 + 80 + 80 = 400 が供給 Ȳ = 400 と一致する。","r = 2% のとき、需要は 240 + 100 + 80 = 420 で、供給 400 より多い（超過需要）。利子率が上がると投資が減り、需要が減る。"][s]+"（架空の値）");
+  };
+
+  R.gLF=function(){
+    const s=state.gLF===undefined?1:state.gLF,r=[6,4,2][s],I=r=>120-10*r;
+    const g=market("gLF",Object.assign({},EF,{lines:[{f:()=>80,c:K.blue,lab:"S = Ȳ − C − G",lr:9.6,la:{dx:6}},{f:I,c:K.ink,lab:"I(r)",lr:1,la:{dx:6,dy:-4}}],pts:[{x:80,r:4,lab:"E"}]}));
+    if(s!==1){const i=I(r);g.line(Math.min(i,80),r,Math.max(i,80),r,K.red,3);g.dot(i,r,K.red,4);
+      g.txt((i+80)/2,r,s===0?"超過供給":"超過需要",{anchor:"middle",dy:-8,color:K.red,bold:true,size:12});
+      g.arrow(125,r,125,s===0?4.4:3.6,K.red,s===0?"r が下がる":"r が上がる",{dx:-8,anchor:"end",dy:4});}
+    caption("gLF",["r = 6% のとき、借りたい額（投資 60）が貸したい額（貯蓄 80）より少ない。資金が余るので利子率が下がる。","均衡 E：r = 4% のとき、投資 80 と国民貯蓄 80 が一致する。","r = 2% のとき、借りたい額（投資 100）が貯蓄 80 を上回る。資金が足りないので利子率が上がる。"][s]+"（架空の値）");
+  };
+
+  /* 政策の効果（説明用モデル）：財市場と貸付資金市場を並べて描く */
+  const POL={
+    g:{A1:450,S1:70,a1:120,r1:5,lab:"G：80 → 90",capY:"政府支出が10増えると、どの利子率でも需要が10増え、Yᵈ が右へ10動く。供給 Ȳ は動かないので、均衡は E → F。利子率が 4% → 5% に上がる。",capS:"政府貯蓄 T − G が 0 → −10 になり、国民貯蓄が 80 → 70 に減る（S が左へ）。利子率が上がり、投資が 80 → 70 に減る。"},
+    t:{A1:455,S1:65,a1:120,r1:5.5,lab:"T：80 → 60",capY:"減税20で可処分所得が20増え、消費が 0.75 × 20 = 15 増える。Yᵈ が右へ15動き、利子率が 4% → 5.5% に上がる。",capS:"民間貯蓄は 5 増えるが、政府貯蓄は 20 減るので、国民貯蓄は 80 → 65 に減る。投資も 65 に減る。"},
+    i:{A1:450,S1:80,a1:130,r1:5,lab:"I(r) が右へ10",capY:"どの利子率でも投資が10増え、Yᵈ が右へ10動く。利子率が 4% → 5% に上がる。",capS:"貯蓄 S は変わらない。投資の線は右へ動くが、利子率が上がるので、投資は結局 80 のまま。"},
+    s:{A1:456,S1:64,a1:120,r1:5.6,lab:"c：0.75 → 0.8",capY:"消費性向が上がり、消費が 240 → 256 に増える。Yᵈ が右へ16動き、利子率が 4% → 5.6% に上がる。",capS:"消費が増えた分だけ国民貯蓄が 80 → 64 に減る。利子率が上がり、投資も 64 に減る。"}
+  };
+  function pol(k){
+    const P=POL[k],after=!!state["p"+k],idY="gP"+k+"Y",idS="gP"+k+"S";
+    const Y0=r=>440-10*r,Y1=r=>P.A1-10*r,I0=r=>120-10*r,I1=r=>P.a1-10*r;
+    const lY=[{f:()=>400,c:K.blue,lab:"Yˢ = Ȳ",lr:9.6}];
+    if(after){lY.push({f:Y0,c:K.base,w:2,d:"5 5",lab:"Yᵈ",lr:8.6,la:{dx:-6,anchor:"end"}});lY.push({f:Y1,c:K.red,lab:"Yᵈ′",lr:1,la:{dx:6,dy:-2}});}
+    else lY.push({f:Y0,c:K.ink,lab:"Yᵈ",lr:1,la:{dx:6,dy:-2}});
+    const ptsY=[{x:400,r:4,lab:"E",dx:8,dy:16,c:after?K.sub:K.ink}];if(after)ptsY.push({x:400,r:P.r1,lab:"F",c:K.red});
+    const gy=market(idY,Object.assign({},EX,{lines:lY,pts:ptsY}));
+    if(after){gy.arrow(Y0(7.5)+2,7.5,Y1(7.5)-2,7.5,K.red);gy.txt(400,P.r1,P.r1+"%",{dx:-10,dy:-6,anchor:"end",color:K.red,bold:true,size:12});}
+    const lS=[];
+    if(after&&P.S1!==80){lS.push({f:()=>80,c:K.base,w:2,d:"5 5",lab:"S",lr:9.6,la:{dx:4}});lS.push({f:()=>P.S1,c:K.red,lab:"S′",lr:9.6,la:{dx:-6,anchor:"end"}});}
+    else lS.push({f:()=>80,c:K.blue,lab:"S",lr:9.6});
+    if(after&&P.a1!==120){lS.push({f:I0,c:K.base,w:2,d:"5 5",lab:"I₀(r)",lr:1,la:{dx:-8,anchor:"end"}});lS.push({f:I1,c:K.red,lab:"I₁(r)",lr:1,la:{dx:6}});}
+    else lS.push({f:I0,c:K.ink,lab:"I(r)",lr:1,la:{dx:6}});
+    const ptsS=[{x:80,r:4,lab:"E",dx:8,dy:16,c:after?K.sub:K.ink}];if(after)ptsS.push({x:P.S1,r:P.r1,lab:"F",c:K.red,dx:-10,anchor:"end"});
+    const gs=market(idS,Object.assign({},EF,{lines:lS,pts:ptsS}));
+    if(after&&P.S1!==80)gs.arrow(80,8.6,P.S1+1,8.6,K.red);
+    if(after&&P.a1!==120)gs.arrow(I0(7.5)+1,7.5,I1(7.5)-1,7.5,K.red);
+    caption(idY,after?P.capY:"変化前：Yᵈ と Yˢ = 400 が E（r = 4%）で交わる。");
+    caption(idS,after?P.capS:"変化前：国民貯蓄 80 と投資 80 が E（r = 4%）で一致する。");
+  }
+  ["g","t","i","s"].forEach(k=>R["p"+k]=()=>pol(k));
+
+  /* ---------- 課題：スライドの練習問題のモデル
+     Ȳ = 500、C = 0.8(Y − T)、I = 100 − 5r、G = T = 100 ---------- */
+  const KX={xmin:440,xmax:570,ymax:12,xt:[460,480,500,520,540,560],yt:[2,4,6,8,10],xlab:"Yᵈ, Yˢ"};
+  const KF={xmin:20,xmax:125,ymax:12,xt:[40,60,80,100,120],yt:[2,4,6,8,10],xlab:"S, I"};
+
+  R.k1=function(){
+    const s=state.k1||0,Yd=r=>520-5*r;
+    const g=market("gK1",Object.assign({},KX,{lines:[{f:()=>500,c:K.blue,lab:"Yˢ = 500",lr:11.4,la:{dx:6}},{f:Yd,c:K.ink,lab:"Yᵈ = 520 − 5r",lr:2,la:{dx:10,dy:-4}}],pts:s?[{x:500,r:4,lab:"E"}]:[]}));
+    if(!s){g.line(Yd(8),8,500,8,K.red,3);g.dot(Yd(8),8,K.red,4);g.txt(490,8,"超過供給 20",{anchor:"middle",dy:-8,color:K.red,bold:true,size:12});g.arrow(555,8,555,4.4,K.red,"r が下がる",{dx:-8,anchor:"end",dy:4});
+      caption("gK1","r = 8% のとき：需要 Yᵈ = 520 − 40 = 480。供給 500 より 20 少ない（超過供給）。利子率が下がって投資が増えると、需要が増える。");}
+    else caption("gK1","均衡 E：520 − 5r = 500 より r = 4%。このとき C = 320、I = 80、G = 100 で、合計 500。");
+  };
+  R.k3=function(){
+    const s=state.k3||0,I=r=>100-5*r;
+    const g=market("gK3",Object.assign({},KF,{lines:[{f:()=>80,c:K.blue,lab:"S = 80",lr:11.4,la:{dx:6}},{f:I,c:K.ink,lab:"I = 100 − 5r",lr:1.2,la:{dx:6,dy:-4}}],pts:s?[{x:80,r:4,lab:"E"}]:[]}));
+    if(!s){g.line(I(8),8,80,8,K.red,3);g.dot(I(8),8,K.red,4);g.txt(70,8,"資金が余る",{anchor:"middle",dy:-8,color:K.red,bold:true,size:12});g.arrow(112,8,112,4.4,K.red,"r が下がる",{dx:-8,anchor:"end",dy:4});
+      caption("gK3","r = 8% のとき：借りたい額 I = 100 − 40 = 60 が、貸したい額 S = 80 より少ない。資金が余るので利子率が下がる。");}
+    else caption("gK3","均衡 E：100 − 5r = 80 より r = 4%。S = I = 80。財市場で求めた答えと同じになる。");
+  };
+
+  const K4=[
+    {A:520,S:80,a:100,r:4,cap:"変化前：Yᵈ = 520 − 5r と Ȳ = 500 が r = 4% で交わる。S = I = 80。"},
+    {A:530,S:70,a:100,r:6,lab:"G：100 → 110",cap:"(1) G が10増え、Yᵈ が右へ10動く。530 − 5r = 500 より r = 6%。国民貯蓄は 500 − 320 − 110 = 70 に減り、投資も 70 に減る。"},
+    {A:540,S:60,a:100,r:8,lab:"T：100 → 75",cap:"(2) 減税25で消費が 0.8 × 25 = 20 増え、Yᵈ が右へ20動く。r = 8%。国民貯蓄は 500 − 340 − 100 = 60、投資も 60。"},
+    {A:505,S:95,a:100,r:1,lab:"G：100 → 85",cap:"(3) G が15減り、Yᵈ が左へ15動く。505 − 5r = 500 より r = 1%。国民貯蓄が 95 に増え、投資も 95 に増える（クラウディング・アウトの逆の動き）。"},
+    {A:530,S:80,a:110,r:6,lab:"I = 110 − 5r",cap:"(4) 投資の線が右へ10動き、Yᵈ も右へ10動く。r = 6%。貯蓄は 80 のままなので、投資も 110 − 30 = 80 のまま。"},
+    {A:525,S:75,a:100,r:5,lab:"c：0.8 → 0.8125",cap:"(5) 消費が 320 → 325 に増え、Yᵈ が右へ5動く。r = 5%。国民貯蓄は 500 − 325 − 100 = 75、投資も 75。"}];
+  R.k4=function(){
+    const s=state.k4||0,P=K4[s],Y0=r=>520-5*r,Y1=r=>P.A-5*r,I0=r=>100-5*r,I1=r=>P.a-5*r,ch=s>0;
+    const lY=[{f:()=>500,c:K.blue,lab:"Yˢ = 500",lr:11.4}];
+    if(ch){lY.push({f:Y0,c:K.base,w:2,d:"5 5",lab:"Yᵈ",lr:10.5,la:{dx:-6,anchor:"end"}});lY.push({f:Y1,c:K.red,lab:"Yᵈ′",lr:1,la:{dx:6,dy:-2}});}
+    else lY.push({f:Y0,c:K.ink,lab:"Yᵈ",lr:1,la:{dx:6,dy:-2}});
+    const pY=[{x:500,r:4,lab:"E",dx:8,dy:16,c:ch?K.sub:K.ink}];if(ch)pY.push({x:500,r:P.r,lab:"F",c:K.red});
+    const gy=market("gK4Y",Object.assign({},KX,{lines:lY,pts:pY}));
+    if(ch){gy.arrow(Y0(9.5)+(P.A>520?2:-2),9.5,Y1(9.5)+(P.A>520?-2:2),9.5,K.red,P.lab,{dy:-8});gy.txt(500,P.r,P.r+"%",{dx:-10,dy:-6,anchor:"end",color:K.red,bold:true,size:12});}
+    const lS=[];
+    if(ch&&P.S!==80){lS.push({f:()=>80,c:K.base,w:2,d:"5 5",lab:"S",lr:11.4,la:{dx:P.S<80?4:-6,anchor:P.S<80?"start":"end"}});lS.push({f:()=>P.S,c:K.red,lab:"S′ = "+P.S,lr:11.4,la:{dx:P.S<80?-6:6,anchor:P.S<80?"end":"start"}});}
+    else lS.push({f:()=>80,c:K.blue,lab:"S = 80",lr:11.4});
+    if(ch&&P.a!==100){lS.push({f:I0,c:K.base,w:2,d:"5 5",lab:"I₀",lr:1,la:{dx:-8,anchor:"end"}});lS.push({f:I1,c:K.red,lab:"I₁ = 110 − 5r",lr:1,la:{dx:6}});}
+    else lS.push({f:I0,c:K.ink,lab:"I = 100 − 5r",lr:1.2,la:{dx:6,dy:-4}});
+    const pS=[{x:80,r:4,lab:"E",dx:8,dy:16,c:ch?K.sub:K.ink}];if(ch)pS.push({x:P.S,r:P.r,lab:"F",c:K.red,dx:P.S<=80?-10:10,anchor:P.S<=80?"end":"start"});
+    const gs=market("gK4S",Object.assign({},KF,{lines:lS,pts:pS}));
+    if(ch&&P.S!==80)gs.arrow(80,10.4,P.S+(P.S<80?1:-1),10.4,K.red);
+    if(ch&&P.a!==100)gs.arrow(I0(9)+1,9,I1(9)-1,9,K.red);
+    caption("gK4Y",P.cap);
+    const t=$("k4tbl");if(t){const C=[320,320,340,320,320,325][s],G=[100,110,100,85,100,100][s],T=[100,100,75,100,100,100][s];
+      t.innerHTML="<tr><td>利子率 r</td><td class='r'>"+P.r+"%</td></tr><tr><td>Y（完全雇用で一定）</td><td class='r'>500</td></tr><tr><td>消費 C</td><td class='r'>"+C+"</td></tr><tr><td>投資 I</td><td class='r'>"+P.S+"</td></tr><tr><td>政府支出 G／税 T</td><td class='r'>"+G+"／"+T+"</td></tr><tr><td>民間貯蓄 S<sub>P</sub> ＝ Y − T − C</td><td class='r'>"+(500-T-C)+"</td></tr><tr><td>政府貯蓄 S<sub>G</sub> ＝ T − G</td><td class='r'>"+(T-G)+"</td></tr><tr><td>国民貯蓄 S ＝ S<sub>P</sub> ＋ S<sub>G</sub></td><td class='r'>"+P.S+"</td></tr>";}
+  };
+
+  /* 課題 問5：消費が利子率にも依存するモデル（架空の消費関数 C = 0.8(Y − T) + 20 − 5r） */
+  const K5=[
+    {o:520,n:540,so:80,sn:r=>60+5*r,ro:4,rn:4,cap:"変化前：どちらのモデルも r = 4% で均衡する（C = 320、I = 80）。新しいモデルの Yᵈ（青）は、元のモデル（灰色）よりなだらか。"},
+    {o:530,n:550,so:70,sn:r=>50+5*r,ro:6,rn:5,cap:"G：100 → 110。元のモデルでは r = 6%、新しいモデルでは r = 5% までしか上がらない。新しいモデルでは C が 320 → 315、I が 80 → 75 とどちらも減る。"},
+    {o:540,n:560,so:60,sn:r=>40+5*r,ro:8,rn:6,cap:"T：100 → 75。元のモデルでは r = 8%、新しいモデルでは r = 6%。新しいモデルでは C は 320 → 330 と増えるが、元のモデル（340）ほどは増えない。I は 80 → 70。"}];
+  R.k5=function(){
+    const s=state.k5||0,P=K5[s];
+    const lY=[{f:()=>500,c:K.blue,lab:"Yˢ = 500",lr:11.4},{f:r=>P.o-5*r,c:K.base,w:2.5,d:"6 4",lab:"元のモデル",lr:1,la:{dx:6,dy:-2}},{f:r=>P.n-10*r,c:K.blue,lab:"C が r に依存",lr:2.6,la:{dx:6,dy:-4}}];
+    const pY=[{x:500,r:P.ro,lab:"",c:K.sub},{x:500,r:P.rn,lab:s?"F":"E",c:s?K.red:K.ink,dx:-10,anchor:"end"}];
+    market("gK5Y",Object.assign({},KX,{xmin:420,xt:[440,460,480,500,520,540,560],lines:lY,pts:pY}));
+    const lS=[{f:()=>P.so,c:K.base,w:2.5,d:"6 4",lab:"元の S",lr:11.4,la:{dx:-6,anchor:"end"}},{f:P.sn,c:K.blue,lab:"S(r)（右上がり）",lr:10.5,la:{dx:6,dy:4}},{f:r=>100-5*r,c:K.ink,lab:"I = 100 − 5r",lr:1.2,la:{dx:6,dy:-4}}];
+    const pS=[{x:100-5*P.ro,r:P.ro,lab:"",c:K.sub},{x:100-5*P.rn,r:P.rn,lab:s?"F":"E",c:s?K.red:K.ink,dx:-10,anchor:"end"}];
+    market("gK5S",Object.assign({},KF,{lines:lS,pts:pS}));
+    caption("gK5Y",P.cap+" 消費関数は説明のための架空の例 C = 0.8(Y − T) + 20 − 5r。");
+  };
+
+  /* 発展：テキスト復習問題3（Ȳ = 500、G = T = 100、C = 0.75(Y − T)、I = 140 − 10r） */
+  const K6=[{A:540,S:100,r:4,cap:"(c) 540 − 10r = 500 より r = 4%。C = 300、I = 100、G = 100。"},
+            {A:560,S:80,r:6,cap:"(d) G = 120：Yᵈ が右へ20動き、r = 6%。C = 300 のまま、I = 80 に減る。"},
+            {A:555,S:85,r:5.5,cap:"(e) T = 80：消費が 0.75 × 20 = 15 増えて 315。Yᵈ が右へ15動き、r = 5.5%。I = 85 に減る。"}];
+  R.k6=function(){
+    const s=state.k6||0,P=K6[s],ch=s>0;
+    const l=[{f:()=>500,c:K.blue,lab:"Yˢ = 500",lr:11.4},{f:r=>540-10*r,c:ch?K.base:K.ink,w:ch?2:3,d:ch?"5 5":"",lab:"Yᵈ = 540 − 10r",lr:1,la:{dx:6,dy:-4}}];
+    if(ch)l.push({f:r=>P.A-10*r,c:K.red,lab:"Yᵈ′",lr:3,la:{dx:6,dy:-4}});
+    const p=[{x:500,r:4,lab:"E",dx:-10,anchor:"end",c:ch?K.sub:K.ink}];if(ch)p.push({x:500,r:P.r,lab:"F",c:K.red});
+    market("gK6",Object.assign({},KX,{xmin:420,xt:[440,460,480,500,520,540,560],lines:l,pts:p}));
+    caption("gK6",P.cap);
+  };
+
+  R.gLab();R.gCap();R.gProd();R.mpl();R.gCons();R.inv();R.gGM();R.gLF();
+  ["g","t","i","s"].forEach(k=>pol(k));R.k1();R.k3();R.k4();R.k5();R.k6();
+})();
+
+/* lily 共通：タブ・目次・前後ナビ・確認問題・内部タブ・解説スイッチ・相互リンク
+   各章のHTMLは、.part（data-title, data-desc）と section（data-t, h2 .sn）を並べるだけでよい。
+   パートが表示されたときに "partshown" イベント（detail.id）を発行する。 */
+(function(){
+  const parts=[...document.querySelectorAll(".part")];
+  const tabs=document.getElementById("tabs");
+  const drawerList=document.getElementById("drawerList");
+  const body=document.body, menuBtn=document.getElementById("menuBtn"), drawer=document.getElementById("drawer");
+  let current=0;
+
+  parts.forEach((p,i)=>{
+    p.setAttribute("role","tabpanel");
+    const secs=[...p.querySelectorAll("section")];
+    const head=document.createElement("div");head.className="part-head";
+    head.innerHTML='<div class="ph-main"><div class="pn">Part '+(i+1)+' / '+parts.length+'</div><h1>'+p.dataset.title+'</h1><p>'+p.dataset.desc+'</p></div>';
+    const mini=document.createElement("div");mini.className="toc-mini";
+    secs.forEach(s=>{const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>s.scrollIntoView({behavior:"smooth",block:"start"}));mini.appendChild(b);});
+    head.querySelector(".ph-main").appendChild(mini);p.prepend(head);
+
+    const t=document.createElement("button");t.type="button";t.className="tab";t.setAttribute("role","tab");t.id="tab-"+p.id;t.setAttribute("aria-controls",p.id);
+    t.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;
+    t.addEventListener("click",()=>go(i,true));
+    t.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%parts.length;go(k,true);tabs.children[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+parts.length)%parts.length;go(k,true);tabs.children[k].focus();}});
+    tabs.appendChild(t);p.setAttribute("aria-labelledby",t.id);
+
+    const h=document.createElement("h4");const hb=document.createElement("button");hb.type="button";hb.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;hb.addEventListener("click",()=>{go(i,true);closeMenu();});h.appendChild(hb);drawerList.appendChild(h);
+    const ul=document.createElement("ul");
+    secs.forEach(s=>{const li=document.createElement("li");const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>{go(i,false);closeMenu();setTimeout(()=>s.scrollIntoView({block:"start"}),30);});li.appendChild(b);ul.appendChild(li);});
+    drawerList.appendChild(ul);
+  });
+
+  function go(i,top){
+    current=i;
+    parts.forEach((p,k)=>p.classList.toggle("on",k===i));
+    [...tabs.children].forEach((t,k)=>{t.setAttribute("aria-selected",k===i?"true":"false");t.tabIndex=k===i?0:-1;});
+    [...drawerList.querySelectorAll("h4")].forEach((h,k)=>h.classList.toggle("cur",k===i));
+    tabs.children[i].scrollIntoView({block:"nearest",inline:"nearest"});
+    const pg=document.getElementById("pager");pg.innerHTML="";
+    if(i>0){const b=document.createElement("button");b.type="button";b.innerHTML="<small>前のパート</small>← "+parts[i-1].dataset.title;b.addEventListener("click",()=>go(i-1,true));pg.appendChild(b);}
+    if(i<parts.length-1){const b=document.createElement("button");b.type="button";b.className="next";b.innerHTML="<small>次のパート</small>"+parts[i+1].dataset.title+" →";b.addEventListener("click",()=>go(i+1,true));pg.appendChild(b);}
+    try{if(location.hash!=="#"+parts[i].id)history.replaceState(null,"","#"+parts[i].id);}catch(e){}
+    if(top)window.scrollTo(0,0);
+    document.dispatchEvent(new CustomEvent("partshown",{detail:{id:parts[i].id}}));
+  }
+  function openMenu(){body.classList.add("menu-open");drawer.setAttribute("aria-hidden","false");menuBtn.setAttribute("aria-expanded","true");document.getElementById("closeBtn").focus();}
+  function closeMenu(){body.classList.remove("menu-open");drawer.setAttribute("aria-hidden","true");menuBtn.setAttribute("aria-expanded","false");}
+  menuBtn.addEventListener("click",openMenu);
+  document.getElementById("closeBtn").addEventListener("click",()=>{closeMenu();menuBtn.focus();});
+  document.getElementById("scrim").addEventListener("click",closeMenu);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&body.classList.contains("menu-open")){closeMenu();menuBtn.focus();}});
+  window.addEventListener("hashchange",()=>{const k=parts.findIndex(p=>"#"+p.id===location.hash);if(k>=0&&k!==current)go(k,true);});
+
+  /* 内部タブ（.itabs の button[aria-controls]） */
+  document.querySelectorAll(".itabs").forEach(box=>{
+    const bs=[...box.querySelectorAll("button")];
+    const sel=i=>bs.forEach((b,k)=>{b.setAttribute("aria-selected",k===i?"true":"false");b.tabIndex=k===i?0:-1;document.getElementById(b.getAttribute("aria-controls")).hidden=k!==i;});
+    bs.forEach((b,i)=>{b.addEventListener("click",()=>sel(i));b.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%bs.length;sel(k);bs[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+bs.length)%bs.length;sel(k);bs[k].focus();}});});
+    sel(0);
+  });
+
+  /* 確認問題・ヒント（.q の .show で .ans を開閉） */
+  document.querySelectorAll(".q").forEach(q=>{const b=q.querySelector(".show"),a=q.querySelector(".ans");if(!b||!a)return;const lab=b.textContent;b.setAttribute("aria-expanded","false");b.addEventListener("click",()=>{a.hidden=!a.hidden;b.textContent=a.hidden?lab:"閉じる";b.setAttribute("aria-expanded",a.hidden?"false":"true");});});
+
+  /* 解説と答案例の表示スイッチ */
+  const tg=document.getElementById("ansToggle"),note=document.getElementById("ansNote");
+  if(tg){
+    const setAns=on=>{document.body.classList.toggle("ans-off",!on);tg.checked=on;if(note)note.textContent=on?"オン：解説と答案例を表示しています。":"オフ：問題とヒントだけを表示しています。";};
+    tg.addEventListener("change",()=>setAns(tg.checked));
+    setAns(typeof ANSWERS_DEFAULT_ON!=="undefined"&&ANSWERS_DEFAULT_ON);
+  }
+
+  /* 解説の開閉 */
+  document.querySelectorAll(".solbtn").forEach(b=>b.addEventListener("click",()=>{const bd=b.nextElementSibling;bd.hidden=!bd.hidden;b.setAttribute("aria-expanded",bd.hidden?"false":"true");b.textContent=bd.hidden?"解説を読む（手順を追って説明）":"解説を閉じる";document.dispatchEvent(new CustomEvent("solopen"));}));
+
+  /* 相互リンク */
+  document.addEventListener("click",e=>{const a=e.target.closest("[data-goto]");if(!a)return;e.preventDefault();const t=document.getElementById(a.dataset.goto);if(!t)return;const k=parts.findIndex(p=>p.contains(t));if(k<0)return;go(k,false);setTimeout(()=>t.scrollIntoView({block:"start"}),30);});
+
+  const start=parts.findIndex(p=>"#"+p.id===location.hash);
+  go(start>=0?start:0,false);
+})();
+
+</script>
+</body>
+</html>
