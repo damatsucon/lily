@@ -1,0 +1,283 @@
+
+/* 設計: 方眼紙に書いた講義プリント。黒インクの本文、青ペンの強調、朱ペンの書き込み、黄色の蛍光ペン。上部に固定ヘッダーとパートのタブ、左からメニューが出る */
+:root{
+  --paper:#fdfdfb;
+  --grid:#e9eef3;
+  --ink:#22252b;
+  --sub:#5e6470;
+  --line:#c9cfd8;
+  --blue:#1f4e9c;
+  --red:#c8361f;
+  --teal:#0b6b5d;
+  --marker:#fff1a6;
+  --note:#fffbe3;
+  --font-body:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --font-hand:"Klee One","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --font-math:"Times New Roman",Times,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.95;
+  -webkit-text-size-adjust:100%;
+}
+a{color:var(--blue)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ヘッダー */
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid var(--ink)}
+.bar-in{max-width:960px;margin:0 auto;padding:10px 16px 0;display:flex;align-items:center;gap:12px}
+.burger{width:42px;height:42px;border:1.5px solid var(--ink);background:var(--paper);border-radius:6px;display:grid;place-items:center;cursor:pointer;flex:none}
+.burger span{display:block;width:20px;height:2px;background:var(--ink);box-shadow:0 -6px 0 var(--ink),0 6px 0 var(--ink)}
+.course{line-height:1.35;min-width:0}
+.course small{display:block;color:var(--sub);font-size:.78rem}
+.course b{font-size:1.05rem}
+.tabs{max-width:960px;margin:8px auto 0;padding:0 16px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1.5px solid var(--ink);border-bottom:none;background:#eef1f5;border-radius:8px 8px 0 0;padding:6px 14px 5px;cursor:pointer;font-size:.92rem;line-height:1.5;color:var(--sub);position:relative;top:2px}
+.tab .n{font-family:var(--font-math);font-weight:700;margin-right:6px;color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);font-weight:700;border-bottom:2px solid var(--paper);z-index:1}
+
+/* ドロワー */
+.scrim{position:fixed;inset:0;background:rgba(20,24,32,.35);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(340px,86vw);background:var(--paper);z-index:31;border-right:2px solid var(--ink);transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto;padding:16px 18px 40px}
+body.menu-open .scrim{opacity:1;pointer-events:auto}
+body.menu-open .drawer{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
+.drawer-head b{font-size:1rem}
+.close{border:1.5px solid var(--ink);background:none;border-radius:6px;width:36px;height:36px;cursor:pointer;font-size:1.2rem;line-height:1}
+.drawer h4{margin:14px 0 2px;font-size:.95rem}
+.drawer h4 button{background:none;border:none;padding:0;cursor:pointer;text-align:left;font-weight:700}
+.drawer h4 .n{font-family:var(--font-math);margin-right:6px}
+.drawer ul{list-style:none;margin:0;padding:0 0 0 12px;border-left:1.5px solid var(--line)}
+.drawer li button{background:none;border:none;padding:3px 0;cursor:pointer;color:var(--sub);text-align:left;font-size:.9rem;line-height:1.5}
+.drawer li button:hover{color:var(--blue)}
+.drawer .cur>button{color:var(--blue)}
+
+/* 本文 */
+main{max-width:960px;margin:0 auto;padding:22px 16px 80px}
+.part{display:none}
+.part.on{display:block}
+.part-head{background:var(--paper);border:1.5px solid var(--ink);border-radius:4px;padding:16px 20px;margin-bottom:26px}
+.part-head .pn{font-family:var(--font-math);font-size:.95rem;color:var(--sub)}
+.part-head h1{font-size:clamp(1.5rem,3.6vw,2rem);line-height:1.4;margin:2px 0 6px;text-wrap:balance}
+.part-head p{margin:0;color:var(--sub);max-width:42em}
+.toc-mini{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9rem}
+.toc-mini button{background:none;border:none;padding:0;cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+
+section{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 22px 24px;margin-bottom:22px;scroll-margin-top:120px}
+@media (max-width:560px){section{padding:4px 14px 18px}}
+h2{font-size:1.4rem;line-height:1.5;margin:18px 0 12px;padding-bottom:6px;border-bottom:3px double var(--ink);text-wrap:balance}
+h2 .sn{display:inline-block;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;border:1.5px solid var(--ink);border-radius:50%;font-family:var(--font-math);font-size:1rem;margin-right:10px;vertical-align:.12em}
+h3{font-size:1.1rem;margin:24px 0 6px;text-wrap:balance}
+h3::before{content:"";display:inline-block;width:10px;height:10px;background:var(--blue);margin-right:8px;vertical-align:.05em}
+p{margin:0 0 1em;max-width:44em}
+.mk{background:linear-gradient(transparent 58%,var(--marker) 58%);font-weight:700}
+.v{font-family:var(--font-math);font-style:italic;font-size:1.1em;white-space:nowrap}
+.plus{color:var(--teal);font-weight:700}
+.minus{color:var(--red);font-weight:700}
+ul.dots,ol.steps{margin:0 0 1em;padding-left:1.4em;max-width:44em}
+ul.dots li,ol.steps li{margin:3px 0}
+
+/* 数式ボックス（教科書風に式番号を右寄せ） */
+.eq{border:1.5px solid var(--ink);background:#fff;padding:12px 18px;margin:16px 0 6px;max-width:44rem;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.eq .f{font-family:var(--font-math);font-size:1.45rem;font-style:italic}
+.eq .f sub{font-size:.65em}
+.eq .no{margin-left:auto;font-size:.85rem;color:var(--sub)}
+.eq-read{max-width:44rem;margin:0 0 16px;padding-left:20px;font-size:.95rem;color:var(--sub)}
+.eq-read::before{content:"読み方　";color:var(--blue);font-weight:700}
+
+/* 先生のメモ */
+.memo{font-family:var(--font-hand);background:var(--note);border-left:4px solid var(--red);padding:12px 16px 12px 18px;margin:16px 0;max-width:44rem;font-size:1.05rem;line-height:1.85}
+.memo .who{display:block;color:var(--red);font-weight:600;font-size:.9rem}
+/* ポイント */
+.point{border:2px solid var(--blue);border-radius:2px;padding:10px 16px;margin:20px 0 4px;max-width:44rem;position:relative}
+.point::before{content:"ポイント";position:absolute;top:-.85em;left:12px;background:var(--paper);padding:0 6px;color:var(--blue);font-weight:700;font-size:.85rem}
+.point p{margin:0}
+
+/* 帯グラフ */
+.bars{background:#fff;border:1px solid var(--line);padding:14px 16px 10px;margin:14px 0 18px;max-width:44rem}
+.bars .sw{display:flex;gap:0;margin-bottom:12px;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content}
+.bars .sw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.bars .sw button+button{border-left:1.5px solid var(--ink)}
+.bars .sw button[aria-selected="true"]{background:var(--ink);color:#fff}
+.brow{display:grid;grid-template-columns:7.2em 1fr;align-items:center;gap:10px;margin:8px 0}
+.brow .lab{font-size:.88rem;line-height:1.35}
+.track{position:relative;height:34px}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;border:1.5px solid var(--ink);white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.seg.y{background:#dfe8f6}
+.seg.c{background:#f3f4f6}.seg.i{background:#e7eaee}.seg.g{background:#d9dde3}
+.seg.gap-p{background:repeating-linear-gradient(45deg,#d6efe9,#d6efe9 5px,#fff 5px,#fff 10px);color:var(--teal);font-weight:700;border-color:var(--teal);border-style:dashed}
+.seg.gap-m{background:repeating-linear-gradient(45deg,#f8ddd7,#f8ddd7 5px,#fff 5px,#fff 10px);color:var(--red);font-weight:700;border-color:var(--red);border-style:dashed}
+.seg.b{background:#e7eaee}.seg.ri{background:#fde9a8}.seg.nx{background:#d6efe9}
+.seg-lab{position:absolute;top:0;bottom:0;display:flex;align-items:center;font-size:.85rem;white-space:nowrap}
+.bars .cap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+
+/* 表 */
+.tw{overflow-x:auto;margin:12px 0 18px}
+table{border-collapse:collapse;background:#fff;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--ink);padding:7px 12px;text-align:left;vertical-align:top;line-height:1.6}
+thead th{background:#eef1f5}
+td.c{text-align:center;white-space:nowrap}
+td.r{text-align:right}
+table.calc-t td{border:none;border-bottom:1px dotted var(--line);padding:3px 14px 3px 0}
+table.calc-t tr:last-child td{border-bottom:2px solid var(--ink);font-weight:700}
+
+/* 図 */
+figure{margin:14px 0 20px}
+figcaption{font-size:.85rem;color:var(--sub);margin-top:4px}
+.figbox{background:#fff;border:1px solid var(--line);padding:8px;overflow-x:auto}
+svg text{font-family:var(--font-body);fill:var(--ink)}
+svg .m{font-family:var(--font-math);font-style:italic}
+
+/* シミュレーター */
+.sim{background:#fff;border:1.5px solid var(--ink);padding:14px;margin:16px 0;display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:860px){.sim{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.grp{margin-bottom:10px}
+.grp .gl{font-size:.78rem;color:var(--sub);display:block;margin-bottom:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips button{border:1.5px solid var(--ink);background:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.85rem;line-height:1.6}
+.chips button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.explain{border-top:1px dashed var(--line);padding-top:10px;margin-top:6px}
+.explain .t{font-weight:700;margin:0}
+.explain .x{font-size:.95rem;margin:4px 0}
+.explain .f{font-size:.8rem;color:var(--sub);margin:0}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);margin:10px 0}
+.meter div{padding:6px 8px;text-align:center}
+.meter div+div{border-left:1px solid var(--ink)}
+.meter small{display:block;font-size:.75rem;color:var(--sub);line-height:1.3}
+.meter strong{font-size:1.3rem;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:7.4em 1fr 3.6em;gap:8px;align-items:center;font-size:.88rem}
+.sl input{width:100%;accent-color:var(--blue)}
+.sl output{text-align:right;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sm{font-size:.8rem;color:var(--sub);margin:6px 0 0}
+
+/* 内部タブ（ケース別） */
+.itabs{display:flex;gap:0;border-bottom:1.5px solid var(--ink);margin:14px 0 0;overflow-x:auto}
+.itabs button{border:none;background:none;padding:6px 14px;cursor:pointer;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.itabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--blue)}
+.ipanel{padding:12px 0 0}
+.ipanel[hidden]{display:none}
+.case{border-left:3px solid var(--line);padding:2px 0 2px 14px;margin:0 0 16px;max-width:44rem}
+.case b{display:block}
+.case .res{font-size:.9rem;margin:2px 0}
+.case p{margin:2px 0 0;font-size:.97rem}
+
+/* 手順 */
+.flow{display:grid;grid-template-columns:1fr;gap:8px;max-width:44rem;margin:12px 0 16px;counter-reset:f}
+@media (min-width:700px){.flow{grid-template-columns:repeat(3,1fr)}}
+.flow div{border:1.5px solid var(--ink);background:#fff;padding:10px 12px;font-size:.93rem;line-height:1.7;counter-increment:f}
+.flow div::before{content:"手順" counter(f);display:block;font-weight:700;color:var(--blue);font-size:.82rem}
+
+/* 計算機 */
+.calc{background:#fff;border:1.5px solid var(--ink);padding:14px 16px;margin:14px 0;max-width:44rem}
+.calc .out{font-size:.98rem;margin-top:10px}
+.calc .chk{color:var(--sub);font-size:.88rem}
+
+/* 確認問題 */
+.q{border:1px solid var(--ink);background:#fff;margin:10px 0;max-width:46rem}
+.q .qq{padding:10px 14px;display:flex;gap:10px}
+.q .qn{font-family:var(--font-math);font-weight:700;color:var(--blue)}
+.q button.show{margin:0 14px 10px;border:1.5px solid var(--ink);background:#fff;border-radius:4px;padding:2px 12px;cursor:pointer;font-size:.85rem}
+.q .ans{border-top:1px dashed var(--line);padding:8px 14px 10px;font-family:var(--font-hand);font-size:1.05rem;background:var(--note)}
+.q .ans[hidden]{display:none}
+.q .ans::before{content:"解答　";color:var(--red);font-weight:600}
+
+/* 前後ナビ */
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:28px;flex-wrap:wrap}
+.pager button{border:1.5px solid var(--ink);background:#fff;padding:10px 16px;cursor:pointer;border-radius:4px;text-align:left;line-height:1.4;max-width:48%}
+.pager button small{display:block;color:var(--sub);font-size:.78rem}
+.pager .next{margin-left:auto;text-align:right}
+.src{font-size:.82rem;color:var(--sub);margin-top:30px;border-top:1px solid var(--line);padding-top:10px}
+
+/* キャラクター */
+.talk{display:flex;align-items:flex-end;gap:12px;margin:14px 0 18px;max-width:44rem}
+.talk img{width:118px;height:auto;flex:none}
+.talk .bubble{position:relative;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:10px 16px;font-family:var(--font-hand);font-size:1.08rem;line-height:1.75;margin-bottom:30px}
+.talk .bubble::before{content:"";position:absolute;left:-12px;bottom:16px;border:6px solid transparent;border-right:8px solid var(--ink)}
+.talk .bubble::after{content:"";position:absolute;left:-8px;bottom:17px;border:5px solid transparent;border-right:7px solid #fff}
+.talk.r{flex-direction:row-reverse;margin-left:auto}
+.talk.r .bubble::before{left:auto;right:-12px;border-right-color:transparent;border-left:8px solid var(--ink)}
+.talk.r .bubble::after{left:auto;right:-8px;border-right-color:transparent;border-left:7px solid #fff}
+.part-head{display:flex;gap:16px;align-items:flex-end}
+.part-head .ph-main{flex:1;min-width:0}
+.part-head .ph-fig{flex:none;width:150px;text-align:center;margin:-6px 0 -16px}
+.part-head .ph-say{font-family:var(--font-hand);font-size:.88rem;line-height:1.5;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:5px 8px;margin-bottom:6px;text-align:left;position:relative}
+.part-head .ph-say::after{content:"";position:absolute;left:50%;bottom:-7px;width:10px;height:10px;background:#fff;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+.part-head .ph-fig img{width:100%;height:auto;display:block}
+@media (max-width:560px){.talk img{width:86px}.part-head .ph-fig{width:96px}.talk .bubble{font-size:1rem}}
+.memo.withfig{display:flex;gap:14px;align-items:center}
+.memo.withfig img{width:104px;height:auto;flex:none}
+@media (max-width:560px){.memo.withfig img{width:78px}}
+
+/* 課題パート */
+.dl{margin:10px 0 16px}
+.dlbtn{display:inline-flex;align-items:center;gap:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);text-decoration:none;padding:8px 16px 8px 10px;border-radius:6px;line-height:1.4;box-shadow:3px 3px 0 var(--ink)}
+.dlbtn:hover{background:#eef2fa}
+.dlbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.dlbtn .dlico{width:34px;height:40px;background:#2b579a;color:#fff;font-weight:700;display:grid;place-items:center;border-radius:3px;font-family:var(--font-math);font-size:1.2rem}
+.dlbtn b{display:block}
+.dlbtn small{display:block;color:var(--sub);font-size:.8rem}
+
+.xref{font-size:.9rem;margin:6px 0 12px;max-width:44em}
+.xref::before{content:"→ ";color:var(--blue);font-weight:700}
+.xref a,.dots a{color:var(--blue);cursor:pointer}
+.kq{border:2px solid var(--ink);background:#fff;padding:12px 16px;margin:12px 0 14px;max-width:46rem}
+.kq .lab{display:inline-block;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px;margin-bottom:4px}
+.kq p{margin:4px 0}
+.memo.hint{border-left-color:var(--blue)}
+.memo.hint .who{color:var(--blue)}
+.locked{display:none;border:1.5px dashed var(--line);color:var(--sub);padding:8px 14px;max-width:44rem;font-size:.92rem;background:#fff}
+body.ans-off .locked{display:block}
+body.ans-off .sol{display:none}
+.solbtn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:4px;padding:6px 16px;cursor:pointer;margin:6px 0 10px}
+.solbtn[aria-expanded="true"]{background:#fff;color:var(--ink)}
+.step{border-top:1px dashed var(--line);padding-top:6px;margin-top:10px}
+h3.stp::before{display:none}
+h3.stp .st{display:inline-block;font-size:.8rem;background:var(--blue);color:#fff;padding:0 9px;border-radius:3px;margin-right:8px;vertical-align:.12em}
+.ansSwitch{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;border:2px solid var(--ink);background:#fff;padding:10px 14px;margin:14px 0 16px;max-width:46rem}
+.sw-l{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700}
+.sw-l input{position:absolute;opacity:0;width:1px;height:1px}
+.sw-ui{width:46px;height:26px;border-radius:13px;background:#c9cfd8;position:relative;flex:none;transition:background .15s}
+.sw-ui::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}
+.sw-l input:checked+.sw-ui{background:var(--teal)}
+.sw-l input:checked+.sw-ui::after{left:23px}
+.sw-l input:focus-visible+.sw-ui{outline:2px solid var(--blue);outline-offset:2px}
+.sw-note{font-size:.88rem;color:var(--sub)}
+.gwrap{background:#fff;border:1.5px solid var(--ink);padding:12px;margin:14px 0 6px;max-width:46rem}
+.gsw{display:flex;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content;max-width:100%;margin-bottom:8px;flex-wrap:wrap}
+.gsw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.gsw button+button{border-left:1.5px solid var(--ink)}
+.gsw button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.gwrap svg{width:100%;max-width:560px;height:auto;display:block}
+.gcap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+.howto{font-size:.93rem;max-width:44rem;margin:6px 0 16px;padding-left:1.3em}
+.trap{border:2px dashed var(--red);padding:10px 16px;margin:16px 0;max-width:44rem;background:#fff}
+.trap b{color:var(--red)}
+.point.ketsu::before{content:"結論"}
+.answer{border:1.5px solid var(--ink);background:#fff;padding:14px 18px 6px;margin:20px 0 16px;max-width:46rem;position:relative}
+.answer::before{content:"答案の書き方の例";position:absolute;top:-.8em;left:12px;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px}
+.answer p{font-size:.97rem}
+.num{background:#fff;border:1px solid var(--line);padding:10px 16px;margin:14px 0;max-width:44rem}
+.num .h{font-size:.82rem;color:var(--sub);display:block}
+#kadai .brow{grid-template-columns:5.5em 1fr}
+#kadai .seg.g{background:#fde9a8}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* 数式（分数・Σ/Π/∫ の上下添字）— 全章共通 */
+.mx{font-family:var(--font-math);display:inline-flex;align-items:center;gap:.12em;vertical-align:middle;white-space:nowrap;font-size:1.08em}
+.mx i{font-style:italic}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.25}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .25em}
+.frac>span:last-child{padding:0 .25em}
+.bop{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 .12em}
+.bop .s{font-size:1.7em;line-height:1}
+.bop small{font-size:.62em;line-height:1.1}
+.eq .mx{font-size:1.25rem}
+.eq.mxeq .f{font-style:normal}
+.mxblock{display:block;overflow-x:auto;padding:4px 0}
