@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第2章 マクロ経済学の基礎</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* 設計: 方眼紙に書いた講義プリント。黒インクの本文、青ペンの強調、朱ペンの書き込み、黄色の蛍光ペン。上部に固定ヘッダーとパートのタブ、左からメニューが出る */
+:root{
+  --paper:#fdfdfb;
+  --grid:#e9eef3;
+  --ink:#22252b;
+  --sub:#5e6470;
+  --line:#c9cfd8;
+  --blue:#1f4e9c;
+  --red:#c8361f;
+  --teal:#0b6b5d;
+  --marker:#fff1a6;
+  --note:#fffbe3;
+  --font-body:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --font-hand:"Klee One","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --font-math:"Times New Roman",Times,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.95;
+  -webkit-text-size-adjust:100%;
+}
+a{color:var(--blue)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ヘッダー */
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid var(--ink)}
+.bar-in{max-width:960px;margin:0 auto;padding:10px 16px 0;display:flex;align-items:center;gap:12px}
+.burger{width:42px;height:42px;border:1.5px solid var(--ink);background:var(--paper);border-radius:6px;display:grid;place-items:center;cursor:pointer;flex:none}
+.burger span{display:block;width:20px;height:2px;background:var(--ink);box-shadow:0 -6px 0 var(--ink),0 6px 0 var(--ink)}
+.course{line-height:1.35;min-width:0}
+.course small{display:block;color:var(--sub);font-size:.78rem}
+.course b{font-size:1.05rem}
+.tabs{max-width:960px;margin:8px auto 0;padding:0 16px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1.5px solid var(--ink);border-bottom:none;background:#eef1f5;border-radius:8px 8px 0 0;padding:6px 14px 5px;cursor:pointer;font-size:.92rem;line-height:1.5;color:var(--sub);position:relative;top:2px}
+.tab .n{font-family:var(--font-math);font-weight:700;margin-right:6px;color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);font-weight:700;border-bottom:2px solid var(--paper);z-index:1}
+
+/* ドロワー */
+.scrim{position:fixed;inset:0;background:rgba(20,24,32,.35);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(340px,86vw);background:var(--paper);z-index:31;border-right:2px solid var(--ink);transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto;padding:16px 18px 40px}
+body.menu-open .scrim{opacity:1;pointer-events:auto}
+body.menu-open .drawer{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
+.drawer-head b{font-size:1rem}
+.close{border:1.5px solid var(--ink);background:none;border-radius:6px;width:36px;height:36px;cursor:pointer;font-size:1.2rem;line-height:1}
+.drawer h4{margin:14px 0 2px;font-size:.95rem}
+.drawer h4 button{background:none;border:none;padding:0;cursor:pointer;text-align:left;font-weight:700}
+.drawer h4 .n{font-family:var(--font-math);margin-right:6px}
+.drawer ul{list-style:none;margin:0;padding:0 0 0 12px;border-left:1.5px solid var(--line)}
+.drawer li button{background:none;border:none;padding:3px 0;cursor:pointer;color:var(--sub);text-align:left;font-size:.9rem;line-height:1.5}
+.drawer li button:hover{color:var(--blue)}
+.drawer .cur>button{color:var(--blue)}
+
+/* 本文 */
+main{max-width:960px;margin:0 auto;padding:22px 16px 80px}
+.part{display:none}
+.part.on{display:block}
+.part-head{background:var(--paper);border:1.5px solid var(--ink);border-radius:4px;padding:16px 20px;margin-bottom:26px}
+.part-head .pn{font-family:var(--font-math);font-size:.95rem;color:var(--sub)}
+.part-head h1{font-size:clamp(1.5rem,3.6vw,2rem);line-height:1.4;margin:2px 0 6px;text-wrap:balance}
+.part-head p{margin:0;color:var(--sub);max-width:42em}
+.toc-mini{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9rem}
+.toc-mini button{background:none;border:none;padding:0;cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+
+section{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 22px 24px;margin-bottom:22px;scroll-margin-top:120px}
+@media (max-width:560px){section{padding:4px 14px 18px}}
+h2{font-size:1.4rem;line-height:1.5;margin:18px 0 12px;padding-bottom:6px;border-bottom:3px double var(--ink);text-wrap:balance}
+h2 .sn{display:inline-block;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;border:1.5px solid var(--ink);border-radius:50%;font-family:var(--font-math);font-size:1rem;margin-right:10px;vertical-align:.12em}
+h3{font-size:1.1rem;margin:24px 0 6px;text-wrap:balance}
+h3::before{content:"";display:inline-block;width:10px;height:10px;background:var(--blue);margin-right:8px;vertical-align:.05em}
+p{margin:0 0 1em;max-width:44em}
+.mk{background:linear-gradient(transparent 58%,var(--marker) 58%);font-weight:700}
+.v{font-family:var(--font-math);font-style:italic;font-size:1.1em;white-space:nowrap}
+.plus{color:var(--teal);font-weight:700}
+.minus{color:var(--red);font-weight:700}
+ul.dots,ol.steps{margin:0 0 1em;padding-left:1.4em;max-width:44em}
+ul.dots li,ol.steps li{margin:3px 0}
+
+/* 数式ボックス（教科書風に式番号を右寄せ） */
+.eq{border:1.5px solid var(--ink);background:#fff;padding:12px 18px;margin:16px 0 6px;max-width:44rem;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.eq .f{font-family:var(--font-math);font-size:1.45rem;font-style:italic}
+.eq .f sub{font-size:.65em}
+.eq .no{margin-left:auto;font-size:.85rem;color:var(--sub)}
+.eq-read{max-width:44rem;margin:0 0 16px;padding-left:20px;font-size:.95rem;color:var(--sub)}
+.eq-read::before{content:"読み方　";color:var(--blue);font-weight:700}
+
+/* 先生のメモ */
+.memo{font-family:var(--font-hand);background:var(--note);border-left:4px solid var(--red);padding:12px 16px 12px 18px;margin:16px 0;max-width:44rem;font-size:1.05rem;line-height:1.85}
+.memo .who{display:block;color:var(--red);font-weight:600;font-size:.9rem}
+/* ポイント */
+.point{border:2px solid var(--blue);border-radius:2px;padding:10px 16px;margin:20px 0 4px;max-width:44rem;position:relative}
+.point::before{content:"ポイント";position:absolute;top:-.85em;left:12px;background:var(--paper);padding:0 6px;color:var(--blue);font-weight:700;font-size:.85rem}
+.point p{margin:0}
+
+/* 帯グラフ */
+.bars{background:#fff;border:1px solid var(--line);padding:14px 16px 10px;margin:14px 0 18px;max-width:44rem}
+.bars .sw{display:flex;gap:0;margin-bottom:12px;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content}
+.bars .sw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.bars .sw button+button{border-left:1.5px solid var(--ink)}
+.bars .sw button[aria-selected="true"]{background:var(--ink);color:#fff}
+.brow{display:grid;grid-template-columns:7.2em 1fr;align-items:center;gap:10px;margin:8px 0}
+.brow .lab{font-size:.88rem;line-height:1.35}
+.track{position:relative;height:34px}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;border:1.5px solid var(--ink);white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.seg.y{background:#dfe8f6}
+.seg.c{background:#f3f4f6}.seg.i{background:#e7eaee}.seg.g{background:#d9dde3}
+.seg.gap-p{background:repeating-linear-gradient(45deg,#d6efe9,#d6efe9 5px,#fff 5px,#fff 10px);color:var(--teal);font-weight:700;border-color:var(--teal);border-style:dashed}
+.seg.gap-m{background:repeating-linear-gradient(45deg,#f8ddd7,#f8ddd7 5px,#fff 5px,#fff 10px);color:var(--red);font-weight:700;border-color:var(--red);border-style:dashed}
+.seg.b{background:#e7eaee}.seg.ri{background:#fde9a8}.seg.nx{background:#d6efe9}
+.seg-lab{position:absolute;top:0;bottom:0;display:flex;align-items:center;font-size:.85rem;white-space:nowrap}
+.bars .cap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+
+/* 表 */
+.tw{overflow-x:auto;margin:12px 0 18px}
+table{border-collapse:collapse;background:#fff;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--ink);padding:7px 12px;text-align:left;vertical-align:top;line-height:1.6}
+thead th{background:#eef1f5}
+td.c{text-align:center;white-space:nowrap}
+td.r{text-align:right}
+table.calc-t td{border:none;border-bottom:1px dotted var(--line);padding:3px 14px 3px 0}
+table.calc-t tr:last-child td{border-bottom:2px solid var(--ink);font-weight:700}
+
+/* 図 */
+figure{margin:14px 0 20px}
+figcaption{font-size:.85rem;color:var(--sub);margin-top:4px}
+.figbox{background:#fff;border:1px solid var(--line);padding:8px;overflow-x:auto}
+svg text{font-family:var(--font-body);fill:var(--ink)}
+svg .m{font-family:var(--font-math);font-style:italic}
+
+/* シミュレーター */
+.sim{background:#fff;border:1.5px solid var(--ink);padding:14px;margin:16px 0;display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:860px){.sim{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.grp{margin-bottom:10px}
+.grp .gl{font-size:.78rem;color:var(--sub);display:block;margin-bottom:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips button{border:1.5px solid var(--ink);background:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.85rem;line-height:1.6}
+.chips button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.explain{border-top:1px dashed var(--line);padding-top:10px;margin-top:6px}
+.explain .t{font-weight:700;margin:0}
+.explain .x{font-size:.95rem;margin:4px 0}
+.explain .f{font-size:.8rem;color:var(--sub);margin:0}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);margin:10px 0}
+.meter div{padding:6px 8px;text-align:center}
+.meter div+div{border-left:1px solid var(--ink)}
+.meter small{display:block;font-size:.75rem;color:var(--sub);line-height:1.3}
+.meter strong{font-size:1.3rem;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:7.4em 1fr 3.6em;gap:8px;align-items:center;font-size:.88rem}
+.sl input{width:100%;accent-color:var(--blue)}
+.sl output{text-align:right;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sm{font-size:.8rem;color:var(--sub);margin:6px 0 0}
+
+/* 内部タブ（ケース別） */
+.itabs{display:flex;gap:0;border-bottom:1.5px solid var(--ink);margin:14px 0 0;overflow-x:auto}
+.itabs button{border:none;background:none;padding:6px 14px;cursor:pointer;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.itabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--blue)}
+.ipanel{padding:12px 0 0}
+.ipanel[hidden]{display:none}
+.case{border-left:3px solid var(--line);padding:2px 0 2px 14px;margin:0 0 16px;max-width:44rem}
+.case b{display:block}
+.case .res{font-size:.9rem;margin:2px 0}
+.case p{margin:2px 0 0;font-size:.97rem}
+
+/* 手順 */
+.flow{display:grid;grid-template-columns:1fr;gap:8px;max-width:44rem;margin:12px 0 16px;counter-reset:f}
+@media (min-width:700px){.flow{grid-template-columns:repeat(3,1fr)}}
+.flow div{border:1.5px solid var(--ink);background:#fff;padding:10px 12px;font-size:.93rem;line-height:1.7;counter-increment:f}
+.flow div::before{content:"手順" counter(f);display:block;font-weight:700;color:var(--blue);font-size:.82rem}
+
+/* 計算機 */
+.calc{background:#fff;border:1.5px solid var(--ink);padding:14px 16px;margin:14px 0;max-width:44rem}
+.calc .out{font-size:.98rem;margin-top:10px}
+.calc .chk{color:var(--sub);font-size:.88rem}
+
+/* 確認問題 */
+.q{border:1px solid var(--ink);background:#fff;margin:10px 0;max-width:46rem}
+.q .qq{padding:10px 14px;display:flex;gap:10px}
+.q .qn{font-family:var(--font-math);font-weight:700;color:var(--blue)}
+.q button.show{margin:0 14px 10px;border:1.5px solid var(--ink);background:#fff;border-radius:4px;padding:2px 12px;cursor:pointer;font-size:.85rem}
+.q .ans{border-top:1px dashed var(--line);padding:8px 14px 10px;font-family:var(--font-hand);font-size:1.05rem;background:var(--note)}
+.q .ans[hidden]{display:none}
+.q .ans::before{content:"解答　";color:var(--red);font-weight:600}
+
+/* 前後ナビ */
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:28px;flex-wrap:wrap}
+.pager button{border:1.5px solid var(--ink);background:#fff;padding:10px 16px;cursor:pointer;border-radius:4px;text-align:left;line-height:1.4;max-width:48%}
+.pager button small{display:block;color:var(--sub);font-size:.78rem}
+.pager .next{margin-left:auto;text-align:right}
+.src{font-size:.82rem;color:var(--sub);margin-top:30px;border-top:1px solid var(--line);padding-top:10px}
+
+/* キャラクター */
+.talk{display:flex;align-items:flex-end;gap:12px;margin:14px 0 18px;max-width:44rem}
+.talk img{width:118px;height:auto;flex:none}
+.talk .bubble{position:relative;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:10px 16px;font-family:var(--font-hand);font-size:1.08rem;line-height:1.75;margin-bottom:30px}
+.talk .bubble::before{content:"";position:absolute;left:-12px;bottom:16px;border:6px solid transparent;border-right:8px solid var(--ink)}
+.talk .bubble::after{content:"";position:absolute;left:-8px;bottom:17px;border:5px solid transparent;border-right:7px solid #fff}
+.talk.r{flex-direction:row-reverse;margin-left:auto}
+.talk.r .bubble::before{left:auto;right:-12px;border-right-color:transparent;border-left:8px solid var(--ink)}
+.talk.r .bubble::after{left:auto;right:-8px;border-right-color:transparent;border-left:7px solid #fff}
+.part-head{display:flex;gap:16px;align-items:flex-end}
+.part-head .ph-main{flex:1;min-width:0}
+.part-head .ph-fig{flex:none;width:150px;text-align:center;margin:-6px 0 -16px}
+.part-head .ph-say{font-family:var(--font-hand);font-size:.88rem;line-height:1.5;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:5px 8px;margin-bottom:6px;text-align:left;position:relative}
+.part-head .ph-say::after{content:"";position:absolute;left:50%;bottom:-7px;width:10px;height:10px;background:#fff;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+.part-head .ph-fig img{width:100%;height:auto;display:block}
+@media (max-width:560px){.talk img{width:86px}.part-head .ph-fig{width:96px}.talk .bubble{font-size:1rem}}
+.memo.withfig{display:flex;gap:14px;align-items:center}
+.memo.withfig img{width:104px;height:auto;flex:none}
+@media (max-width:560px){.memo.withfig img{width:78px}}
+
+/* 課題パート */
+.dl{margin:10px 0 16px}
+.dlbtn{display:inline-flex;align-items:center;gap:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);text-decoration:none;padding:8px 16px 8px 10px;border-radius:6px;line-height:1.4;box-shadow:3px 3px 0 var(--ink)}
+.dlbtn:hover{background:#eef2fa}
+.dlbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.dlbtn .dlico{width:34px;height:40px;background:#2b579a;color:#fff;font-weight:700;display:grid;place-items:center;border-radius:3px;font-family:var(--font-math);font-size:1.2rem}
+.dlbtn b{display:block}
+.dlbtn small{display:block;color:var(--sub);font-size:.8rem}
+
+.xref{font-size:.9rem;margin:6px 0 12px;max-width:44em}
+.xref::before{content:"→ ";color:var(--blue);font-weight:700}
+.xref a,.dots a{color:var(--blue);cursor:pointer}
+.kq{border:2px solid var(--ink);background:#fff;padding:12px 16px;margin:12px 0 14px;max-width:46rem}
+.kq .lab{display:inline-block;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px;margin-bottom:4px}
+.kq p{margin:4px 0}
+.memo.hint{border-left-color:var(--blue)}
+.memo.hint .who{color:var(--blue)}
+.locked{display:none;border:1.5px dashed var(--line);color:var(--sub);padding:8px 14px;max-width:44rem;font-size:.92rem;background:#fff}
+body.ans-off .locked{display:block}
+body.ans-off .sol{display:none}
+.solbtn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:4px;padding:6px 16px;cursor:pointer;margin:6px 0 10px}
+.solbtn[aria-expanded="true"]{background:#fff;color:var(--ink)}
+.step{border-top:1px dashed var(--line);padding-top:6px;margin-top:10px}
+h3.stp::before{display:none}
+h3.stp .st{display:inline-block;font-size:.8rem;background:var(--blue);color:#fff;padding:0 9px;border-radius:3px;margin-right:8px;vertical-align:.12em}
+.ansSwitch{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;border:2px solid var(--ink);background:#fff;padding:10px 14px;margin:14px 0 16px;max-width:46rem}
+.sw-l{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700}
+.sw-l input{position:absolute;opacity:0;width:1px;height:1px}
+.sw-ui{width:46px;height:26px;border-radius:13px;background:#c9cfd8;position:relative;flex:none;transition:background .15s}
+.sw-ui::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}
+.sw-l input:checked+.sw-ui{background:var(--teal)}
+.sw-l input:checked+.sw-ui::after{left:23px}
+.sw-l input:focus-visible+.sw-ui{outline:2px solid var(--blue);outline-offset:2px}
+.sw-note{font-size:.88rem;color:var(--sub)}
+.gwrap{background:#fff;border:1.5px solid var(--ink);padding:12px;margin:14px 0 6px;max-width:46rem}
+.gsw{display:flex;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content;max-width:100%;margin-bottom:8px;flex-wrap:wrap}
+.gsw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.gsw button+button{border-left:1.5px solid var(--ink)}
+.gsw button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.gwrap svg{width:100%;max-width:560px;height:auto;display:block}
+.gcap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+.howto{font-size:.93rem;max-width:44rem;margin:6px 0 16px;padding-left:1.3em}
+.trap{border:2px dashed var(--red);padding:10px 16px;margin:16px 0;max-width:44rem;background:#fff}
+.trap b{color:var(--red)}
+.point.ketsu::before{content:"結論"}
+.answer{border:1.5px solid var(--ink);background:#fff;padding:14px 18px 6px;margin:20px 0 16px;max-width:46rem;position:relative}
+.answer::before{content:"答案の書き方の例";position:absolute;top:-.8em;left:12px;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px}
+.answer p{font-size:.97rem}
+.num{background:#fff;border:1px solid var(--line);padding:10px 16px;margin:14px 0;max-width:44rem}
+.num .h{font-size:.82rem;color:var(--sub);display:block}
+#kadai .brow{grid-template-columns:5.5em 1fr}
+#kadai .seg.g{background:#fde9a8}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* 数式（分数・Σ/Π/∫ の上下添字）— 全章共通 */
+.mx{font-family:var(--font-math);display:inline-flex;align-items:center;gap:.12em;vertical-align:middle;white-space:nowrap;font-size:1.08em}
+.mx i{font-style:italic}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.25}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .25em}
+.frac>span:last-child{padding:0 .25em}
+.bop{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 .12em}
+.bop .s{font-size:1.7em;line-height:1}
+.bop small{font-size:.62em;line-height:1.1}
+.eq .mx{font-size:1.25rem}
+.eq.mxeq .f{font-style:normal}
+.mxblock{display:block;overflow-x:auto;padding:4px 0}
+</style>
+</head>
+<body>
+
+<div class="scrim" id="scrim"></div>
+<nav class="drawer" id="drawer" aria-label="全体の目次" aria-hidden="true">
+  <div class="drawer-head"><b>目次</b><button class="close" id="closeBtn" aria-label="目次を閉じる">×</button></div>
+  <div id="drawerList"></div>
+</nav>
+
+<header class="bar">
+  <div class="bar-in">
+    <button class="burger" id="menuBtn" aria-label="目次を開く" aria-controls="drawer" aria-expanded="false"><span></span></button>
+    <div class="course"><small>経済原論 I　マクロ経済学入門</small><b>第2章　マクロ経済学の基礎　解説プリントと課題</b></div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="パート" id="tabs"></div>
+</header>
+
+<main>
+<!-- ===================== パート1 ===================== -->
+<div class="part" id="junkan" data-title="経済の循環" data-desc="経済循環図を、貯蓄のない経済から始めて、貯蓄・投資、政府、外国と順に広げていきます。どの段階でも成り立つ「生産＝分配＝支出」と「貯蓄＝投資」の関係をつかみます。">
+
+<section id="s1" data-t="貯蓄のない経済と三面等価">
+<h2><span class="sn">1</span>貯蓄のない経済：生産＝分配＝支出</h2>
+<p>いちばん単純な経済から始めます。登場するのは<b>家計</b>と<b>企業</b>の2つ、市場は<b>財市場</b>（モノ・サービスの市場）と<b>生産要素市場</b>（労働と資本の市場）の2つです。ここでは、市場は理想的に働き、需要と供給は必ず一致すると考えます。</p>
+<p>下の図はボタンで4段階に切り替えられます。この節では「貯蓄なし」を見てください。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="経済循環図の段階"><button type="button" data-g="cyc" data-s="0" aria-pressed="true">① 貯蓄なし</button><button type="button" data-g="cyc" data-s="1" aria-pressed="false">② 貯蓄・投資</button><button type="button" data-g="cyc" data-s="2" aria-pressed="false">③ 政府</button><button type="button" data-g="cyc" data-s="3" aria-pressed="false">④ 外国</button></div>
+  <svg id="gCyc" viewBox="0 0 680 495" role="img" aria-label="経済循環図"></svg>
+  <p class="gcap" id="gCyc-cap"></p>
+</div>
+<ul class="dots">
+  <li>家計は労働 <span class="v">L</span> と資本 <span class="v">K</span> を企業に提供し、賃金と利子・配当 <span class="v">wL + rK</span> を受け取る。</li>
+  <li>企業は <span class="v">K</span> と <span class="v">L</span> を使って生産する。この関係を<b>生産関数</b> <span class="v">Y = F(K, L)</span> と書く。</li>
+  <li>家計は受け取った所得で、作られたモノを買う（消費 <span class="v">C</span>）。</li>
+</ul>
+<div class="eq"><span class="f">Y = wL + rK</span><span class="no">テキスト (2.3)</span></div>
+<p class="eq-read">生産 ＝ 分配された所得（作った価値は、働いた人と資本を出した人にすべて分けられる）</p>
+<div class="eq"><span class="f">Y = C</span><span class="no">テキスト (2.2)</span></div>
+<p class="eq-read">生産 ＝ 支出（作ったものは、すべて買われる。これが財市場の均衡条件）</p>
+<p>この2つから、<span class="mk">生産 ＝ 所得 ＝ 支出</span>が成り立ちます。これを<b>三面等価</b>と呼びます。</p>
+<div class="memo"><span class="who">メモ：島のパン屋で考えよう</span>島にはパン屋が1軒だけ。島の人はパン屋で働いて給料をもらい、その給料でパンを買う。パン屋が1日に焼いたパンの値段の合計（生産）、島の人の給料と店主のもうけの合計（所得）、島の人がパンに払ったお金の合計（支出）は、みな同じ金額になる。</div>
+<div class="point"><p>どんな経済でも、作った価値（生産）は誰かの所得になり、その所得で作ったものが買われる。生産＝所得＝支出（三面等価）。</p></div>
+</section>
+
+<section id="s2" data-t="貯蓄と投資のある経済">
+<h2><span class="sn">2</span>貯蓄と投資のある経済</h2>
+<p>家計は所得をすべて使うわけではありません。使わずに残した分が<b>貯蓄</b> <span class="v">S</span> です。</p>
+<div class="eq"><span class="f">S ≡ Y − C</span><span class="no">テキスト (2.5)</span></div>
+<p class="eq-read">貯蓄 ＝ 所得 − 消費（≡ は「定義によって等しい」という記号）</p>
+<p>一方、企業は作ったモノの一部を、自分で工場や機械として使います。これが<b>投資</b> <span class="v">I</span> です。経済学の投資は「株を買う」ことではなく、<span class="mk">資本ストック（工場・機械）を増やすこと</span>を指します。</p>
+<p>企業は投資のための資金が足りないので、家計の貯蓄を借ります。お金を貸し借りする場所が<b>貸付資金市場</b>です（図の②）。</p>
+<div class="eq"><span class="f">Y = C + I</span><span class="no">テキスト (2.4)</span></div>
+<p class="eq-read">財市場の均衡：作った量 ＝ 消費 ＋ 投資</p>
+<div class="eq"><span class="f">S = I</span><span class="no">テキスト (2.6)</span></div>
+<p class="eq-read">貸付資金市場の均衡：貸したいお金（貯蓄）＝ 借りたいお金（投資）</p>
+<h3>2つの均衡条件は同じことを言っている</h3>
+<p>(2.4) の <span class="v">Y</span> に <span class="v">C + S</span>（貯蓄の定義を移項したもの）を入れると、<span class="v">C + S = C + I</span>、つまり <span class="v">S = I</span> です。逆も同じように導けます。<span class="mk">財市場の均衡と貸付資金市場の均衡は同値</span>（片方が成り立てば、必ずもう片方も成り立つ）です。</p>
+<div class="bars">
+  <div class="brow"><span class="lab">所得 <span class="v">Y</span></span><div class="track"><div class="seg c" style="left:0;width:80%">消費 C　400</div><div class="seg ri" style="left:80%;width:20%">貯蓄 S　100</div></div></div>
+  <div class="brow"><span class="lab">支出 <span class="v">Y</span></span><div class="track"><div class="seg c" style="left:0;width:80%">消費 C　400</div><div class="seg i" style="left:80%;width:20%">投資 I　100</div></div></div>
+  <p class="cap">単位：兆円（架空の値）。所得500のうち400を消費し、100を貯蓄する。財市場で需要と供給が一致する（支出も500）なら、投資も100になり、貯蓄と一致する。</p>
+</div>
+<p class="xref">この関係は <a href="#s21" data-goto="s21">課題 問3</a> で使います</p>
+<div class="point"><p>貯蓄は所得のうち使わなかった分。財市場の均衡（Y = C + I）と貸付資金市場の均衡（S = I）は同じことを表す。</p></div>
+</section>
+
+<section id="s3" data-t="政府のある経済">
+<h2><span class="sn">3</span>政府のある経済</h2>
+<p>政府は家計から<b>税</b> <span class="v">T</span> を集め、<b>政府支出</b> <span class="v">G</span> を行います（図の③）。財市場での需要は、消費・投資・政府支出の3つになります。</p>
+<div class="eq"><span class="f">Y = C + I + G</span><span class="no">テキスト (2.7)</span></div>
+<p class="eq-read">財市場の均衡：作った量 ＝ 消費 ＋ 投資 ＋ 政府支出</p>
+<p>家計が自由に使えるのは、税を払った後の所得 <span class="v">Y − T</span>（<b>可処分所得</b>）です。貯蓄は、民間と政府に分けて考えます。</p>
+<div class="tw"><table>
+<thead><tr><th>名前</th><th>式</th><th>意味</th></tr></thead>
+<tbody>
+<tr><td><b>民間貯蓄</b> <span class="v">S<sub>P</sub></span></td><td><span class="v">Y − T − C</span></td><td>可処分所得のうち、家計が使わなかった分</td></tr>
+<tr><td><b>公的貯蓄</b> <span class="v">S<sub>G</sub></span></td><td><span class="v">T − G</span></td><td>税収のうち、政府が使わなかった分。マイナスなら<b>財政赤字</b></td></tr>
+<tr><td><b>国民貯蓄</b> <span class="v">S</span></td><td><span class="v">S<sub>P</sub> + S<sub>G</sub> = Y − C − G</span></td><td>国全体の貯蓄</td></tr>
+</tbody></table></div>
+<div class="eq"><span class="f">S = S<sub>P</sub> + S<sub>G</sub> = Y − C − G</span><span class="no">テキスト (2.8)</span></div>
+<p class="eq-read">国民貯蓄 ＝ 民間貯蓄 ＋ 公的貯蓄（税 T は家計から政府へ移るだけなので、合計すると消える）</p>
+<p>貸付資金市場の均衡は、ここでも <span class="v">S = I</span>（テキスト (2.9)）で、財市場の均衡 (2.7) と同値です。</p>
+<div class="num"><span class="h">数値例（単位：兆円、架空の値）</span>
+<table class="calc-t">
+<tr><td>Y = 500、T = 100、C = 350、G = 100</td><td class="r"></td></tr>
+<tr><td>民間貯蓄 S<sub>P</sub> ＝ 500 − 100 − 350</td><td class="r">50</td></tr>
+<tr><td>公的貯蓄 S<sub>G</sub> ＝ 100 − 100</td><td class="r">0</td></tr>
+<tr><td>国民貯蓄 S ＝ 50 + 0（＝ 500 − 350 − 100）</td><td class="r">50</td></tr>
+<tr><td>投資 I ＝ S</td><td class="r">50</td></tr>
+</table></div>
+<p class="xref">この数値例は <a href="#s19" data-goto="s19">課題 問1</a>・<a href="#s20" data-goto="s20">問2</a> の出発点です</p>
+<div class="point"><p>国民貯蓄＝民間貯蓄（Y−T−C）＋公的貯蓄（T−G）。財政赤字は公的貯蓄のマイナス。閉じた経済では国民貯蓄＝投資。</p></div>
+</section>
+
+<section id="s4" data-t="外国のある経済（開放経済）">
+<h2><span class="sn">4</span>外国のある経済（開放経済）</h2>
+<p>外国とモノを売り買いすると、国内で作ったモノ（<b>自国財</b>）と外国で作ったモノ（<b>外国財</b>）を区別する必要があります（図の④）。</p>
+<ul class="dots">
+  <li>国内の人が自国財に使う額 ＝ <span class="v">C + I + G</span> − 輸入 <span class="v">IM</span></li>
+  <li>外国の人が自国財に使う額 ＝ 輸出 <span class="v">EX</span></li>
+</ul>
+<div class="eq"><span class="f">Y = C + I + G + NX</span><span class="no">テキスト (2.10)</span></div>
+<p class="eq-read">作った量 ＝ 国内の需要（内需）＋ 純輸出（外需）。NX ＝ EX − IM</p>
+<p>純輸出がプラスの国は、作ったより少なく使っているので、余りを外国に貸しています。外国に対する「貯金」を<b>対外純資産</b>、その1年間の増加を<b>経常収支</b> <span class="v">CA</span> と呼びます。最初の対外純資産がゼロなら、<span class="v">CA = NX</span>（テキスト (2.11)）です。</p>
+<div class="eq"><span class="f">S = I + CA</span><span class="no">テキスト (2.12)</span></div>
+<p class="eq-read">国民貯蓄は、国内で投資に貸し出されるか（I）、外国に貸し出されるか（CA）のどちらか</p>
+<div class="bars">
+  <div class="brow"><span class="lab">国民貯蓄 <span class="v">S</span></span><div class="track"><div class="seg y" style="left:0;width:100%">70</div></div></div>
+  <div class="brow"><span class="lab">行き先</span><div class="track"><div class="seg i" style="left:0;width:71.4%">国内の投資 I　50</div><div class="seg nx" style="left:71.4%;width:28.6%">外国へ CA　20</div></div></div>
+  <p class="cap">単位：兆円（架空の値）。国内の投資に使い切れなかった20を外国に貸している（経常収支の黒字）。</p>
+</div>
+<p>世界全体では、どこかの輸出は必ずどこかの輸入なので、純輸出と経常収支を合計するとゼロです。開放経済のくわしい分析は第5章で学びます。</p>
+<p class="xref">この式は <a href="#s22" data-goto="s22">課題 問4</a> で使います</p>
+<div class="point"><p>開放経済では Y = C + I + G + NX。国民貯蓄は国内の投資と外国への貸し付けに回る（S = I + CA）。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート2 ===================== -->
+<div class="part" id="gdp" data-title="GDPを測る" data-desc="国の経済の大きさを表す GDP は、どう計算するのでしょうか。付加価値、グロスとネット、GDP と GNI、名目と実質、フローとストックを、数値例で確かめます。">
+
+<section id="s5" data-t="GDPと付加価値">
+<h2><span class="sn">5</span>GDP は「付加価値の合計」</h2>
+<p><b>GDP</b>（国内総生産）は、<span class="mk">ある一定期間に国内で生産された最終生産物の価値の合計</span>です。いろいろな財の数量を、市場価格を重みにして足し合わせます。</p>
+<div class="eq"><span class="f">Y = p¹q¹ + p²q² + ⋯ + pⁿqⁿ</span><span class="no">テキスト p.36</span></div>
+<p class="eq-read">GDP ＝ 各財の（価格 × 数量）の合計。i 番目の財の価格が pⁱ、数量が qⁱ</p>
+<p>市場価格を重みに使うのは、価格に消費者の評価（限界便益、第1章）が表れていると考えるからです。</p>
+<h3>中間生産物は数えない</h3>
+<p>農家が小麦を作って製粉業者に100万円で売り、製粉業者が小麦粉にしてパン屋に150万円で売り、パン屋がパンにして消費者に200万円で売ったとします（テキスト図2.3）。</p>
+<div class="bars">
+  <div class="brow"><span class="lab">農家</span><div class="track"><div class="seg ri" style="left:0;width:50%">付加価値 100</div></div></div>
+  <div class="brow"><span class="lab">製粉業者</span><div class="track"><div class="seg i" style="left:0;width:50%">仕入れ（小麦）100</div><div class="seg ri" style="left:50%;width:25%">付加 50</div></div></div>
+  <div class="brow"><span class="lab">パン屋</span><div class="track"><div class="seg i" style="left:0;width:75%">仕入れ（小麦粉）150</div><div class="seg ri" style="left:75%;width:25%">付加 50</div></div></div>
+  <div class="brow"><span class="lab">GDP</span><div class="track"><div class="seg nx" style="left:0;width:100%">最終生産物（パン）200 ＝ 付加価値の合計 100 + 50 + 50</div></div></div>
+  <p class="cap">単位：万円。黄色が各段階で新しく生み出された価値（付加価値）。</p>
+</div>
+<ul class="dots">
+  <li><b>付加価値</b> ＝ 売上 − 原材料などの仕入れ。その段階で新しく生み出した価値。</li>
+  <li>小麦・小麦粉・パンの売上を全部足すと450万円ですが、これは小麦の価値を3回、小麦粉の価値を2回数えてしまいます（<b>二重計算</b>）。</li>
+  <li>GDP は最終生産物のパンの200万円で、<span class="mk">これは各段階の付加価値の合計に等しい</span>。</li>
+</ul>
+<div class="point"><p>GDP は最終生産物の価値の合計＝各段階の付加価値の合計。途中で使われる中間生産物は数えない。</p></div>
+</section>
+
+<section id="s6" data-t="グロスとネット、市場で取引されないもの">
+<h2><span class="sn">6</span>グロスとネット、市場で取引されないもの</h2>
+<h3>グロス（粗）とネット（純）</h3>
+<p>機械や建物は、使うと少しずつ傷みます。この目減りを<b>資本減耗</b>と呼びます。資本減耗は推計が難しいので、GDP は資本減耗を差し引かない<b>グロス</b>（総・粗）の値です。差し引いた<b>ネット</b>（純）の値が<b>国内純生産</b>（NDP）です。</p>
+<div class="eq"><span class="f">NDP = GDP − 資本減耗</span><span class="no">テキスト p.38</span></div>
+<h3>市場で取引されないものはどう扱うか</h3>
+<div class="tw"><table>
+<thead><tr><th>もの</th><th>GDP での扱い</th></tr></thead>
+<tbody>
+<tr><td>政府のサービス（警察、国防など）</td><td>市場価格がないので、<b>かかった費用</b>で評価して含める</td></tr>
+<tr><td>持ち家に住むこと</td><td>家賃を払ったものとみなして推計し、含める（<b>帰属家賃</b>）</td></tr>
+<tr><td>農家が自分で食べる野菜</td><td>推計して含める（帰属計算）</td></tr>
+<tr><td>家事労働</td><td>推計が難しいので<b>含めない</b></td></tr>
+<tr><td>公害、環境汚染</td><td>本来はマイナスとして数えるべきだが、<b>考慮されていない</b></td></tr>
+</tbody></table></div>
+<div class="memo"><span class="who">メモ：帰属家賃がないとどうなる？</span>同じ家に同じように住んでいても、借家なら家賃が GDP に入り、持ち家なら入らない。すると「みんなが家を買うと GDP が減る」という変なことが起こる。帰属家賃はこれを防ぐための工夫。</div>
+<p class="xref">政府サービスを費用で評価することの問題は <a href="#s23" data-goto="s23">課題 問5</a> で考えます</p>
+<div class="point"><p>GDP は資本減耗を引かないグロスの値。市場取引がないものは、費用や推計で評価して含めるが、家事労働や環境汚染は含まれない。</p></div>
+</section>
+
+<section id="s7" data-t="GDPとGNI、国民所得">
+<h2><span class="sn">7</span>GDP と GNI、国民所得</h2>
+<ul class="dots">
+  <li><b>GDP</b>（国内総生産）：日本の<b>国内</b>で生み出された価値。日本で働く外国人の生産は含み、外国で働く日本人の生産は含まない。</li>
+  <li><b>GNI</b>（国民総所得）：日本の<b>国民</b>が得た所得。以前は GNP（国民総生産）と呼ばれた。</li>
+</ul>
+<div class="eq"><span class="f">GNI = GDP + 海外からの所得の純受取</span><span class="no">テキスト p.41</span></div>
+<p class="eq-read">海外からの所得の純受取 ＝ 日本人が海外から受け取る所得 − 国内の外国人が受け取る所得</p>
+<p>GNI から資本減耗を引いたものが国民純生産（NNP）で、これを<b>市場価格表示の国民所得</b>と呼びます。さらに、価格に含まれる間接税を除いた<b>要素費用表示の国民所得</b>（NI）は、働いた人と資本を出した人が受け取った所得の合計です。</p>
+<div class="bars" id="barGni">
+  <div class="brow"><span class="lab">GDP</span><div class="track"><div class="seg y" style="left:0;width:96.2%">GDP　500</div></div></div>
+  <div class="brow"><span class="lab">GNI</span><div class="track"><div class="seg y" style="left:0;width:96.2%">GDP　500</div><div class="seg nx" style="left:96.2%;width:3.8%"></div><span class="seg-lab plus" style="left:calc(100% + 6px)">＋20</span></div></div>
+  <div class="brow"><span class="lab">NNP</span><div class="track"><div class="seg ri" style="left:0;width:80.8%">市場価格表示の国民所得　420</div><div class="seg gap-m" style="left:80.8%;width:19.2%">資本減耗 100</div></div></div>
+  <div class="brow"><span class="lab">NI</span><div class="track"><div class="seg c" style="left:0;width:73.1%">要素費用表示の国民所得　380</div><div class="seg gap-m" style="left:73.1%;width:7.7%">純間接税</div></div></div>
+  <p class="cap">単位：兆円（架空の値）。GNI 520 ＝ GDP 500 ＋ 海外からの純受取 20。NNP 420 ＝ GNI 520 − 資本減耗 100。NI 380 ＝ NNP 420 − 純間接税 40（間接税 − 補助金）。テキスト図2.4を数値例にしたもの。</p>
+</div>
+<div class="point"><p>GDP は国内、GNI は国民の所得。GNI＝GDP＋海外からの純受取。資本減耗と純間接税を引いていくと国民所得になる。</p></div>
+</section>
+
+<section id="s8" data-t="名目と実質、物価の考え方">
+<h2><span class="sn">8</span>名目 GDP と実質 GDP</h2>
+<p>物価が上がると、作った量が同じでも GDP の金額は増えてしまいます。そこで2種類の GDP を使い分けます。</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>どの価格で評価するか</th><th>式（時点 t）</th></tr></thead>
+<tbody>
+<tr><td><b>名目 GDP</b> <span class="v">PY<sub>t</sub></span></td><td>その年の価格</td><td><span class="v">p<sub>t</sub>¹q<sub>t</sub>¹ + ⋯ + p<sub>t</sub>ⁿq<sub>t</sub>ⁿ</span></td></tr>
+<tr><td><b>実質 GDP</b> <span class="v">Y<sub>t</sub></span></td><td>基準年（時点0）の価格に固定</td><td><span class="v">p<sub>0</sub>¹q<sub>t</sub>¹ + ⋯ + p<sub>0</sub>ⁿq<sub>t</sub>ⁿ</span></td></tr>
+</tbody></table></div>
+<p>実質 GDP は価格を固定しているので、<span class="mk">量の変化だけ</span>を表します。経済活動の本当の水準を見るには、実質 GDP を使います。</p>
+<h3>2つの財で計算してみよう</h3>
+<p>パンと映画の2つの財だけの経済を考えます（架空の値）。基準年（時点0）はパン100円・10個、映画500円・2回で固定し、今年（時点1）の価格と数量を動かしてみてください。</p>
+<div class="sim" id="gdpSim">
+  <div>
+    <div class="tw" style="margin:0"><table id="gdpTable">
+      <thead><tr><th></th><th>パンの価格</th><th>パンの数量</th><th>映画の価格</th><th>映画の数量</th></tr></thead>
+      <tbody><tr><td>基準年（0）</td><td class="r">100</td><td class="r">10</td><td class="r">500</td><td class="r">2</td></tr>
+      <tr><td>今年（1）</td><td class="r" id="t_p1"></td><td class="r" id="t_q1"></td><td class="r" id="t_p2"></td><td class="r" id="t_q2"></td></tr></tbody>
+    </table></div>
+    <div class="sl" style="margin-top:10px"><label for="g_p1">パンの価格</label><input type="range" id="g_p1" min="80" max="160" step="10" value="120"><output id="v_p1" for="g_p1"></output></div>
+    <div class="sl"><label for="g_q1">パンの数量</label><input type="range" id="g_q1" min="6" max="14" step="1" value="11"><output id="v_q1" for="g_q1"></output></div>
+    <div class="sl"><label for="g_p2">映画の価格</label><input type="range" id="g_p2" min="400" max="700" step="50" value="500"><output id="v_p2" for="g_p2"></output></div>
+    <div class="sl"><label for="g_q2">映画の数量</label><input type="range" id="g_q2" min="1" max="5" step="1" value="3"><output id="v_q2" for="g_q2"></output></div>
+  </div>
+  <div>
+    <div class="tw" style="margin:0"><table class="calc-t" id="gdpOut" style="width:100%"></table></div>
+    <p class="sm">GDP デフレータ ＝ 名目 ÷ 実質。ラスパイレスとパーシェは第11節で説明します。</p>
+  </div>
+</div>
+<div class="eq"><span class="f">名目 GDP = GDP デフレータ × 実質 GDP</span><span class="no">PY<sub>t</sub> = P<sub>t</sub> · Y<sub>t</sub></span></div>
+<p class="eq-read">成長率で見ると、名目成長率 ≒ インフレ率 ＋ 実質成長率</p>
+<h3>連鎖方式</h3>
+<p>基準年から時間がたつと、財の値段の比（相対価格）が大きく変わり、固定した価格で測ると実態とずれていきます（パソコンの値下がりなど）。そこで現在の日本では、<span class="mk">前年の価格で今年の実質成長率を求め、それを掛け合わせて</span>実質 GDP を計算します。これを<b>連鎖方式</b>と呼びます。</p>
+<div class="eq"><span class="f">Y<sub>t</sub> = Y<sub>0</sub> × Γ<sub>0,1</sub> × Γ<sub>1,2</sub> × ⋯ × Γ<sub>t−1,t</sub></span><span class="no">テキスト p.43</span></div>
+<p class="eq-read">Γ<sub>s,s+1</sub> は「時点 s の価格で測った、s から s+1 への（1＋実質成長率）」</p>
+<div class="point"><p>名目 GDP はその年の価格、実質 GDP は基準年の価格で評価する。実質 GDP の変化は量の変化だけを表す。</p></div>
+</section>
+
+<section id="s9" data-t="日本のGDP">
+<h2><span class="sn">9</span>日本の GDP の中身と動き</h2>
+<p>講義スライドに示された、2024年度の日本の名目 GDP の構成です。</p>
+<div class="tw"><table>
+<thead><tr><th>項目</th><th>10億円</th><th>構成比</th></tr></thead>
+<tbody>
+<tr><td>国内総生産（GDP）</td><td class="r">642,415</td><td class="r">100.0%</td></tr>
+<tr><td>　民間最終消費支出</td><td class="r">340,364</td><td class="r">53.0%</td></tr>
+<tr><td>　政府最終消費支出</td><td class="r">129,100</td><td class="r">20.1%</td></tr>
+<tr><td>　総固定資本形成（うち民間 146,750、公的 32,018）</td><td class="r">178,768</td><td class="r">27.8%</td></tr>
+<tr><td>　在庫変動</td><td class="r">−20</td><td class="r">0.0%</td></tr>
+<tr><td>　純輸出（輸出 141,651 − 輸入 147,448）</td><td class="r minus">−5,797</td><td class="r minus">−0.9%</td></tr>
+<tr><td>海外からの所得の純受取</td><td class="r">39,727</td><td class="r">6.2%</td></tr>
+<tr><td>国民総所得（GNI）</td><td class="r">682,142</td><td class="r">106.2%</td></tr>
+</tbody></table></div>
+<div class="bars">
+  <div class="brow"><span class="lab">GDP の構成</span><div class="track"><div class="seg c" style="left:0;width:53%">消費 53.0%</div><div class="seg g" style="left:53%;width:20.1%">政府 20.1%</div><div class="seg i" style="left:73.1%;width:26.9%">投資 27.8%</div></div></div>
+  <p class="cap">純輸出が −0.9% なので、消費・政府・投資の合計（100.9%）は GDP をわずかに上回る（図では投資を短く描いている）。</p>
+</div>
+<ul class="dots">
+  <li>GDP の半分以上を<b>民間消費</b>が占める。</li>
+  <li>純輸出はマイナスだが、海外からの所得の純受取が大きいので、<b>GNI は GDP より6%ほど大きい</b>（第5章の経常収支の話につながる）。</li>
+</ul>
+<h3>実質経済成長率の移り変わり</h3>
+<p>スライドとテキスト（図2.5、2.6）によると、日本の実質経済成長率の平均は、時代とともに下がってきました。</p>
+<figure><div class="figbox"><svg id="gGrow" viewBox="0 0 560 280" role="img" aria-label="年代ごとの実質経済成長率の平均"></svg></div>
+<figcaption>出典：講義スライド「経済成長率（実質）」に示された年代平均。</figcaption></figure>
+<p>マイナス成長になったのは、第1次石油危機（1974年）、バブル崩壊後（1993年）、金融機関の「貸し渋り」とアジア通貨危機（1998年）、リーマン・ショック後の世界金融危機（2008・2009年）、新型コロナウイルス（2020年）などです。</p>
+<div class="point"><p>日本の GDP の半分以上は民間消費。実質成長率の平均は、1960年代の約10%から2000年代の約0.5%へ下がってきた。</p></div>
+</section>
+
+<section id="s10" data-t="フローとストック">
+<h2><span class="sn">10</span>フローとストック</h2>
+<div class="tw"><table>
+<thead><tr><th></th><th>意味</th><th>例</th></tr></thead>
+<tbody>
+<tr><td><b>フロー</b></td><td>一定の期間にどれだけ流れたか（流量）</td><td>GDP、所得、消費、投資</td></tr>
+<tr><td><b>ストック</b></td><td>ある時点でどれだけたまっているか（貯蔵量）</td><td>資本ストック、資産の残高</td></tr>
+</tbody></table></div>
+<div class="memo"><span class="who">メモ：プールに水を入れる</span>1時間に入れた水の量がフロー、今の水位がストック。給料（月にいくら）はフロー、銀行の残高（今いくら）はストック。</div>
+<div class="eq"><span class="f">K<sub>t+1</sub> = K<sub>t</sub> + I<sub>t</sub></span><span class="no">テキスト p.47</span></div>
+<p class="eq-read">来期はじめの資本ストック ＝ 今期はじめの資本ストック ＋ 今期の投資（フロー）</p>
+<div class="num"><span class="h">数値例（架空の値。ここでの投資は資本減耗を引いた純投資）</span>
+<table class="calc-t"><tr><td>今期はじめの資本 K<sub>t</sub></td><td class="r">100</td></tr><tr><td>今期の投資 I<sub>t</sub></td><td class="r">10</td></tr><tr><td>来期はじめの資本 K<sub>t+1</sub></td><td class="r">110</td></tr></table></div>
+<p>投資は今期の需要（財市場）を増やすだけでなく、資本ストックを増やして将来の生産能力も高めます。この関係を詳しく扱うのが経済成長の理論です（第13章）。</p>
+<div class="point"><p>フローは「期間あたりの量」、ストックは「ある時点の量」。投資（フロー）がたまって資本（ストック）になる。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート3 ===================== -->
+<div class="part" id="bukka" data-title="物価と利子率" data-desc="いろいろな財の値段の「平均」である物価は、どう測るのでしょうか。消費者物価指数と GDP デフレータの違い、名目利子率と実質利子率の関係を学びます。">
+
+<section id="s11" data-t="物価指数（ラスパイレスとパーシェ）">
+<h2><span class="sn">11</span>物価指数：ラスパイレスとパーシェ</h2>
+<p><b>物価</b>は、いろいろな財の価格の「平均」的な水準です。基準時点0と比べた時点 t の物価は、各財の値上がり率（<span class="v">p<sub>t</sub>ⁱ / p<sub>0</sub>ⁱ</span>）に重み <span class="v">w<sub>i</sub></span> を付けた平均で表します（重みの合計は1）。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>P<sub>t</sub></i> = <i>w</i><sub>1</sub><span class="frac"><span><i>p<sub>t</sub></i><sup>1</sup></span><span><i>p</i><sub>0</sub><sup>1</sup></span></span> + <i>w</i><sub>2</sub><span class="frac"><span><i>p<sub>t</sub></i><sup>2</sup></span><span><i>p</i><sub>0</sub><sup>2</sup></span></span> + ⋯ + <i>w<sub>n</sub></i><span class="frac"><span><i>p<sub>t</sub><sup>n</sup></i></span><span><i>p</i><sub>0</sub><sup><i>n</i></sup></span></span></span></span><span class="no">テキスト (2.13)</span></div>
+<p class="eq-read">物価 ＝ 各財の値上がり率の加重平均</p>
+<p>重みの決め方で、2つの指数があります。整理すると、どちらも「同じ買い物かごを、今の価格と基準時点の価格で買ったときの金額の比」になります。</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>重み（どの買い物かごか）</th><th>計算式（整理したもの）</th><th>代表例</th></tr></thead>
+<tbody>
+<tr><td><b>ラスパイレス指数</b></td><td>基準時点の数量 <span class="v">q<sub>0</sub></span> で固定</td><td><span class="v">Σp<sub>t</sub>q<sub>0</sub> / Σp<sub>0</sub>q<sub>0</sub></span>（テキスト (2.16)）</td><td>消費者物価指数（CPI）</td></tr>
+<tr><td><b>パーシェ指数</b></td><td>比較時点の数量 <span class="v">q<sub>t</sub></span> を使う</td><td><span class="v">Σp<sub>t</sub>q<sub>t</sub> / Σp<sub>0</sub>q<sub>t</sub></span>（テキスト (2.17)）</td><td>GDP デフレータ</td></tr>
+</tbody></table></div>
+<div class="num"><span class="h">第8節の数値例（パン 100→120円、10→11個／映画 500円のまま、2→3回）</span>
+<table class="calc-t">
+<tr><td>ラスパイレス：(120×10 + 500×2) ÷ (100×10 + 500×2) ＝ 2,200 ÷ 2,000</td><td class="r">1.100（物価10.0%上昇）</td></tr>
+<tr><td>パーシェ：(120×11 + 500×3) ÷ (100×11 + 500×3) ＝ 2,820 ÷ 2,600</td><td class="r">1.085（物価8.5%上昇）</td></tr>
+</table></div>
+<h3>代替効果：なぜラスパイレスは高めに出るのか</h3>
+<p>値上がりした財（パン）を控え、値上がりしなかった財（映画）を多く買うのが普通です（<b>代替効果</b>）。ラスパイレス指数は基準時点の買い物かごのままなので、この行動を反映せず、<span class="mk">生活費の上昇を大きめに評価</span>します。一方、パーシェ指数は代替効果を反映しますが、値上がりによる実質的な購買力の変化までは反映しません。</p>
+<p>上の数値例でも、ラスパイレス（10.0%）のほうがパーシェ（8.5%）より高くなっています。第8節のスライダーで、ほかの組み合わせも試してください。</p>
+<div class="point"><p>ラスパイレスは基準時点の買い物かご、パーシェは今の買い物かごで測る。代替効果のため、ラスパイレス（CPI）は高めに出る。</p></div>
+</section>
+
+<section id="s12" data-t="CPIとGDPデフレータ">
+<h2><span class="sn">12</span>消費者物価指数と GDP デフレータ</h2>
+<div class="eq"><span class="f">GDP デフレータ = 名目 GDP ÷ 実質 GDP = Σp<sub>t</sub>q<sub>t</sub> / Σp<sub>0</sub>q<sub>t</sub></span><span class="no">テキスト (2.18)</span></div>
+<p class="eq-read">GDP デフレータは、パーシェ型の物価指数</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>消費者物価指数（CPI）</th><th>GDP デフレータ</th></tr></thead>
+<tbody>
+<tr><td>型</td><td>ラスパイレス型（基準時点の重み）</td><td>パーシェ型（比較時点の重み）。現在は連鎖方式</td></tr>
+<tr><td>対象</td><td>家計が買うモノ・サービス</td><td>国内で生産されたすべての最終生産物（輸入品は含まない）</td></tr>
+<tr><td>くせ</td><td>代替効果を反映しないので高めに出る。新製品が反映されにくい、古い製品が残る、品質向上の扱いが難しい</td><td>—</td></tr>
+</tbody></table></div>
+<p>テキスト図2.7によると、CPI で測ったインフレ率は、GDP デフレータで測ったものより1%ほど高く出ています。日本は1990年代後半から2010年過ぎまで、GDP デフレータで見て物価が下がり続けました（デフレ）。</p>
+<div class="point"><p>CPI は家計の買い物をラスパイレス型で、GDP デフレータは国内生産全体をパーシェ型で測る。CPI のインフレ率は高めに出やすい。</p></div>
+</section>
+
+<section id="s13" data-t="名目利子率と実質利子率">
+<h2><span class="sn">13</span>名目利子率と実質利子率</h2>
+<ul class="dots">
+  <li><b>名目利子率</b> <span class="v">i</span>：1円を1年預けると、お金がいくら増えるか（ふつうの「金利」）。</li>
+  <li><b>実質利子率</b> <span class="v">r</span>：1円を1年預けると、そのお金で<b>買えるモノ</b>がどれだけ増えるか。</li>
+</ul>
+<div class="eq mxeq"><span class="f"><span class="mx">1 + <i>r</i> = <span class="frac"><span>1 + <i>i</i></span><span>1 + <i>π</i></span></span>　≒　1 + <i>i</i> − <i>π</i></span></span><span class="no">テキスト p.53</span></div>
+<p class="eq-read">π はインフレ率。i と π があまり大きくなければ、実質利子率 ≒ 名目利子率 − インフレ率</p>
+<div class="calc">
+  <div class="sl" style="grid-template-columns:9.5em 1fr 4.4em"><label for="fi">名目利子率 i</label><input type="range" id="fi" min="0" max="10" step="0.5" value="5"><output id="vfi" for="fi"></output></div>
+  <div class="sl" style="grid-template-columns:9.5em 1fr 4.4em"><label for="fp">インフレ率 π</label><input type="range" id="fp" min="-3" max="10" step="0.5" value="2"><output id="vfp" for="fp"></output></div>
+  <div class="meter">
+    <div><small>正確な式 (1+i)/(1+π) − 1</small><strong id="fr1"></strong></div>
+    <div><small>近似 i − π</small><strong id="fr2"></strong></div>
+    <div><small>差</small><strong id="fr3"></strong></div>
+  </div>
+  <p class="sm">名目5%・インフレ2%なら実質約3%。名目0%でもデフレ（−2%）なら実質約2%（テキスト p.54 の例）。</p>
+</div>
+<h3>フィッシャー方程式</h3>
+<div class="eq"><span class="f">i = r + πᵉ</span><span class="no">フィッシャー方程式</span></div>
+<p class="eq-read">名目利子率 ＝ 実質利子率 ＋ 予想インフレ率（期待インフレ率）</p>
+<p>合理的な家計や企業にとって大切なのは、名目ではなく実質利子率です。古典派モデルでは、実質利子率は実物経済（貯蓄と投資）で決まり、そこに予想インフレ率が上乗せされて名目利子率が決まると考えます。実物と名目が別々に決まるという考え方を<b>古典派の二分法</b>と呼びます。</p>
+<div class="point"><p>実質利子率 ≒ 名目利子率 − インフレ率。フィッシャー方程式：名目利子率＝実質利子率＋予想インフレ率。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート4 ===================== -->
+<div class="part" id="shitsugyo" data-title="失業とフィリップス曲線" data-desc="失業率はどう定義され、なぜ失業が生まれるのでしょうか。失業率とインフレ率の関係を表すフィリップス曲線まで見ていきます。">
+
+<section id="s14" data-t="失業率の定義">
+<h2><span class="sn">14</span>失業率の定義</h2>
+<div class="eq mxeq"><span class="f"><span class="mx">完全失業率 = <span class="frac"><span>完全失業者数</span><span>労働力人口</span></span></span></span><span class="no">テキスト p.56</span></div>
+<p class="eq-read">働く意欲のある人のうち、仕事が見つかっていない人の割合</p>
+<ul class="dots">
+  <li><b>労働力人口</b> ＝ 15歳以上のうち、就業者（休業者を含む）と完全失業者の合計。</li>
+  <li><b>完全失業者</b>：仕事がなく、仕事があればすぐ就くことができ、実際に仕事を探している人。</li>
+  <li><b>非労働力人口</b>：学生、家事に専念する人、引退した高齢者など、仕事を探していない人。失業者には数えない。</li>
+</ul>
+<div class="bars" id="barU">
+  <div class="sw" role="tablist" aria-label="例の切り替え">
+    <button role="tab" aria-selected="true" data-k="a">ふつうの状態</button>
+    <button role="tab" aria-selected="false" data-k="b">1人が職探しをあきらめた</button>
+  </div>
+  <div class="brow"><span class="lab">15歳以上の人口</span><div class="track" data-row="pop"></div></div>
+  <p class="cap" id="barUcap"></p>
+</div>
+<p>職探しをあきらめた人は非労働力人口に移るので、<span class="mk">失業率は下がって見えます</span>。失業率の数字だけで景気を判断するときは注意が必要です。また、失業の定義は国によって違うので、単純な国際比較もできません。</p>
+<div class="point"><p>失業率＝完全失業者÷労働力人口。職探しをあきらめた人は労働力人口から外れ、失業率に数えられない。</p></div>
+</section>
+
+<section id="s15" data-t="失業の理由とフィリップス曲線">
+<h2><span class="sn">15</span>失業はなぜ生まれるか、フィリップス曲線</h2>
+<div class="tw"><table>
+<thead><tr><th>種類</th><th>理由</th><th>考え方</th></tr></thead>
+<tbody>
+<tr><td><b>摩擦的失業</b></td><td>転職や、古い産業から新しい産業への移動のあいだに、一時的に生まれる失業</td><td>古典派。経済が変化している健全さの表れで、問題にすべきものではない</td></tr>
+<tr><td><b>非自発的失業</b></td><td>働きたいのに仕事がない。総需要が足りず、しかも賃金が下がりにくい（<b>賃金の下方硬直性</b>）ので解消しない</td><td>ケインズ派</td></tr>
+</tbody></table></div>
+<p>なぜ賃金が下がりにくいのかを、現代のニュー・ケインジアンはミクロ経済学で説明します。</p>
+<ul class="dots">
+  <li><b>情報の非対称性（逆選択）</b>：働く人の能力を、雇う企業はよく知らない。賃金が平均的な能力に合わせて決まると、能力の高い人が転職市場に出てこなくなり、市場がうまく働かない。</li>
+  <li><b>効率賃金</b>：賃金を下げると働く人のやる気が下がり、かえって企業の利益が減る。だから失業があっても賃金を下げない。</li>
+</ul>
+<h3>フィリップス曲線</h3>
+<p>失業率とインフレ率のあいだには、<span class="mk">失業率が低いときほどインフレ率が高い</span>という負の関係が見られます。これを<b>フィリップス曲線</b>と呼びます。日本のデータ（1971〜2019年）でも、この関係が見られます（テキスト図2.10）。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="pc" data-s="0" aria-pressed="true">フィリップス曲線</button><button type="button" data-g="pc" data-s="1" aria-pressed="false">予想インフレ率が上がると</button></div>
+  <svg id="gPc" viewBox="0 0 520 340" role="img" aria-label="フィリップス曲線の模式図"></svg>
+  <p class="gcap" id="gPc-cap"></p>
+</div>
+<p>1970年代の高インフレ期には、多くの国で安定したフィリップス曲線が見られなくなりました。その論争から、<b>予想インフレ率に応じて曲線が動く</b>という考え方や、長期的には曲線は垂直になるという<b>自然失業率仮説</b>が生まれました（第10章）。また近年は、フィリップス曲線が平らになっていると言われます。</p>
+<div class="point"><p>失業には摩擦的失業と非自発的失業がある。失業率とインフレ率には負の関係（フィリップス曲線）があるが、予想インフレ率で曲線は動く。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート5 ===================== -->
+<div class="part" id="matome" data-title="まとめと演習" data-desc="章全体の要点を振り返り、確認問題で理解を確かめます。理解できたら、次のタブで課題に挑戦しましょう。">
+<section id="s16" data-t="まとめ">
+<h2><span class="sn">16</span>まとめ</h2>
+<div class="tw"><table>
+<thead><tr><th>テーマ</th><th>要点</th><th>式</th></tr></thead>
+<tbody>
+<tr><td>三面等価</td><td>生産＝分配された所得＝支出</td><td><span class="v">Y = wL + rK</span>、<span class="v">Y = C</span></td></tr>
+<tr><td>貯蓄と投資</td><td>財市場の均衡と貸付資金市場の均衡は同値</td><td><span class="v">Y = C + I ⇔ S = I</span></td></tr>
+<tr><td>政府</td><td>国民貯蓄＝民間貯蓄＋公的貯蓄</td><td><span class="v">S = (Y−T−C) + (T−G)</span></td></tr>
+<tr><td>開放経済</td><td>貯蓄は国内投資か外国への貸し付けに回る</td><td><span class="v">S = I + CA</span></td></tr>
+<tr><td>GDP</td><td>最終生産物の価値＝付加価値の合計。GNI＝GDP＋海外からの純受取</td><td><span class="v">Y = Σpⁱqⁱ</span></td></tr>
+<tr><td>名目と実質</td><td>実質 GDP は基準年の価格で評価。GDP デフレータ＝名目÷実質</td><td><span class="v">PY = P · Y</span></td></tr>
+<tr><td>物価指数</td><td>CPI はラスパイレス型で高めに出る。GDP デフレータはパーシェ型</td><td></td></tr>
+<tr><td>利子率</td><td>実質利子率 ≒ 名目利子率 − インフレ率</td><td><span class="v">i = r + πᵉ</span></td></tr>
+<tr><td>失業</td><td>失業率＝完全失業者÷労働力人口。フィリップス曲線</td><td></td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s17" data-t="確認問題">
+<h2><span class="sn">17</span>確認問題</h2>
+<p>答えを考えてから「解答を見る」を押してください。</p>
+<div class="q"><div class="qq"><span class="qn">Q1</span><span>Y = 600、C = 420、G = 80、T = 100 の閉鎖経済で、民間貯蓄、公的貯蓄、国民貯蓄、投資はいくら？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>民間貯蓄 600 − 100 − 420 ＝ 80、公的貯蓄 100 − 80 ＝ 20、国民貯蓄 80 + 20 ＝ 100（＝ 600 − 420 − 80）。閉鎖経済なので投資も 100。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q2</span><span>鉄鉱石会社が鉄を300で製鉄所に売り、製鉄所が鋼板を500で自動車会社に売り、自動車会社が車を900で消費者に売った。この経済の GDP は？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>最終生産物の車の 900。付加価値で計算しても 300 + (500 − 300) + (900 − 500) ＝ 900。売上の単純合計 1,700 は二重計算。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q3</span><span>GDP が 550、日本人が海外から受け取る所得が 40、国内の外国人が受け取る所得が 15 のとき、GNI は？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>海外からの所得の純受取 ＝ 40 − 15 ＝ 25。GNI ＝ 550 + 25 ＝ 575。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q4</span><span>名目 GDP が 2,820、実質 GDP が 2,600 のとき、GDP デフレータは？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>2,820 ÷ 2,600 ≒ 1.085（基準年を1として、物価が約8.5%上がった）。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q5</span><span>名目利子率が 1%、インフレ率が 3% のとき、実質利子率はおよそいくら？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>1 − 3 ＝ −2%。お金は1%増えても、物価が3%上がるので、買えるモノは約2%減る。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q6</span><span>15歳以上人口 100人のうち、就業者 57人、完全失業者 3人、非労働力人口 40人。完全失業率は？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>労働力人口 ＝ 57 + 3 ＝ 60人。完全失業率 ＝ 3 ÷ 60 ＝ 5%。15歳以上人口（100人）で割らないことに注意。</div></div>
+</section>
+<p class="src">出典：麻生良文『マクロ経済学入門』第2章「マクロ経済学の基礎」（pp.25–60）、講義スライド第2章改訂版（近藤春生）をもとに、初学者向けに再構成しました。数値例は、特に断りのないものは説明のための架空の値です。</p>
+</div>
+
+<!-- ===================== パート6 ===================== -->
+<div class="part" id="kadai" data-title="課題に挑戦" data-desc="講義スライドの「問題」（テキスト p.32）と、テキスト p.35・p.40 の問題を、ヒントから順に解いていきます。解説と答案例は、表示スイッチがオンのときだけ見られます。">
+
+<section id="s18" data-t="課題の設定と準備">
+<h2><span class="sn">18</span>課題の設定と準備</h2>
+<div class="ansSwitch">
+  <label class="sw-l" for="ansToggle"><input type="checkbox" id="ansToggle" role="switch"><span class="sw-ui" aria-hidden="true"></span><span>解説と答案例を表示する</span></label>
+  <span class="sw-note" id="ansNote">オフ：問題とヒントだけを表示しています。</span>
+</div>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch2.docx" download="第2章課題_解答例.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+<div class="kq"><span class="lab">課題（講義スライド「問題 p.32」）</span>
+<p><b>問1</b>　公的貯蓄と民間貯蓄は、それぞれが無関係に決まっているとしよう。財政赤字の拡大は、公的貯蓄を減らし、国民貯蓄を減少させる。このとき、国内投資はどうなるだろうか。</p>
+<p><b>問2</b>　公的貯蓄と民間貯蓄が連動して決まるメカニズムはあるだろうか？</p>
+<p><b>問3</b>　貯蓄主体と投資主体は異なるのに、なぜ一国全体では、貯蓄と投資が一致するのだろうか（閉鎖経済の場合）。</p>
+</div>
+<div class="kq"><span class="lab">発展（テキストの問題）</span>
+<p><b>問4</b>（テキスト p.35）　ある国が巨額の貿易黒字を発生させていると、相手国からの批判を呼ぶことが多い。貿易黒字を減らすために、国内の消費を拡大させる政策（減税）や政府支出を拡大させる政策が必要だと主張される場合がある。なぜ、こうした政策が貿易黒字を減らすのだろうか（ヒント：S = I + NX が成り立つことを用い、減税や G の拡大が国民貯蓄 S = S<sub>P</sub> + S<sub>G</sub> をどう変化させるか考える）。</p>
+<p><b>問5</b>（テキスト p.40）　政府の提供するサービスについて、消費者の限界便益でウェイト付けした合計金額が本来の GDP 推計方法であるとする。次の場合、政府活動をサービスの供給費用で推計すると、正しい GDP と比べて過大推計になるか、過小推計になるか。(1) 政府サービスの供給量は不変だが、今までよりも安い費用で供給できるようになった。(2) 国民が必要性を感じないサービスを提供するために、新たに人を雇った（民間の経済活動は影響を受けないとする）。(3) 政府サービスの限界費用 c は一定で固定費はないとする（q 単位の供給は cq 円と評価される）。政府のサービス供給が (a) 過大な場合、(b) 過小な場合、(c) 効率的な場合、それぞれ真の値と比べてどのようなバイアスがあるか（限界便益は正で逓減する。効率的な供給量とは、限界便益と限界費用が一致する水準）。</p>
+</div>
+<h3>問題文の言葉を確かめる</h3>
+<div class="tw"><table>
+<thead><tr><th>言葉</th><th>意味</th></tr></thead>
+<tbody>
+<tr><td>財政赤字</td><td>政府支出が税収を上回る状態（T − G &lt; 0）。公的貯蓄がマイナス</td></tr>
+<tr><td>公的貯蓄と民間貯蓄が「無関係に決まる」</td><td>政府が赤字を出しても、家計の貯蓄 S<sub>P</sub> は変わらないという仮定</td></tr>
+<tr><td>閉鎖経済</td><td>外国との取引がない経済。S = I が成り立つ</td></tr>
+<tr><td>限界便益で「ウェイト付け」</td><td>市場価格（＝限界便益）× 数量で評価すること。ふつうの財の GDP と同じ測り方</td></tr>
+</tbody></table></div>
+<h3>この課題で使う道具</h3>
+<div class="tw"><table>
+<thead><tr><th>問題</th><th>使う道具</th><th>復習</th></tr></thead>
+<tbody>
+<tr><td>問1・問2</td><td>国民貯蓄 S = S<sub>P</sub> + S<sub>G</sub>、S = I</td><td><a href="#s3" data-goto="s3">第3節</a></td></tr>
+<tr><td>問3</td><td>財市場の均衡と貸付資金市場の均衡の同値性</td><td><a href="#s2" data-goto="s2">第2節</a></td></tr>
+<tr><td>問4</td><td>S = I + NX（CA = NX）</td><td><a href="#s4" data-goto="s4">第4節</a></td></tr>
+<tr><td>問5</td><td>政府サービスの費用評価、限界便益</td><td><a href="#s6" data-goto="s6">第6節</a></td></tr>
+</tbody></table></div>
+<h3>課題の解説で使う数値例</h3>
+<p>単位は兆円。<b>説明のための架空の値</b>です（第3節の数値例と同じ）。</p>
+<div class="tw"><table>
+<thead><tr><th>項目</th><th>値</th></tr></thead>
+<tbody>
+<tr><td>GDP <span class="v">Y</span></td><td class="r">500</td></tr>
+<tr><td>税 <span class="v">T</span>、政府支出 <span class="v">G</span></td><td class="r">100、100</td></tr>
+<tr><td>消費 <span class="v">C</span></td><td class="r">350</td></tr>
+<tr><td>民間貯蓄 S<sub>P</sub>、公的貯蓄 S<sub>G</sub>、国民貯蓄 S</td><td class="r">50、0、50</td></tr>
+<tr><td>投資の式（問1で使う） <span class="v">I = 70 − 5r</span></td><td class="r">r = 4% のとき 50</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s19" data-t="問1 財政赤字と国内投資">
+<h2><span class="sn">19</span>問1：財政赤字が増えると、国内投資はどうなるか</h2>
+<div class="kq"><span class="lab">問題</span><p>公的貯蓄と民間貯蓄は、それぞれが無関係に決まっているとしよう。財政赤字の拡大は、公的貯蓄を減らし、国民貯蓄を減少させる。このとき、国内投資はどうなるだろうか。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>閉鎖経済では S = I が成り立ちます。国民貯蓄 S が減ると、I はどうなるでしょうか。貸付資金市場でお金を貸したい量が減ったとき、お金の「値段」である利子率はどう動くでしょうか。</div>
+<p class="xref">復習：<a href="#s3" data-goto="s3">パート1「政府のある経済」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>何が変わり、何が変わらないか</h3>
+<p>政府が支出を20増やし（G：100 → 120）、税はそのまま（T = 100）とします。財政赤字が20生まれます。</p>
+<div class="tw"><table>
+<thead><tr><th>項目</th><th>変わる？</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td>公的貯蓄 S<sub>G</sub> = T − G</td><td class="c minus">20 減る</td><td>0 → −20</td></tr>
+<tr><td>民間貯蓄 S<sub>P</sub></td><td class="c">変わらない</td><td>問題の仮定（無関係に決まる）</td></tr>
+<tr><td>国民貯蓄 S = S<sub>P</sub> + S<sub>G</sub></td><td class="c minus">20 減る</td><td>50 → 30</td></tr>
+</tbody></table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>貸付資金市場のどの線が動くか</h3>
+<p>貸付資金市場では、お金を貸す側が貯蓄 S、借りる側が投資 I です。投資は利子率が高いほど少なくなります（右下がり）。ここでは貯蓄は利子率によらないとして、垂直な線で描きます。<span class="mk">国民貯蓄が減ると、S の線が左へ20動きます</span>。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="q1" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="q1" data-s="1" aria-pressed="false">変化後</button></div>
+  <svg id="gQ1" viewBox="0 0 520 340" role="img" aria-label="財政赤字で貯蓄の線が左へ動き、利子率が上がって投資が減るグラフ"></svg>
+  <p class="gcap" id="gQ1-cap"></p>
+</div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフで読み取る</h3>
+<p>貸したいお金が減ったので、貸付資金市場で利子率が上がります（4% → 8%）。利子率が上がると、借りて工場を建てるのが割に合わなくなり、<span class="mk">民間の投資が減ります</span>。新しい均衡では、投資は国民貯蓄と同じ30になります。</p>
+<div class="num"><span class="h">数値例</span>
+<table class="calc-t">
+<tr><td>国民貯蓄 S ＝ 50 + (100 − 120)</td><td class="r">30</td></tr>
+<tr><td>投資 I ＝ 70 − 5r ＝ 30 となる利子率</td><td class="r">r ＝ 8%</td></tr>
+<tr><td>投資の変化</td><td class="r minus">50 → 30（−20）</td></tr>
+</table></div>
+<p>政府の借金（国債）が民間の投資のための資金を奪う、と考えることもできます。これを<b>クラウディング・アウト</b>（押しのけ）と呼びます。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「政府支出が増えると景気がよくなり、投資も増える」と答えてしまうこと。この問題は、市場が均衡し S = I が成り立つ閉鎖経済を考えています。国民貯蓄が減れば、投資に回せるお金も同じだけ減ります。</div>
+<div class="point ketsu"><p>国民貯蓄が減った分だけ国内投資が減る。貸付資金市場で利子率が上がり、民間投資が押しのけられる（クラウディング・アウト）。</p></div>
+<div class="answer">
+<p>閉鎖経済では貸付資金市場の均衡条件 S = I が成り立つ。民間貯蓄 S<sub>P</sub> が公的貯蓄と無関係に決まるとすると、財政赤字の拡大による公的貯蓄 S<sub>G</sub> = T − G の減少は、そのまま国民貯蓄 S = S<sub>P</sub> + S<sub>G</sub> を同じだけ減少させる。</p>
+<p>貸付資金市場では資金の供給が減るので利子率が上昇し、投資は利子率の減少関数であるから民間投資が減少する。新しい均衡では投資は減少した国民貯蓄に等しくなり、国内投資は国民貯蓄の減少分だけ減少する（クラウディング・アウト）。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s20" data-t="問2 公的貯蓄と民間貯蓄の連動">
+<h2><span class="sn">20</span>問2：公的貯蓄と民間貯蓄は連動するか</h2>
+<div class="kq"><span class="lab">問題</span><p>公的貯蓄と民間貯蓄が連動して決まるメカニズムはあるだろうか？</p></div>
+<div class="memo hint"><span class="who">ヒント</span>政府が今年減税して財政赤字を出すと、その借金はいつか返さなければなりません。返すのは誰でしょうか。将来の増税を予想した家計は、今年増えた手取りをどうするでしょうか。</div>
+<p class="xref">復習：<a href="#s3" data-goto="s3">パート1「政府のある経済」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>減税で財政赤字が生まれるとする</h3>
+<p>政府支出はそのまま（G = 100）、税を20減らす（T：100 → 80）とします。公的貯蓄は 0 → −20 です。家計の手取り（可処分所得）は20増えます。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>家計は将来の増税を予想する</h3>
+<p>政府の借金は、将来の増税で返すしかありません。家計がそれを見越すと、今年増えた手取りは「将来の増税のための貯金」として残し、消費は増やしません。すると、<span class="mk">公的貯蓄が減ったのと同じだけ、民間貯蓄が増えます</span>。</p>
+<div class="bars">
+  <div class="brow"><span class="lab">減税前</span><div class="track"><div class="seg ri" style="left:0;width:71.4%">民間貯蓄 50</div><span class="seg-lab" style="left:calc(71.4% + 8px)">公的貯蓄 0 → 国民貯蓄 50</span></div></div>
+  <div class="brow"><span class="lab">減税後</span><div class="track"><div class="seg ri" style="left:0;width:100%">民間貯蓄 70</div></div></div>
+  <div class="brow"><span class="lab"></span><div class="track"><div class="seg gap-m" style="left:71.4%;width:28.6%">公的貯蓄 −20</div><span class="seg-lab" style="left:0">国民貯蓄 70 − 20 ＝ 50（変わらない）</span></div></div>
+  <p class="cap">単位：兆円（架空の値）。家計が消費を変えなければ、民間貯蓄は 500 − 80 − 350 ＝ 70 に増え、公的貯蓄の減少をちょうど打ち消す。</p>
+</div>
+<p>この考え方を<b>リカードの等価定理</b>（リカードの中立命題）と呼びます。第5章で、一時的な減税が純輸出を変えなかったのも同じ理由です。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>ほかにもある連動の仕組み</h3>
+<ul class="dots">
+  <li><b>政府支出がずっと増える場合</b>：将来もずっと増税が続くと予想すると、家計の生涯の手取り（恒常所得）が減り、消費が減る（第5章の恒常的な政府支出）。</li>
+  <li><b>利子率を通じた連動</b>：財政赤字で利子率が上がると（問1）、貯金の得が大きくなり、家計が消費を減らして貯蓄を増やすこともある。</li>
+</ul>
+<p>ただし、家計が本当に将来の増税まで見越して行動するかには議論があります。手元のお金が少なく借りることもできない家計や、将来の税を払うのが自分ではないと考える家計は、減税されると消費を増やすかもしれません。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「公的貯蓄と民間貯蓄は別の主体が決めるので、関係はない」と答えてしまうこと。家計は政府の借金がいずれ自分たちの税で返されることを考えて行動できる、という点がポイントです。</div>
+<div class="point ketsu"><p>ある。家計が将来の増税を予想すると、減税で財政赤字が増えても民間貯蓄が同じだけ増え、国民貯蓄は変わらない（リカードの等価定理）。ただし成り立つかどうかには議論がある。</p></div>
+<div class="answer">
+<p>政府が減税によって財政赤字を拡大させた場合、その債務は将来の増税によって返済されなければならない。家計がこの将来の増税を予想して行動するならば、減税で増えた可処分所得を消費に回さず貯蓄するため、公的貯蓄の減少と同額だけ民間貯蓄が増加する。その結果、国民貯蓄は変化しない。これをリカードの等価定理という。</p>
+<p>このほか、政府支出の恒常的な増加が将来の増税を予想させて恒常所得を減らし消費を減らす経路や、財政赤字による利子率の上昇が民間貯蓄を増やす経路も考えられる。ただし、流動性制約に直面する家計や将来の税負担を考慮しない家計が多ければ、こうした連動は弱くなる。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s21" data-t="問3 なぜ貯蓄と投資は一致するか">
+<h2><span class="sn">21</span>問3：なぜ一国全体では貯蓄と投資が一致するのか</h2>
+<div class="kq"><span class="lab">問題</span><p>貯蓄主体と投資主体は異なるのに、なぜ一国全体では、貯蓄と投資が一致するのだろうか（閉鎖経済の場合）。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>貯蓄 S ≡ Y − C の定義と、財市場の均衡 Y = C + I を組み合わせてみましょう。そのうえで、もし貯蓄したい額と投資したい額がずれていたら、何が動いて一致するのかを考えます。テキストは「古典派モデルとケインジアン・モデルで、S = I を実現するメカニズムは異なる」と述べています。</div>
+<p class="xref">復習：<a href="#s2" data-goto="s2">パート1「貯蓄と投資のある経済」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>式の上では、財市場の均衡と同じこと</h3>
+<p>貯蓄の定義 S ≡ Y − C を、財市場の均衡 Y = C + I に入れると S = I になります。つまり<span class="mk">財市場で作った量と使う量が一致していれば、貯蓄と投資は必ず一致</span>します。逆に言えば、問題は「財市場の均衡（＝貯蓄と投資の一致）を実現するのは何か」です。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>古典派の答え：利子率が動く</h3>
+<p>家計がもっと貯蓄したくなり、貯蓄したい額が投資したい額を上回ったとします。お金を貸したい人が多いので、貸付資金市場で<b>利子率が下がり</b>ます。利子率が下がると投資が増え、貯蓄は減るので、両者は一致します。利子率が、お金の需要と供給をそろえる「価格」として働きます（第4章）。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>ケインズ派の答え：生産量（所得）が動く</h3>
+<p>価格や利子率がすぐには動かない世界では、家計が貯蓄を増やして消費を減らすと、モノが売れ残り、企業は<b>生産を減らします</b>。生産が減ると所得が減り、所得が減ると貯蓄も減ります。貯蓄が投資と同じ水準まで下がったところで、財市場は均衡します（第7章）。</p>
+<div class="num"><span class="h">ケインズ派の数値例（架空の値。消費 C = 50 + 0.8Y、投資 I = 50 で一定）</span>
+<table class="calc-t">
+<tr><td>均衡：Y = 50 + 0.8Y + 50 より</td><td class="r">Y ＝ 500</td></tr>
+<tr><td>貯蓄 S ＝ Y − C ＝ 500 − 450</td><td class="r">50（＝ I）</td></tr>
+<tr><td>家計が節約し C = 30 + 0.8Y になると、Y = 30 + 0.8Y + 50 より</td><td class="r">Y ＝ 400</td></tr>
+<tr><td>貯蓄 S ＝ 400 − 350</td><td class="r">50（＝ I のまま）</td></tr>
+</table>
+<p style="margin:.4em 0 0;font-size:.92rem">みんなが貯蓄を増やそうとしても、所得が減って、貯蓄の合計は投資と同じ50のまま変わらない（<b>節約のパラドックス</b>）。</p></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「統計上、S = I は必ず成り立つ恒等式だから」とだけ答えること。国民経済計算では売れ残りを「在庫投資」として数えるので、帳簿の上では一致しますが、それは財市場の均衡とは別の話です（テキスト p.30 の注2）。問われているのは、計画した貯蓄と計画した投資を一致させる仕組みです。</div>
+<div class="point ketsu"><p>財市場の均衡は S = I と同値なので、財市場を均衡させる仕組みが貯蓄と投資を一致させる。古典派では利子率の調整、ケインズ派では生産量（所得）の調整による。</p></div>
+<div class="answer">
+<p>貯蓄の定義 S ≡ Y − C を財市場の均衡条件 Y = C + I に代入すると S = I が得られる。したがって、財市場の均衡と貸付資金市場の均衡は同値であり、一国全体で貯蓄と投資が一致するのは、財市場を均衡させるメカニズムが働くからである。</p>
+<p>古典派モデルでは、価格が伸縮的であり、貸付資金市場で利子率が調整されることで、家計の計画貯蓄と企業の計画投資が一致する。ケインジアン・モデルでは価格が硬直的であり、生産量（所得）が調整されることで、貯蓄が投資の水準に一致する。なお、国民経済計算上で S と I が一致するのは、売れ残りを在庫投資に含めるという定義によるものであり、財市場の均衡とは区別して考える必要がある。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s22" data-t="問4 貿易黒字を減らす政策">
+<h2><span class="sn">22</span>問4：減税や政府支出の拡大は、なぜ貿易黒字を減らすのか</h2>
+<div class="kq"><span class="lab">問題</span><p>貿易黒字を減らすために、国内の消費を拡大させる政策（減税）や政府支出を拡大させる政策が必要だと主張される場合がある。なぜ、こうした政策が貿易黒字を減らすのだろうか（テキスト p.35）。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>S = I + NX を移項すると NX = S − I です。減税や政府支出の拡大は、民間貯蓄 S<sub>P</sub> と公的貯蓄 S<sub>G</sub> をそれぞれどう変えるでしょうか。</div>
+<p class="xref">復習：<a href="#s4" data-goto="s4">パート1「外国のある経済」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>純輸出は「貯蓄 − 投資」</h3>
+<div class="eq"><span class="f">NX = S − I = (S<sub>P</sub> + S<sub>G</sub>) − I</span></div>
+<p class="eq-read">国内で使い残したお金（貯蓄のうち投資に回らない分）が、外国への貸し付け＝純輸出になる</p>
+<p>出発点は、Y = 500、T = 100、G = 100、C = 330、I = 50 とします（架空の値）。S<sub>P</sub> = 500 − 100 − 330 = 70、S<sub>G</sub> = 0、S = 70、<span class="plus">NX = 70 − 50 = 20（黒字）</span>です。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>それぞれの政策で何が変わるか</h3>
+<div class="tw"><table>
+<thead><tr><th>政策（20だけ）</th><th>民間貯蓄 S<sub>P</sub></th><th>公的貯蓄 S<sub>G</sub></th><th>国民貯蓄 S</th><th>NX（I = 50 のまま）</th></tr></thead>
+<tbody>
+<tr><td>出発点</td><td class="r">70</td><td class="r">0</td><td class="r">70</td><td class="r plus">＋20</td></tr>
+<tr><td>政府支出を増やす（G：100 → 120）</td><td class="r">70</td><td class="r minus">−20</td><td class="r">50</td><td class="r">0</td></tr>
+<tr><td>減税（T：100 → 80）、家計が手取りの増加分を全部消費する（C：330 → 350）</td><td class="r">70</td><td class="r minus">−20</td><td class="r">50</td><td class="r">0</td></tr>
+</tbody></table></div>
+<p>どちらの政策も<span class="mk">国民貯蓄を減らす</span>ので、投資が変わらなければ純輸出が減ります。国内でたくさん使うようになり、輸出に回していた分を国内で使う（または輸入が増える）と考えることもできます。</p>
+<div class="bars">
+  <div class="brow"><span class="lab">政策の前</span><div class="track"><div class="seg i" style="left:0;width:71.4%">投資 I　50</div><div class="seg nx" style="left:71.4%;width:28.6%">NX　20</div></div></div>
+  <div class="brow"><span class="lab">政策の後</span><div class="track"><div class="seg i" style="left:0;width:71.4%">投資 I　50</div><span class="seg-lab" style="left:calc(71.4% + 8px)">NX 0（貯蓄 50 は全部国内投資へ）</span></div></div>
+  <p class="cap">国民貯蓄 S の行き先（単位：兆円、架空の値）。</p>
+</div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>注意点：減税が効かない場合</h3>
+<p>問2のリカードの等価定理が成り立つと、家計は減税分を貯蓄に回すので、民間貯蓄が20増え、国民貯蓄も純輸出も変わりません。<b>減税が貿易黒字を減らすのは、家計が減税分を消費に回す場合</b>です。また、投資は小国の世界利子率で決まり、変わらないと考えています（第5章）。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「消費が増えると輸入が増えるから」とだけ答えること。それも一面ですが、この問題では S = I + NX を使い、「国民貯蓄が減るから純輸出が減る」と説明することが求められています。</div>
+<div class="point ketsu"><p>NX = S − I。減税（消費を増やす場合）や政府支出の拡大は国民貯蓄を減らすので、投資が変わらなければ純輸出（貿易黒字）が減る。</p></div>
+<div class="answer">
+<p>開放経済では S = I + NX が成り立ち、NX = S − I = S<sub>P</sub> + S<sub>G</sub> − I と書ける。政府支出の拡大は公的貯蓄 S<sub>G</sub> = T − G を減少させる。減税も公的貯蓄を減らし、家計が増えた可処分所得を消費に回すならば民間貯蓄は変化しないので、いずれの政策も国民貯蓄 S を減少させる。</p>
+<p>国内投資 I が変わらなければ、国民貯蓄の減少分だけ純輸出が減少し、貿易黒字が縮小する。ただし、家計が将来の増税を予想して減税分を貯蓄する場合（リカードの等価定理）には、減税は国民貯蓄を変えず、貿易黒字も減らない。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s23" data-t="問5 政府サービスの評価のずれ">
+<h2><span class="sn">23</span>問5：政府サービスを費用で評価すると、GDP はどうずれるか</h2>
+<div class="kq"><span class="lab">問題</span><p>政府サービスを供給費用で推計すると、限界便益でウェイト付けした正しい GDP と比べて、過大推計か過小推計か。(1) 安い費用で同じ量を供給できるようになった。(2) 必要性のないサービスのために新たに人を雇った。(3) 限界費用 c が一定のとき、供給が (a) 過大、(b) 過小、(c) 効率的な場合（テキスト p.40）。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>正しい評価は「限界便益 × 数量」、統計での評価は「費用 × 数量」です。2つの「単価」である限界便益と費用（限界費用）のどちらが大きいかを比べましょう。限界便益は、量が増えるほど小さくなります。</div>
+<p class="xref">復習：<a href="#s6" data-goto="s6">パート2「グロスとネット、市場で取引されないもの」</a>、第1章「曲線の高さを読む」</p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>2つの評価方法を並べる</h3>
+<div class="tw"><table>
+<thead><tr><th></th><th>単価</th><th>評価額</th></tr></thead>
+<tbody>
+<tr><td>正しい評価（ふつうの財と同じ）</td><td>限界便益 MB（q 単位目の便益）</td><td>MB × q</td></tr>
+<tr><td>統計での評価</td><td>費用 c</td><td>c × q</td></tr>
+</tbody></table></div>
+<p>つまり、<span class="mk">c &gt; MB なら過大推計、c &lt; MB なら過小推計</span>です。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>(1) と (2)</h3>
+<ul class="dots">
+  <li><b>(1) 安い費用で同じ量</b>：国民が受けるサービスは同じなので、正しい GDP は変わりません。しかし統計上は c × q が小さくなり、GDP が減ります。費用の削減（生産性の向上）が、<span class="minus">GDP を減らして見せる＝過小推計</span>になります。</li>
+  <li><b>(2) 必要のないサービスのために人を雇う</b>：そのサービスの限界便益はゼロなので、正しい GDP は増えません。しかし統計上は人件費の分だけ GDP が増えます。<span class="minus">過大推計</span>です。</li>
+</ul>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>(3) 供給量と効率的な水準を比べる</h3>
+<p>限界便益が MB = 10 − q、限界費用が c = 4（一定）の例で考えます（架空の値）。効率的な量は MB = c となる q* = 6 です。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="供給量の切り替え"><button type="button" data-g="q5" data-s="0" aria-pressed="false">(a) 過大 q = 8</button><button type="button" data-g="q5" data-s="1" aria-pressed="false">(b) 過小 q = 4</button><button type="button" data-g="q5" data-s="2" aria-pressed="true">(c) 効率的 q = 6</button></div>
+  <svg id="gQ5" viewBox="0 0 520 340" role="img" aria-label="限界便益と限界費用、正しい評価と統計の評価を比べるグラフ"></svg>
+  <p class="gcap" id="gQ5-cap"></p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>ケース</th><th>q</th><th>MB(q)</th><th>正しい評価 MB × q</th><th>統計の評価 c × q</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td>(a) 過大</td><td class="r">8</td><td class="r">2</td><td class="r">16</td><td class="r">32</td><td class="minus">過大推計</td></tr>
+<tr><td>(b) 過小</td><td class="r">4</td><td class="r">6</td><td class="r">24</td><td class="r">16</td><td class="minus">過小推計</td></tr>
+<tr><td>(c) 効率的</td><td class="r">6</td><td class="r">4</td><td class="r">24</td><td class="r">24</td><td>ずれなし</td></tr>
+</tbody></table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「正しい評価」を需要曲線の下の面積（総便益）としてしまうこと。問題文は「限界便益でウェイト付けした合計」、つまりふつうの財の GDP と同じく「価格（＝限界便益）× 数量」で評価すると言っています。</div>
+<div class="point ketsu"><p>(1) 過小推計　(2) 過大推計　(3) 供給が過大なら MB &lt; c で過大推計、過小なら MB &gt; c で過小推計、効率的なら MB = c でずれはない。</p></div>
+<div class="answer">
+<p>正しい評価は限界便益と数量の積 MB(q)·q、国民経済計算上の評価は費用と数量の積である。(1) 供給量が不変なら限界便益で評価した価値は変わらないが、費用が下がると評価額は減少するので、GDP は過小推計となる。(2) 国民が必要と感じないサービスの限界便益はゼロであるが、人件費の分だけ評価額が増えるので、GDP は過大推計となる。</p>
+<p>(3) 限界便益は逓減し、限界費用は c で一定であるから、効率的な供給量 q* では MB(q*) = c である。供給が過大（q &gt; q*）なら MB(q) &lt; c なので cq &gt; MB(q)·q となり過大推計、供給が過小（q &lt; q*）なら MB(q) &gt; c なので過小推計となる。効率的な場合は MB(q*) = c なので、費用による評価は正しい値と一致する。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s24" data-t="課題のまとめ">
+<h2><span class="sn">24</span>課題のまとめ</h2>
+<p class="locked">まとめは、解説の公開後に表示されます。</p>
+<div class="sol open-when-on">
+<div class="tw"><table>
+<thead><tr><th>問題</th><th>答え</th><th>使った関係</th></tr></thead>
+<tbody>
+<tr><td>問1 財政赤字と投資</td><td>国民貯蓄の減少分だけ投資が減る（利子率が上がり、クラウディング・アウト）</td><td>S = S<sub>P</sub> + S<sub>G</sub> = I</td></tr>
+<tr><td>問2 貯蓄の連動</td><td>ある。将来の増税を予想すると民間貯蓄が増え、国民貯蓄は変わらない（リカードの等価定理）</td><td>S<sub>P</sub> の増加 ＝ S<sub>G</sub> の減少</td></tr>
+<tr><td>問3 S = I の理由</td><td>財市場の均衡と同値。古典派は利子率、ケインズ派は生産量の調整で一致する</td><td>S ≡ Y − C、Y = C + I</td></tr>
+<tr><td>問4 貿易黒字</td><td>国民貯蓄が減るので純輸出が減る（減税は消費に回る場合）</td><td>NX = S − I</td></tr>
+<tr><td>問5 政府サービス</td><td>(1) 過小 (2) 過大 (3) 過大供給→過大、過小供給→過小、効率的→ずれなし</td><td>MB × q と c × q の比較</td></tr>
+</tbody></table></div>
+<h3>解くときの3つの問い</h3>
+<ol class="steps">
+  <li><b>どの式が使えるか？</b>　S = I、S = I + NX、S = S<sub>P</sub> + S<sub>G</sub> のどれを使うかを決める。</li>
+  <li><b>何が変わり、何が変わらないか？</b>　問題文の仮定（「無関係に決まる」「民間は影響を受けない」）を表にして確かめる。</li>
+  <li><b>家計はどう反応するか？</b>　将来の増税を予想するかどうかで、答えが変わることがある。</li>
+</ol>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch2.docx" download="第2章課題_解答例.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+</div>
+</section>
+<p class="src">課題：講義スライド第2章「問題 p.32」、テキスト p.35・p.40 の問題。数値例は説明のための架空の値です。</p>
+</div>
+
+<div class="pager" id="pager"></div>
+</main>
+
+<script>
+/* 解説と答案例を最初から表示するときは true に変える */
+const ANSWERS_DEFAULT_ON=false;
+/* 第2章：グラフとシミュレーター */
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const K={ink:"#22252b",sub:"#5e6470",grid:"#e3e7ed",blue:"#1f4e9c",teal:"#0b6b5d",red:"#c8361f",base:"#a9b0bb"};
+  const $=id=>document.getElementById(id);
+  const f1=v=>(Math.round(v*10)/10).toString();
+  const f2=v=>(Math.round(v*100)/100).toFixed(2);
+  const f3=v=>(Math.round(v*1000)/1000).toFixed(3);
+  const comma=v=>Math.round(v).toLocaleString("ja-JP");
+
+  function plot(id,o){
+    const svg=$(id);while(svg.firstChild)svg.removeChild(svg.firstChild);
+    const vb=svg.viewBox.baseVal,W=vb.width,H=vb.height;
+    const L=o.left||56,R=W-(o.right||24),T=o.top||24,B=H-(o.bottom||40);
+    const X=v=>L+(v-o.xmin)/(o.xmax-o.xmin)*(R-L), Y=v=>B-(v-o.ymin)/(o.ymax-o.ymin)*(B-T);
+    const el=(t,a,txt,fill)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;if(fill)e.style.fill=fill;svg.appendChild(e);return e;};
+    (o.xt||[]).forEach(v=>{el("line",{x1:X(v),x2:X(v),y1:T,y2:B,stroke:K.grid});el("text",{x:X(v),y:B+16,"text-anchor":"middle","font-size":11},String(v),K.sub);});
+    (o.yt||[]).forEach(v=>{el("line",{x1:L,x2:R,y1:Y(v),y2:Y(v),stroke:K.grid});el("text",{x:L-8,y:Y(v)+4,"text-anchor":"end","font-size":11},String(v)+(o.yu||""),K.sub);});
+    el("line",{x1:L,y1:B,x2:R,y2:B,stroke:K.ink,"stroke-width":1.5});
+    el("line",{x1:L,y1:B,x2:L,y2:T-6,stroke:K.ink,"stroke-width":1.5});
+    el("text",{x:L-8,y:T-10,"text-anchor":"end","font-size":14,class:o.ylabM===false?"":"m"},o.ylab||"y");
+    el("text",{x:R,y:B+32,"text-anchor":"end","font-size":13,class:o.xlabM===false?"":"m"},o.xlab||"x");
+    return {X,Y,el,L,R,T,B,
+      line:(x1,y1,x2,y2,c,w,d)=>el("line",{x1:X(x1),y1:Y(y1),x2:X(x2),y2:Y(y2),stroke:c||K.ink,"stroke-width":w||2.5,"stroke-dasharray":d||""}),
+      path:(pts,c,w,d)=>el("polyline",{points:pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" "),fill:"none",stroke:c||K.ink,"stroke-width":w||2.5,"stroke-dasharray":d||""}),
+      area:(pts,f,s)=>el("polygon",{points:pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" "),fill:f,stroke:s||"none","stroke-width":1.5}),
+      dot:(x,y,c,r)=>el("circle",{cx:X(x),cy:Y(y),r:r||4.5,fill:c||K.ink}),
+      txt:(x,y,s,a)=>{a=a||{};return el("text",{x:X(x)+(a.dx||0),y:Y(y)+(a.dy||0),"text-anchor":a.anchor||"start","font-size":a.size||13,"font-weight":a.bold?700:400,class:a.m?"m":""},s,a.color);}
+    };
+  }
+  const state={},R={};
+  const caption=(id,t)=>{const e=$(id+"-cap");if(e)e.innerHTML=t;};
+  document.querySelectorAll(".gsw button").forEach(b=>b.addEventListener("click",()=>{const g=b.dataset.g;state[g]=+b.dataset.s;document.querySelectorAll('.gsw button[data-g="'+g+'"]').forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));if(R[g])R[g]();}));
+  document.querySelectorAll(".gsw").forEach(box=>{const on=box.querySelector('[aria-pressed="true"]');if(on)state[on.dataset.g]=+on.dataset.s;});
+
+  /* 経済循環図（4段階） */
+  R.cyc=function(){
+    const s=state.cyc||0, svg=$("gCyc");while(svg.firstChild)svg.removeChild(svg.firstChild);
+    const el=(t,a,txt,fill)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;if(fill)e.style.fill=fill;svg.appendChild(e);return e;};
+    const defs=el("defs",{});defs.innerHTML='<marker id="cA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#22252b"/></marker><marker id="cB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c8361f"/></marker><marker id="cN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f4e9c"/></marker>';
+    const box=(x,y,w,h,t,sub,hl)=>{el("rect",{x,y,width:w,height:h,fill:hl?"#eef2fa":"#fff",stroke:hl?K.blue:K.ink,"stroke-width":2});el("text",{x:x+w/2,y:y+h/2+(sub?-2:5),"text-anchor":"middle","font-size":15,"font-weight":700},t);if(sub)el("text",{x:x+w/2,y:y+h/2+16,"text-anchor":"middle","font-size":11},sub,K.sub);};
+    const oval=(cx,cy,rx,ry,t,hl)=>{el("ellipse",{cx,cy,rx,ry,fill:hl?"#eef2fa":"#fff",stroke:hl?K.blue:K.ink,"stroke-width":2});el("text",{x:cx,y:cy+5,"text-anchor":"middle","font-size":14,"font-weight":700},t);};
+    const arr=(d,c,dash,mk)=>el("path",{d,fill:"none",stroke:c,"stroke-width":2,"stroke-dasharray":dash?"6 5":"","marker-end":"url(#"+mk+")"});
+    const lab=(x,y,t,c,anchor)=>el("text",{x,y,"font-size":12,"text-anchor":anchor||"start"},t,c);
+    // 基本の2主体・2市場
+    box(30,190,120,60,"家計");
+    box(530,190,120,60,"企業","Y = F(K, L)");
+    oval(340,62,95,30,"生産要素市場");
+    oval(340,360,80,30,"財市場");
+    arr("M100,190 C100,115 170,72 240,64",K.ink,false,"cA");lab(40,118,"労働 L・資本 K",K.ink);
+    arr("M436,64 C510,72 580,115 580,190",K.ink,false,"cA");
+    arr("M612,190 C612,95 510,32 430,46",K.red,true,"cB");lab(450,24,"賃金・利子・配当 wL + rK",K.red);
+    arr("M250,50 C170,40 64,105 64,190",K.red,true,"cB");
+    arr("M580,250 C580,320 500,358 424,362",K.ink,false,"cA");lab(560,320,"財・サービス Y",K.ink);
+    arr("M258,366 C170,362 100,320 100,250",K.ink,false,"cA");lab(110,296,"消費 C",K.ink);
+    arr("M64,250 C64,350 170,400 266,386",K.red,true,"cB");
+    arr("M414,386 C520,400 612,340 612,250",K.red,true,"cB");
+    let cap="① 家計と企業、財市場と生産要素市場だけの経済。生産＝分配（Y = wL + rK）、生産＝支出（Y = C）。";
+    if(s>=1){
+      oval(340,220,82,28,"貸付資金市場",s===1);
+      arr("M150,217 L256,219",K.blue,true,"cN");lab(166,208,"貯蓄 S",K.blue);
+      arr("M423,219 L528,217",K.blue,true,"cN");lab(446,208,"借入れ",K.blue);
+      arr("M410,346 C470,330 520,295 546,252",K.blue,false,"cN");lab(452,300,"投資 I",K.blue);
+      cap="② 家計は所得の一部を貯蓄し、貸付資金市場を通じて企業に貸す。企業はそのお金で、財市場で投資財を買う。Y = C + I、資金の需給 S = I。";
+    }
+    if(s>=2){
+      box(180,276,96,34,"政府","",s===2);
+      arr("M140,250 C150,270 162,286 178,290",K.red,true,"cB");lab(190,268,"税 T",K.red);
+      arr("M240,310 C250,330 262,340 276,345",K.blue,false,"cN");lab(184,330,"政府支出 G",K.blue);
+      cap="③ 政府が家計から税 T を集め、財市場で G を支出する。Y = C + I + G。国民貯蓄 S = (Y−T−C) + (T−G) = I。";
+    }
+    if(s>=3){
+      box(290,420,100,32,"外国","",true);
+      arr("M322,390 L322,418",K.teal,false,"cA");lab(316,410,"輸出 EX",K.teal,"end");
+      arr("M358,418 L358,392",K.teal,false,"cA");lab(364,410,"輸入 IM",K.teal);
+      cap="④ 自国財が外国に売られ（輸出）、外国財が国内に入ってくる（輸入）。Y = C + I + G + NX、S = I + CA。";
+    }
+    el("line",{x1:150,y1:482,x2:180,y2:482,stroke:K.ink,"stroke-width":2});lab(186,486,"モノ・サービス",K.ink);
+    el("line",{x1:300,y1:482,x2:330,y2:482,stroke:K.red,"stroke-width":2,"stroke-dasharray":"6 5"});lab(336,486,"お金",K.red);
+    if(s>=1){el("line",{x1:400,y1:482,x2:430,y2:482,stroke:K.blue,"stroke-width":2});lab(436,486,"その段階で加わった流れ",K.blue);}
+    caption("gCyc",cap);
+  };
+
+  /* 年代別の実質成長率（スライドの年代平均） */
+  R.grow=function(){
+    const g=plot("gGrow",{xmin:0,xmax:4,ymin:0,ymax:12,yt:[2,4,6,8,10,12],yu:"%",xlab:"",ylab:"%",ylabM:false,left:48,bottom:36});
+    const d=[["1960年代",10.4],["1970年代",5.0],["1980年代",3.8],["2000年代",0.5]];
+    d.forEach(([n,v],i)=>{const x0=i+0.22,x1=i+0.78;g.area([[x0,0],[x1,0],[x1,v],[x0,v]],"rgba(31,78,156,.30)",K.blue);g.txt(i+0.5,v,v.toFixed(1)+"%",{anchor:"middle",dy:-6,bold:true,color:K.blue});g.txt(i+0.5,0,n,{anchor:"middle",dy:18,size:12});});
+  };
+
+  /* 名目・実質 GDP と物価指数 */
+  R.gdp=function(){
+    const p1=+$("g_p1").value,q1=+$("g_q1").value,p2=+$("g_p2").value,q2=+$("g_q2").value;
+    $("v_p1").textContent=p1;$("v_q1").textContent=q1;$("v_p2").textContent=p2;$("v_q2").textContent=q2;
+    $("t_p1").textContent=p1;$("t_q1").textContent=q1;$("t_p2").textContent=p2;$("t_q2").textContent=q2;
+    const b={p1:100,q1:10,p2:500,q2:2};
+    const Y0=b.p1*b.q1+b.p2*b.q2, N1=p1*q1+p2*q2, R1=b.p1*q1+b.p2*q2, Las=(p1*b.q1+p2*b.q2)/Y0, Pas=N1/R1;
+    const pct=v=>(v>=0?"+":"")+f1(v*100)+"%";
+    $("gdpOut").innerHTML=
+      "<tr><td>基準年の GDP（名目＝実質）100×10 + 500×2</td><td class='r'>"+comma(Y0)+"</td></tr>"+
+      "<tr><td>今年の名目 GDP "+p1+"×"+q1+" + "+p2+"×"+q2+"</td><td class='r'>"+comma(N1)+"</td></tr>"+
+      "<tr><td>今年の実質 GDP 100×"+q1+" + 500×"+q2+"</td><td class='r'>"+comma(R1)+"</td></tr>"+
+      "<tr><td>名目成長率</td><td class='r'>"+pct(N1/Y0-1)+"</td></tr>"+
+      "<tr><td>実質成長率</td><td class='r'>"+pct(R1/Y0-1)+"</td></tr>"+
+      "<tr><td>GDP デフレータ（＝パーシェ）"+comma(N1)+" ÷ "+comma(R1)+"</td><td class='r'>"+f3(Pas)+"</td></tr>"+
+      "<tr><td>ラスパイレス指数 ("+p1+"×10 + "+p2+"×2) ÷ "+comma(Y0)+"</td><td class='r'>"+f3(Las)+"</td></tr>";
+  };
+  ["g_p1","g_q1","g_p2","g_q2"].forEach(i=>$(i).addEventListener("input",R.gdp));
+
+  /* フィッシャー */
+  R.fisher=function(){
+    const i=+$("fi").value/100,p=+$("fp").value/100;$("vfi").textContent=f1(i*100)+"%";$("vfp").textContent=f1(p*100)+"%";
+    const r1=(1+i)/(1+p)-1,r2=i-p;
+    $("fr1").textContent=f2(r1*100)+"%";$("fr2").textContent=f2(r2*100)+"%";$("fr3").textContent=f2((r1-r2)*100);
+  };
+  ["fi","fp"].forEach(i=>$(i).addEventListener("input",R.fisher));
+
+  /* 失業率の帯 */
+  const U={a:{emp:57,un:3,nl:40,cap:"15歳以上100人のうち、就業者57人、完全失業者3人、非労働力人口40人。完全失業率 ＝ 3 ÷ (57 + 3) ＝ <b>5.0%</b>。"},
+           b:{emp:57,un:2,nl:41,cap:"失業者のうち1人が職探しをあきらめると、非労働力人口に移る。完全失業率 ＝ 2 ÷ (57 + 2) ≒ <b>3.4%</b>。働く人は増えていないのに、失業率は下がる。"}};
+  const barU=$("barU");
+  function drawU(k){
+    const d=U[k],tot=d.emp+d.un+d.nl,pc=v=>(v/tot*100)+"%";
+    barU.querySelector('[data-row="pop"]').innerHTML='<div class="seg c" style="left:0;width:'+pc(d.emp)+'">就業者 '+d.emp+'</div><div class="seg gap-m" style="left:'+pc(d.emp)+';width:'+pc(d.un)+'">'+d.un+'</div><div class="seg i" style="left:'+pc(d.emp+d.un)+';width:'+pc(d.nl)+'">非労働力人口 '+d.nl+'</div>';
+    $("barUcap").innerHTML="単位：人（架空の値）。赤い斜線が完全失業者。就業者と完全失業者を合わせたものが労働力人口。"+d.cap;
+    barU.querySelectorAll(".sw button").forEach(b=>b.setAttribute("aria-selected",b.dataset.k===k?"true":"false"));
+  }
+  barU.querySelectorAll(".sw button").forEach(b=>b.addEventListener("click",()=>drawU(b.dataset.k)));
+
+  /* フィリップス曲線（模式図） */
+  R.pc=function(){
+    const s=state.pc||0;
+    const g=plot("gPc",{xmin:0,xmax:8,ymin:-1,ymax:9,xt:[2,4,6,8],yt:[0,2,4,6,8],yu:"%",xlab:"失業率（%）",ylab:"インフレ率",xlabM:false,ylabM:false,left:74});
+    g.line(0,0,8,0,K.sub,1);
+    const f=(u,sh)=>12/u-2+sh;const pts=sh=>{const a=[];for(let k=0;k<=60;k++){const u=1.3+k/60*6.5;a.push([u,Math.min(9,f(u,sh))]);}return a;};
+    if(s){g.path(pts(0),K.base,2,"5 5");g.path(pts(3),K.blue,3);g.txt(2.3,f(2.3,3),"予想インフレ率が高いとき",{dx:12,dy:4,color:K.blue,bold:true,size:12});g.txt(7.6,f(7.6,0),"元の曲線",{anchor:"end",dy:16,color:K.sub,size:12});
+      g.dot(4,f(4,0),K.sub);g.dot(4,f(4,3),K.blue);g.line(4,f(4,0)+0.3,4,f(4,3)-0.3,K.red,2);g.txt(4,f(4,1.5),"同じ失業率でもインフレ率が高い",{anchor:"end",dx:-8,color:K.red,size:12});
+      caption("gPc","模式図。人々が予想するインフレ率が上がると、曲線は上へ動く。1970年代には、こうして安定した関係が見られなくなった。");}
+    else{g.path(pts(0),K.blue,3);g.dot(2,f(2,0),K.red);g.dot(6,f(6,0),K.teal);g.txt(2,f(2,0),"失業率が低い → インフレ率が高い",{dx:10,color:K.red,size:12,bold:true});g.txt(6,f(6,0),"失業率が高い → インフレ率が低い",{anchor:"end",dx:-4,dy:-12,color:K.teal,size:12,bold:true});
+      caption("gPc","模式図（実際のデータではない）。失業率とインフレ率の負の関係。日本のデータ（テキスト図2.10）でも同じ形が見られる。");}
+  };
+
+  /* 問1：貸付資金市場 */
+  R.q1=function(){
+    const s=state.q1||0;
+    const g=plot("gQ1",{xmin:0,xmax:80,ymin:0,ymax:14,xt:[20,30,40,50,60,70],yt:[2,4,6,8,10,12],yu:"%",xlab:"お金の量（S, I）",ylab:"r",xlabM:false});
+    const I=r=>70-5*r;
+    g.line(I(0),0,I(13),13,K.ink,3);g.txt(I(13),13,"投資 I = 70 − 5r",{dx:6,dy:4,size:12});
+    if(s){g.line(50,0,50,13.5,K.base,2,"5 5");g.txt(50,13.5,"S（前）",{anchor:"middle",dy:-4,color:K.sub,size:12});
+      g.line(30,0,30,13.5,K.blue,3);g.txt(30,13.5,"S'",{anchor:"middle",dy:-4,color:K.blue,bold:true,m:true});
+      const y=11.5;g.line(50,y,32,y,K.red,2);g.el("polygon",{points:(g.X(30))+","+g.Y(y)+" "+(g.X(30)+9)+","+(g.Y(y)-5)+" "+(g.X(30)+9)+","+(g.Y(y)+5),fill:K.red});g.txt(40,y,"財政赤字 −20",{anchor:"middle",dy:-8,color:K.red,bold:true,size:12});
+      g.line(0,4,50,4,K.base,1.2,"3 4");g.line(0,8,30,8,K.sub,1.2,"4 4");g.dot(50,4,K.base);g.dot(30,8,K.blue);
+      
+      g.txt(30,8,"r が上がり、投資は 50 → 30",{dx:10,dy:-8,color:K.blue,bold:true,size:12});
+      caption("gQ1","財政赤字で国民貯蓄が50から30に減り、S の線が左へ20動く。貸付資金市場で利子率が4%から8%に上がり、投資は30に減る。");}
+    else{g.line(50,0,50,13.5,K.blue,3);g.txt(50,13.5,"国民貯蓄 S",{anchor:"middle",dy:-4,color:K.blue,bold:true,size:12});g.line(0,4,50,4,K.sub,1.2,"4 4");g.dot(50,4,K.ink);g.txt(50,4,"S = I = 50",{dx:10,dy:-8,bold:true,size:12});
+      caption("gQ1","変化前：国民貯蓄50。利子率4%で投資も50になり、S = I が成り立つ（貯蓄は利子率によらないとして垂直に描いている）。");}
+  };
+
+  /* 問5：政府サービスの評価 */
+  R.q5=function(){
+    const s=state.q5===undefined?2:state.q5,q=[8,4,6][s],mb=10-q,c=4;
+    const g=plot("gQ5",{xmin:0,xmax:11,ymin:0,ymax:11,xt:[2,4,6,8,10],yt:[2,4,6,8,10],xlab:"q（サービスの量）",ylab:"円",xlabM:false,ylabM:false});
+    g.area([[0,0],[q,0],[q,c],[0,c]],"rgba(200,54,31,.16)");
+    g.area([[0,0],[q,0],[q,mb],[0,mb]],"none",K.blue);
+    if(mb>0)g.area([[0,0],[q,0],[q,mb],[0,mb]],"rgba(31,78,156,.14)");
+    g.line(0,10,10,0,K.ink,3);g.txt(1.2,8.8,"限界便益 MB = 10 − q",{dx:6,size:12,bold:true});
+    g.line(0,c,10.5,c,K.red,2.5);g.txt(10.4,c,"費用 c = 4",{anchor:"end",dy:-6,color:K.red,bold:true,size:12});
+    g.line(q,0,q,Math.max(c,mb)+0.3,K.sub,1.2,"4 4");g.dot(q,mb,K.blue);g.txt(q,0,"q = "+q,{anchor:"middle",dy:-6,bold:true,size:12});
+    const judge=s===0?"過大推計":s===1?"過小推計":"ずれなし";
+    caption("gQ5","q = "+q+"：正しい評価 MB × q ＝ "+mb+" × "+q+" ＝ "+(mb*q)+"（青い長方形）、統計の評価 c × q ＝ 4 × "+q+" ＝ "+(c*q)+"（赤い長方形）。<b>"+judge+"</b>。");
+  };
+
+  R.cyc();R.grow();R.gdp();R.fisher();drawU("a");R.pc();R.q1();R.q5();
+})();
+
+/* lily 共通：タブ・目次・前後ナビ・確認問題・内部タブ・解説スイッチ・相互リンク
+   各章のHTMLは、.part（data-title, data-desc）と section（data-t, h2 .sn）を並べるだけでよい。
+   パートが表示されたときに "partshown" イベント（detail.id）を発行する。 */
+(function(){
+  const parts=[...document.querySelectorAll(".part")];
+  const tabs=document.getElementById("tabs");
+  const drawerList=document.getElementById("drawerList");
+  const body=document.body, menuBtn=document.getElementById("menuBtn"), drawer=document.getElementById("drawer");
+  let current=0;
+
+  parts.forEach((p,i)=>{
+    p.setAttribute("role","tabpanel");
+    const secs=[...p.querySelectorAll("section")];
+    const head=document.createElement("div");head.className="part-head";
+    head.innerHTML='<div class="ph-main"><div class="pn">Part '+(i+1)+' / '+parts.length+'</div><h1>'+p.dataset.title+'</h1><p>'+p.dataset.desc+'</p></div>';
+    const mini=document.createElement("div");mini.className="toc-mini";
+    secs.forEach(s=>{const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>s.scrollIntoView({behavior:"smooth",block:"start"}));mini.appendChild(b);});
+    head.querySelector(".ph-main").appendChild(mini);p.prepend(head);
+
+    const t=document.createElement("button");t.type="button";t.className="tab";t.setAttribute("role","tab");t.id="tab-"+p.id;t.setAttribute("aria-controls",p.id);
+    t.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;
+    t.addEventListener("click",()=>go(i,true));
+    t.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%parts.length;go(k,true);tabs.children[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+parts.length)%parts.length;go(k,true);tabs.children[k].focus();}});
+    tabs.appendChild(t);p.setAttribute("aria-labelledby",t.id);
+
+    const h=document.createElement("h4");const hb=document.createElement("button");hb.type="button";hb.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;hb.addEventListener("click",()=>{go(i,true);closeMenu();});h.appendChild(hb);drawerList.appendChild(h);
+    const ul=document.createElement("ul");
+    secs.forEach(s=>{const li=document.createElement("li");const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>{go(i,false);closeMenu();setTimeout(()=>s.scrollIntoView({block:"start"}),30);});li.appendChild(b);ul.appendChild(li);});
+    drawerList.appendChild(ul);
+  });
+
+  function go(i,top){
+    current=i;
+    parts.forEach((p,k)=>p.classList.toggle("on",k===i));
+    [...tabs.children].forEach((t,k)=>{t.setAttribute("aria-selected",k===i?"true":"false");t.tabIndex=k===i?0:-1;});
+    [...drawerList.querySelectorAll("h4")].forEach((h,k)=>h.classList.toggle("cur",k===i));
+    tabs.children[i].scrollIntoView({block:"nearest",inline:"nearest"});
+    const pg=document.getElementById("pager");pg.innerHTML="";
+    if(i>0){const b=document.createElement("button");b.type="button";b.innerHTML="<small>前のパート</small>← "+parts[i-1].dataset.title;b.addEventListener("click",()=>go(i-1,true));pg.appendChild(b);}
+    if(i<parts.length-1){const b=document.createElement("button");b.type="button";b.className="next";b.innerHTML="<small>次のパート</small>"+parts[i+1].dataset.title+" →";b.addEventListener("click",()=>go(i+1,true));pg.appendChild(b);}
+    try{if(location.hash!=="#"+parts[i].id)history.replaceState(null,"","#"+parts[i].id);}catch(e){}
+    if(top)window.scrollTo(0,0);
+    document.dispatchEvent(new CustomEvent("partshown",{detail:{id:parts[i].id}}));
+  }
+  function openMenu(){body.classList.add("menu-open");drawer.setAttribute("aria-hidden","false");menuBtn.setAttribute("aria-expanded","true");document.getElementById("closeBtn").focus();}
+  function closeMenu(){body.classList.remove("menu-open");drawer.setAttribute("aria-hidden","true");menuBtn.setAttribute("aria-expanded","false");}
+  menuBtn.addEventListener("click",openMenu);
+  document.getElementById("closeBtn").addEventListener("click",()=>{closeMenu();menuBtn.focus();});
+  document.getElementById("scrim").addEventListener("click",closeMenu);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&body.classList.contains("menu-open")){closeMenu();menuBtn.focus();}});
+  window.addEventListener("hashchange",()=>{const k=parts.findIndex(p=>"#"+p.id===location.hash);if(k>=0&&k!==current)go(k,true);});
+
+  /* 内部タブ（.itabs の button[aria-controls]） */
+  document.querySelectorAll(".itabs").forEach(box=>{
+    const bs=[...box.querySelectorAll("button")];
+    const sel=i=>bs.forEach((b,k)=>{b.setAttribute("aria-selected",k===i?"true":"false");b.tabIndex=k===i?0:-1;document.getElementById(b.getAttribute("aria-controls")).hidden=k!==i;});
+    bs.forEach((b,i)=>{b.addEventListener("click",()=>sel(i));b.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%bs.length;sel(k);bs[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+bs.length)%bs.length;sel(k);bs[k].focus();}});});
+    sel(0);
+  });
+
+  /* 確認問題・ヒント（.q の .show で .ans を開閉） */
+  document.querySelectorAll(".q").forEach(q=>{const b=q.querySelector(".show"),a=q.querySelector(".ans");if(!b||!a)return;const lab=b.textContent;b.setAttribute("aria-expanded","false");b.addEventListener("click",()=>{a.hidden=!a.hidden;b.textContent=a.hidden?lab:"閉じる";b.setAttribute("aria-expanded",a.hidden?"false":"true");});});
+
+  /* 解説と答案例の表示スイッチ */
+  const tg=document.getElementById("ansToggle"),note=document.getElementById("ansNote");
+  if(tg){
+    const setAns=on=>{document.body.classList.toggle("ans-off",!on);tg.checked=on;if(note)note.textContent=on?"オン：解説と答案例を表示しています。":"オフ：問題とヒントだけを表示しています。";};
+    tg.addEventListener("change",()=>setAns(tg.checked));
+    setAns(typeof ANSWERS_DEFAULT_ON!=="undefined"&&ANSWERS_DEFAULT_ON);
+  }
+
+  /* 解説の開閉 */
+  document.querySelectorAll(".solbtn").forEach(b=>b.addEventListener("click",()=>{const bd=b.nextElementSibling;bd.hidden=!bd.hidden;b.setAttribute("aria-expanded",bd.hidden?"false":"true");b.textContent=bd.hidden?"解説を読む（手順を追って説明）":"解説を閉じる";document.dispatchEvent(new CustomEvent("solopen"));}));
+
+  /* 相互リンク */
+  document.addEventListener("click",e=>{const a=e.target.closest("[data-goto]");if(!a)return;e.preventDefault();const t=document.getElementById(a.dataset.goto);if(!t)return;const k=parts.findIndex(p=>p.contains(t));if(k<0)return;go(k,false);setTimeout(()=>t.scrollIntoView({block:"start"}),30);});
+
+  const start=parts.findIndex(p=>"#"+p.id===location.hash);
+  go(start>=0?start:0,false);
+})();
+
+</script>
+</body>
+</html>
