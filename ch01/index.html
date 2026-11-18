@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第1章 経済学の基礎</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* 設計: 方眼紙に書いた講義プリント。黒インクの本文、青ペンの強調、朱ペンの書き込み、黄色の蛍光ペン。上部に固定ヘッダーとパートのタブ、左からメニューが出る */
+:root{
+  --paper:#fdfdfb;
+  --grid:#e9eef3;
+  --ink:#22252b;
+  --sub:#5e6470;
+  --line:#c9cfd8;
+  --blue:#1f4e9c;
+  --red:#c8361f;
+  --teal:#0b6b5d;
+  --marker:#fff1a6;
+  --note:#fffbe3;
+  --font-body:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --font-hand:"Klee One","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --font-math:"Times New Roman",Times,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.95;
+  -webkit-text-size-adjust:100%;
+}
+a{color:var(--blue)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ヘッダー */
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid var(--ink)}
+.bar-in{max-width:960px;margin:0 auto;padding:10px 16px 0;display:flex;align-items:center;gap:12px}
+.burger{width:42px;height:42px;border:1.5px solid var(--ink);background:var(--paper);border-radius:6px;display:grid;place-items:center;cursor:pointer;flex:none}
+.burger span{display:block;width:20px;height:2px;background:var(--ink);box-shadow:0 -6px 0 var(--ink),0 6px 0 var(--ink)}
+.course{line-height:1.35;min-width:0}
+.course small{display:block;color:var(--sub);font-size:.78rem}
+.course b{font-size:1.05rem}
+.tabs{max-width:960px;margin:8px auto 0;padding:0 16px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1.5px solid var(--ink);border-bottom:none;background:#eef1f5;border-radius:8px 8px 0 0;padding:6px 14px 5px;cursor:pointer;font-size:.92rem;line-height:1.5;color:var(--sub);position:relative;top:2px}
+.tab .n{font-family:var(--font-math);font-weight:700;margin-right:6px;color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);font-weight:700;border-bottom:2px solid var(--paper);z-index:1}
+
+/* ドロワー */
+.scrim{position:fixed;inset:0;background:rgba(20,24,32,.35);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(340px,86vw);background:var(--paper);z-index:31;border-right:2px solid var(--ink);transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto;padding:16px 18px 40px}
+body.menu-open .scrim{opacity:1;pointer-events:auto}
+body.menu-open .drawer{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
+.drawer-head b{font-size:1rem}
+.close{border:1.5px solid var(--ink);background:none;border-radius:6px;width:36px;height:36px;cursor:pointer;font-size:1.2rem;line-height:1}
+.drawer h4{margin:14px 0 2px;font-size:.95rem}
+.drawer h4 button{background:none;border:none;padding:0;cursor:pointer;text-align:left;font-weight:700}
+.drawer h4 .n{font-family:var(--font-math);margin-right:6px}
+.drawer ul{list-style:none;margin:0;padding:0 0 0 12px;border-left:1.5px solid var(--line)}
+.drawer li button{background:none;border:none;padding:3px 0;cursor:pointer;color:var(--sub);text-align:left;font-size:.9rem;line-height:1.5}
+.drawer li button:hover{color:var(--blue)}
+.drawer .cur>button{color:var(--blue)}
+
+/* 本文 */
+main{max-width:960px;margin:0 auto;padding:22px 16px 80px}
+.part{display:none}
+.part.on{display:block}
+.part-head{background:var(--paper);border:1.5px solid var(--ink);border-radius:4px;padding:16px 20px;margin-bottom:26px}
+.part-head .pn{font-family:var(--font-math);font-size:.95rem;color:var(--sub)}
+.part-head h1{font-size:clamp(1.5rem,3.6vw,2rem);line-height:1.4;margin:2px 0 6px;text-wrap:balance}
+.part-head p{margin:0;color:var(--sub);max-width:42em}
+.toc-mini{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9rem}
+.toc-mini button{background:none;border:none;padding:0;cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+
+section{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 22px 24px;margin-bottom:22px;scroll-margin-top:120px}
+@media (max-width:560px){section{padding:4px 14px 18px}}
+h2{font-size:1.4rem;line-height:1.5;margin:18px 0 12px;padding-bottom:6px;border-bottom:3px double var(--ink);text-wrap:balance}
+h2 .sn{display:inline-block;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;border:1.5px solid var(--ink);border-radius:50%;font-family:var(--font-math);font-size:1rem;margin-right:10px;vertical-align:.12em}
+h3{font-size:1.1rem;margin:24px 0 6px;text-wrap:balance}
+h3::before{content:"";display:inline-block;width:10px;height:10px;background:var(--blue);margin-right:8px;vertical-align:.05em}
+p{margin:0 0 1em;max-width:44em}
+.mk{background:linear-gradient(transparent 58%,var(--marker) 58%);font-weight:700}
+.v{font-family:var(--font-math);font-style:italic;font-size:1.1em;white-space:nowrap}
+.plus{color:var(--teal);font-weight:700}
+.minus{color:var(--red);font-weight:700}
+ul.dots,ol.steps{margin:0 0 1em;padding-left:1.4em;max-width:44em}
+ul.dots li,ol.steps li{margin:3px 0}
+
+/* 数式ボックス（教科書風に式番号を右寄せ） */
+.eq{border:1.5px solid var(--ink);background:#fff;padding:12px 18px;margin:16px 0 6px;max-width:44rem;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.eq .f{font-family:var(--font-math);font-size:1.45rem;font-style:italic}
+.eq .f sub{font-size:.65em}
+.eq .no{margin-left:auto;font-size:.85rem;color:var(--sub)}
+.eq-read{max-width:44rem;margin:0 0 16px;padding-left:20px;font-size:.95rem;color:var(--sub)}
+.eq-read::before{content:"読み方　";color:var(--blue);font-weight:700}
+
+/* 先生のメモ */
+.memo{font-family:var(--font-hand);background:var(--note);border-left:4px solid var(--red);padding:12px 16px 12px 18px;margin:16px 0;max-width:44rem;font-size:1.05rem;line-height:1.85}
+.memo .who{display:block;color:var(--red);font-weight:600;font-size:.9rem}
+/* ポイント */
+.point{border:2px solid var(--blue);border-radius:2px;padding:10px 16px;margin:20px 0 4px;max-width:44rem;position:relative}
+.point::before{content:"ポイント";position:absolute;top:-.85em;left:12px;background:var(--paper);padding:0 6px;color:var(--blue);font-weight:700;font-size:.85rem}
+.point p{margin:0}
+
+/* 帯グラフ */
+.bars{background:#fff;border:1px solid var(--line);padding:14px 16px 10px;margin:14px 0 18px;max-width:44rem}
+.bars .sw{display:flex;gap:0;margin-bottom:12px;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content}
+.bars .sw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.bars .sw button+button{border-left:1.5px solid var(--ink)}
+.bars .sw button[aria-selected="true"]{background:var(--ink);color:#fff}
+.brow{display:grid;grid-template-columns:7.2em 1fr;align-items:center;gap:10px;margin:8px 0}
+.brow .lab{font-size:.88rem;line-height:1.35}
+.track{position:relative;height:34px}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;border:1.5px solid var(--ink);white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.seg.y{background:#dfe8f6}
+.seg.c{background:#f3f4f6}.seg.i{background:#e7eaee}.seg.g{background:#d9dde3}
+.seg.gap-p{background:repeating-linear-gradient(45deg,#d6efe9,#d6efe9 5px,#fff 5px,#fff 10px);color:var(--teal);font-weight:700;border-color:var(--teal);border-style:dashed}
+.seg.gap-m{background:repeating-linear-gradient(45deg,#f8ddd7,#f8ddd7 5px,#fff 5px,#fff 10px);color:var(--red);font-weight:700;border-color:var(--red);border-style:dashed}
+.seg.b{background:#e7eaee}.seg.ri{background:#fde9a8}.seg.nx{background:#d6efe9}
+.seg-lab{position:absolute;top:0;bottom:0;display:flex;align-items:center;font-size:.85rem;white-space:nowrap}
+.bars .cap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+
+/* 表 */
+.tw{overflow-x:auto;margin:12px 0 18px}
+table{border-collapse:collapse;background:#fff;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--ink);padding:7px 12px;text-align:left;vertical-align:top;line-height:1.6}
+thead th{background:#eef1f5}
+td.c{text-align:center;white-space:nowrap}
+td.r{text-align:right}
+table.calc-t td{border:none;border-bottom:1px dotted var(--line);padding:3px 14px 3px 0}
+table.calc-t tr:last-child td{border-bottom:2px solid var(--ink);font-weight:700}
+
+/* 図 */
+figure{margin:14px 0 20px}
+figcaption{font-size:.85rem;color:var(--sub);margin-top:4px}
+.figbox{background:#fff;border:1px solid var(--line);padding:8px;overflow-x:auto}
+svg text{font-family:var(--font-body);fill:var(--ink)}
+svg .m{font-family:var(--font-math);font-style:italic}
+
+/* シミュレーター */
+.sim{background:#fff;border:1.5px solid var(--ink);padding:14px;margin:16px 0;display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:860px){.sim{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.grp{margin-bottom:10px}
+.grp .gl{font-size:.78rem;color:var(--sub);display:block;margin-bottom:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips button{border:1.5px solid var(--ink);background:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.85rem;line-height:1.6}
+.chips button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.explain{border-top:1px dashed var(--line);padding-top:10px;margin-top:6px}
+.explain .t{font-weight:700;margin:0}
+.explain .x{font-size:.95rem;margin:4px 0}
+.explain .f{font-size:.8rem;color:var(--sub);margin:0}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);margin:10px 0}
+.meter div{padding:6px 8px;text-align:center}
+.meter div+div{border-left:1px solid var(--ink)}
+.meter small{display:block;font-size:.75rem;color:var(--sub);line-height:1.3}
+.meter strong{font-size:1.3rem;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:7.4em 1fr 3.6em;gap:8px;align-items:center;font-size:.88rem}
+.sl input{width:100%;accent-color:var(--blue)}
+.sl output{text-align:right;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sm{font-size:.8rem;color:var(--sub);margin:6px 0 0}
+
+/* 内部タブ（ケース別） */
+.itabs{display:flex;gap:0;border-bottom:1.5px solid var(--ink);margin:14px 0 0;overflow-x:auto}
+.itabs button{border:none;background:none;padding:6px 14px;cursor:pointer;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.itabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--blue)}
+.ipanel{padding:12px 0 0}
+.ipanel[hidden]{display:none}
+.case{border-left:3px solid var(--line);padding:2px 0 2px 14px;margin:0 0 16px;max-width:44rem}
+.case b{display:block}
+.case .res{font-size:.9rem;margin:2px 0}
+.case p{margin:2px 0 0;font-size:.97rem}
+
+/* 手順 */
+.flow{display:grid;grid-template-columns:1fr;gap:8px;max-width:44rem;margin:12px 0 16px;counter-reset:f}
+@media (min-width:700px){.flow{grid-template-columns:repeat(3,1fr)}}
+.flow div{border:1.5px solid var(--ink);background:#fff;padding:10px 12px;font-size:.93rem;line-height:1.7;counter-increment:f}
+.flow div::before{content:"手順" counter(f);display:block;font-weight:700;color:var(--blue);font-size:.82rem}
+
+/* 計算機 */
+.calc{background:#fff;border:1.5px solid var(--ink);padding:14px 16px;margin:14px 0;max-width:44rem}
+.calc .out{font-size:.98rem;margin-top:10px}
+.calc .chk{color:var(--sub);font-size:.88rem}
+
+/* 確認問題 */
+.q{border:1px solid var(--ink);background:#fff;margin:10px 0;max-width:46rem}
+.q .qq{padding:10px 14px;display:flex;gap:10px}
+.q .qn{font-family:var(--font-math);font-weight:700;color:var(--blue)}
+.q button.show{margin:0 14px 10px;border:1.5px solid var(--ink);background:#fff;border-radius:4px;padding:2px 12px;cursor:pointer;font-size:.85rem}
+.q .ans{border-top:1px dashed var(--line);padding:8px 14px 10px;font-family:var(--font-hand);font-size:1.05rem;background:var(--note)}
+.q .ans[hidden]{display:none}
+.q .ans::before{content:"解答　";color:var(--red);font-weight:600}
+
+/* 前後ナビ */
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:28px;flex-wrap:wrap}
+.pager button{border:1.5px solid var(--ink);background:#fff;padding:10px 16px;cursor:pointer;border-radius:4px;text-align:left;line-height:1.4;max-width:48%}
+.pager button small{display:block;color:var(--sub);font-size:.78rem}
+.pager .next{margin-left:auto;text-align:right}
+.src{font-size:.82rem;color:var(--sub);margin-top:30px;border-top:1px solid var(--line);padding-top:10px}
+
+/* キャラクター */
+.talk{display:flex;align-items:flex-end;gap:12px;margin:14px 0 18px;max-width:44rem}
+.talk img{width:118px;height:auto;flex:none}
+.talk .bubble{position:relative;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:10px 16px;font-family:var(--font-hand);font-size:1.08rem;line-height:1.75;margin-bottom:30px}
+.talk .bubble::before{content:"";position:absolute;left:-12px;bottom:16px;border:6px solid transparent;border-right:8px solid var(--ink)}
+.talk .bubble::after{content:"";position:absolute;left:-8px;bottom:17px;border:5px solid transparent;border-right:7px solid #fff}
+.talk.r{flex-direction:row-reverse;margin-left:auto}
+.talk.r .bubble::before{left:auto;right:-12px;border-right-color:transparent;border-left:8px solid var(--ink)}
+.talk.r .bubble::after{left:auto;right:-8px;border-right-color:transparent;border-left:7px solid #fff}
+.part-head{display:flex;gap:16px;align-items:flex-end}
+.part-head .ph-main{flex:1;min-width:0}
+.part-head .ph-fig{flex:none;width:150px;text-align:center;margin:-6px 0 -16px}
+.part-head .ph-say{font-family:var(--font-hand);font-size:.88rem;line-height:1.5;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:5px 8px;margin-bottom:6px;text-align:left;position:relative}
+.part-head .ph-say::after{content:"";position:absolute;left:50%;bottom:-7px;width:10px;height:10px;background:#fff;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+.part-head .ph-fig img{width:100%;height:auto;display:block}
+@media (max-width:560px){.talk img{width:86px}.part-head .ph-fig{width:96px}.talk .bubble{font-size:1rem}}
+.memo.withfig{display:flex;gap:14px;align-items:center}
+.memo.withfig img{width:104px;height:auto;flex:none}
+@media (max-width:560px){.memo.withfig img{width:78px}}
+
+/* 課題パート */
+.dl{margin:10px 0 16px}
+.dlbtn{display:inline-flex;align-items:center;gap:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);text-decoration:none;padding:8px 16px 8px 10px;border-radius:6px;line-height:1.4;box-shadow:3px 3px 0 var(--ink)}
+.dlbtn:hover{background:#eef2fa}
+.dlbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.dlbtn .dlico{width:34px;height:40px;background:#2b579a;color:#fff;font-weight:700;display:grid;place-items:center;border-radius:3px;font-family:var(--font-math);font-size:1.2rem}
+.dlbtn b{display:block}
+.dlbtn small{display:block;color:var(--sub);font-size:.8rem}
+
+.xref{font-size:.9rem;margin:6px 0 12px;max-width:44em}
+.xref::before{content:"→ ";color:var(--blue);font-weight:700}
+.xref a,.dots a{color:var(--blue);cursor:pointer}
+.kq{border:2px solid var(--ink);background:#fff;padding:12px 16px;margin:12px 0 14px;max-width:46rem}
+.kq .lab{display:inline-block;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px;margin-bottom:4px}
+.kq p{margin:4px 0}
+.memo.hint{border-left-color:var(--blue)}
+.memo.hint .who{color:var(--blue)}
+.locked{display:none;border:1.5px dashed var(--line);color:var(--sub);padding:8px 14px;max-width:44rem;font-size:.92rem;background:#fff}
+body.ans-off .locked{display:block}
+body.ans-off .sol{display:none}
+.solbtn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:4px;padding:6px 16px;cursor:pointer;margin:6px 0 10px}
+.solbtn[aria-expanded="true"]{background:#fff;color:var(--ink)}
+.step{border-top:1px dashed var(--line);padding-top:6px;margin-top:10px}
+h3.stp::before{display:none}
+h3.stp .st{display:inline-block;font-size:.8rem;background:var(--blue);color:#fff;padding:0 9px;border-radius:3px;margin-right:8px;vertical-align:.12em}
+.ansSwitch{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;border:2px solid var(--ink);background:#fff;padding:10px 14px;margin:14px 0 16px;max-width:46rem}
+.sw-l{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700}
+.sw-l input{position:absolute;opacity:0;width:1px;height:1px}
+.sw-ui{width:46px;height:26px;border-radius:13px;background:#c9cfd8;position:relative;flex:none;transition:background .15s}
+.sw-ui::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}
+.sw-l input:checked+.sw-ui{background:var(--teal)}
+.sw-l input:checked+.sw-ui::after{left:23px}
+.sw-l input:focus-visible+.sw-ui{outline:2px solid var(--blue);outline-offset:2px}
+.sw-note{font-size:.88rem;color:var(--sub)}
+.gwrap{background:#fff;border:1.5px solid var(--ink);padding:12px;margin:14px 0 6px;max-width:46rem}
+.gsw{display:flex;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content;max-width:100%;margin-bottom:8px;flex-wrap:wrap}
+.gsw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.gsw button+button{border-left:1.5px solid var(--ink)}
+.gsw button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.gwrap svg{width:100%;max-width:560px;height:auto;display:block}
+.gcap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+.howto{font-size:.93rem;max-width:44rem;margin:6px 0 16px;padding-left:1.3em}
+.trap{border:2px dashed var(--red);padding:10px 16px;margin:16px 0;max-width:44rem;background:#fff}
+.trap b{color:var(--red)}
+.point.ketsu::before{content:"結論"}
+.answer{border:1.5px solid var(--ink);background:#fff;padding:14px 18px 6px;margin:20px 0 16px;max-width:46rem;position:relative}
+.answer::before{content:"答案の書き方の例";position:absolute;top:-.8em;left:12px;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px}
+.answer p{font-size:.97rem}
+.num{background:#fff;border:1px solid var(--line);padding:10px 16px;margin:14px 0;max-width:44rem}
+.num .h{font-size:.82rem;color:var(--sub);display:block}
+#kadai .brow{grid-template-columns:5.5em 1fr}
+#kadai .seg.g{background:#fde9a8}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* 数式（分数・Σ/Π/∫ の上下添字）— 全章共通 */
+.mx{font-family:var(--font-math);display:inline-flex;align-items:center;gap:.12em;vertical-align:middle;white-space:nowrap;font-size:1.08em}
+.mx i{font-style:italic}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.25}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .25em}
+.frac>span:last-child{padding:0 .25em}
+.bop{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 .12em}
+.bop .s{font-size:1.7em;line-height:1}
+.bop small{font-size:.62em;line-height:1.1}
+.eq .mx{font-size:1.25rem}
+.eq.mxeq .f{font-style:normal}
+.mxblock{display:block;overflow-x:auto;padding:4px 0}
+</style>
+</head>
+<body>
+
+<div class="scrim" id="scrim"></div>
+<nav class="drawer" id="drawer" aria-label="全体の目次" aria-hidden="true">
+  <div class="drawer-head"><b>目次</b><button class="close" id="closeBtn" aria-label="目次を閉じる">×</button></div>
+  <div id="drawerList"></div>
+</nav>
+
+<header class="bar">
+  <div class="bar-in">
+    <button class="burger" id="menuBtn" aria-label="目次を開く" aria-controls="drawer" aria-expanded="false"><span></span></button>
+    <div class="course"><small>経済原論 I　マクロ経済学入門</small><b>第1章　経済学の基礎　解説プリントと課題</b></div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="パート" id="tabs"></div>
+</header>
+
+<main>
+<!-- ===================== パート1 ===================== -->
+<div class="part" id="zentai" data-title="経済学の全体像" data-desc="マクロ経済学とミクロ経済学の違い、マクロ経済学の2つの考え方（古典派とケインズ派）、経済学がどんな道具を使って考えるのかを見ていきます。">
+
+<section id="s1" data-t="ミクロ経済学とマクロ経済学">
+<h2><span class="sn">1</span>ミクロ経済学とマクロ経済学</h2>
+<p>経済学は大きく<b>ミクロ経済学</b>と<b>マクロ経済学</b>に分かれます。違いは「どこを見るか」です。</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>ミクロ経済学</th><th>マクロ経済学</th></tr></thead>
+<tbody>
+<tr><td>見るもの</td><td>一人ひとりの家計や企業、個々の市場</td><td>国全体の経済</td></tr>
+<tr><td>主な問い</td><td>家計はどれだけ買うか、企業はどれだけ作るか、価格はどう決まるか</td><td>GDP、物価、経済成長率、失業率はどう決まるか</td></tr>
+<tr><td>たとえると</td><td>森の中の1本1本の木</td><td>森全体</td></tr>
+</tbody></table></div>
+<p>マクロ経済学で扱う GDP や物価水準のように、国全体で合計・平均した数字を<b>集計量</b>と呼びます。</p>
+<h3>部分均衡分析と一般均衡分析</h3>
+<ul class="dots">
+  <li><b>部分均衡分析</b>：ある1つの市場だけに注目して考える方法（例：コメの市場だけを見る）。</li>
+  <li><b>一般均衡分析</b>：いくつもの市場を同時に考える方法。</li>
+</ul>
+<p>マクロ経済学は、財（モノ・サービス）の市場、労働の市場、お金の市場などを同時に考えるので、<span class="mk">一種の一般均衡モデル</span>と言えます。</p>
+<h3>経済循環図：お金とモノはぐるぐる回る</h3>
+<figure><div class="figbox">
+<svg viewBox="0 0 640 360" width="640" role="img" aria-label="経済循環図。家計は生産要素市場に労働と資本を提供して賃金・利子・配当を受け取り、企業は財市場で財・サービスを売って代金を受け取る">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#22252b"/></marker>
+  <marker id="ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c8361f"/></marker></defs>
+  <rect x="30" y="150" width="120" height="60" fill="#fff" stroke="#22252b" stroke-width="2"/><text x="90" y="186" text-anchor="middle" font-size="16" font-weight="700">家計</text>
+  <rect x="490" y="150" width="120" height="60" fill="#fff" stroke="#22252b" stroke-width="2"/><text x="550" y="180" text-anchor="middle" font-size="16" font-weight="700">企業</text><text x="550" y="200" text-anchor="middle" font-size="12">作る量 Y = F(K, L)</text>
+  <ellipse cx="320" cy="55" rx="95" ry="32" fill="#fff" stroke="#22252b" stroke-width="2"/><text x="320" y="60" text-anchor="middle" font-size="15" font-weight="700">生産要素市場</text>
+  <ellipse cx="320" cy="305" rx="80" ry="32" fill="#fff" stroke="#22252b" stroke-width="2"/><text x="320" y="310" text-anchor="middle" font-size="15" font-weight="700">財市場</text>
+  <path d="M110,150 C110,90 170,60 225,58" fill="none" stroke="#22252b" stroke-width="2" marker-end="url(#ah)"/>
+  <text x="70" y="98" font-size="12">労働 L と資本 K を提供</text>
+  <path d="M415,58 C470,60 530,90 530,150" fill="none" stroke="#22252b" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M570,150 C570,70 470,30 418,42" fill="none" stroke="#c8361f" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ahb)"/>
+  <text x="470" y="30" font-size="12" style="fill:#c8361f">賃金・利子・配当の支払い（wL + rK）</text>
+  <path d="M222,48 C160,40 70,80 70,150" fill="none" stroke="#c8361f" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ahb)"/>
+  <path d="M530,210 C530,270 470,300 402,303" fill="none" stroke="#22252b" stroke-width="2" marker-end="url(#ah)"/>
+  <text x="470" y="262" font-size="12">財・サービスを売る（Y）</text>
+  <path d="M240,303 C170,300 110,270 110,210" fill="none" stroke="#22252b" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M70,210 C70,300 180,330 238,318" fill="none" stroke="#c8361f" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ahb)"/>
+  <text x="20" y="300" font-size="12" style="fill:#c8361f">消費の支出（C）</text>
+  <path d="M402,318 C470,330 570,300 570,210" fill="none" stroke="#c8361f" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ahb)"/>
+  <line x1="190" y1="352" x2="220" y2="352" stroke="#22252b" stroke-width="2"/><text x="226" y="356" font-size="12">モノ・サービスの流れ</text>
+  <line x1="370" y1="352" x2="400" y2="352" stroke="#c8361f" stroke-width="2" stroke-dasharray="6 5"/><text x="406" y="356" font-size="12" style="fill:#c8361f">お金の流れ</text>
+</svg></div>
+<figcaption>テキスト図1.1をもとに作図。モノ（実線）とお金（破線）は逆向きに流れる。</figcaption></figure>
+<p>家計は労働や資本を企業に提供し、その見返りに賃金・利子・配当を受け取ります。企業は作ったモノを売り、家計はその所得で買い物をします。この図から、次の2つの関係が読み取れます。</p>
+<div class="eq"><span class="f">Y = wL + rK</span><span class="no">生産と分配</span></div>
+<p class="eq-read">作った価値は、すべて働いた人（賃金）と資本を出した人（利子・配当）に分けられる</p>
+<div class="eq"><span class="f">Y = C</span><span class="no">生産と支出</span></div>
+<p class="eq-read">作ったものは、すべて誰かに買われる（この単純な図では、買うのは家計の消費だけ）</p>
+<div class="point"><p>ミクロは「木」、マクロは「森」を見る。マクロ経済学は、いくつもの市場を同時に考える一般均衡モデル。</p></div>
+</section>
+
+<section id="s2" data-t="古典派とケインズ派">
+<h2><span class="sn">2</span>マクロ経済学の2つの考え方：古典派とケインズ派</h2>
+<p>マクロ経済学には、大きく2つの考え方があります。分かれ目は、<span class="mk">「市場はうまく調整してくれるか」</span>への答えです。</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>古典派</th><th>ケインズ派</th></tr></thead>
+<tbody>
+<tr><td>価格の動き</td><td>すばやく動き、需要と供給はすぐに一致する</td><td>なかなか動かない（硬直的）</td></tr>
+<tr><td>何が何を決めるか</td><td>供給が需要を決める（<b>セイ法則</b>）</td><td>需要が供給を決める（<b>有効需要の原理</b>）</td></tr>
+<tr><td>前提</td><td>完全雇用（働きたい人はみな働けている）</td><td>不完全雇用（失業が残りうる）</td></tr>
+<tr><td>政策について</td><td>裁量的な政策より、ルールに基づく政策</td><td>不況なら財政政策・金融政策で需要を増やすべき</td></tr>
+</tbody></table></div>
+<div class="memo"><span class="who">メモ：お店の値札で考えよう</span>売れ残りが出たとき、すぐ値下げして売り切るお店ばかりなら「古典派」の世界。値札がなかなか変わらず、売れ残りや人手のだぶつきが続くなら「ケインズ派」の世界。</div>
+<p>マクロ経済学でいう古典派は、<b>ミクロ経済学の考え方をそのままマクロ経済に持ち込んだもの</b>です。古典派の世界では「物価はお金の量が決める」と考えます（古典派の二分法、貨幣ヴェール観）。</p>
+<h3>マクロ経済学の歩み</h3>
+<div class="tw"><table>
+<thead><tr><th>時期</th><th>出来事</th></tr></thead>
+<tbody>
+<tr><td>1930年代</td><td>大恐慌。ケインズが「需要を刺激せよ」という処方箋を示し、ケインズ経済学が生まれる</td></tr>
+<tr><td>1960年代まで</td><td>ケインズ経済学の全盛期。サミュエルソンの<b>新古典派総合</b>（ケインズ流の政策で完全雇用を実現すれば、あとはミクロ経済学の分析が当てはまる）</td></tr>
+<tr><td>1970年代</td><td>スタグフレーション（不況とインフレが同時に起こる）でケインズ経済学が退潮。フリードマンの<b>マネタリズム</b>（ルールに基づく金融政策、k%ルール）、ルーカスらの<b>合理的期待形成学派</b>が台頭。「期待」と「ミクロ的基礎」の重要性が強調される</td></tr>
+<tr><td>現代</td><td><b>ニューケインジアン</b>（市場の失敗を前提に、裁量的な政策に意味があると考える）、<b>新しい古典派</b>（リアル・ビジネス・サイクル理論：景気の波は技術などの実物的なショックで起こる）、<b>新しい成長論</b>（教育や研究開発が成長を生む）。どれもミクロ経済学的な基礎と、時間を通じた動きを扱う動学モデルを使う点は共通</td></tr>
+</tbody></table></div>
+<p>この教科書では、両方の考え方を学びます。第4章・第5章の古典派モデルは「市場がうまく働く世界」、のちに学ぶケインズモデルは「価格が動きにくい世界」の話です。</p>
+<div class="point"><p>古典派は「価格がすぐ調整される・供給が需要を決める」、ケインズ派は「価格は硬直的・需要が供給を決める」。</p></div>
+</section>
+
+<section id="s3" data-t="経済学の考え方">
+<h2><span class="sn">3</span>経済学の考え方：モデルで考える</h2>
+<h3>分析方法の特徴</h3>
+<ul class="dots">
+  <li><b>数学的なモデルとグラフ</b>をよく使う。</li>
+  <li>理論モデルを作り、それが現実に合うかを<b>統計データで確かめる</b>。</li>
+  <li>家計や企業は<b>合理的に行動する</b>と考える（合理的経済人の仮定）。社会全体の動きも、一人ひとりの行動から説明しようとする（方法論的個人主義）。</li>
+</ul>
+<h3>モデルの役割</h3>
+<div class="memo"><span class="who">メモ：モデルは地図のようなもの</span>地図は現実をそのまま写さない。駅までの道を知りたいなら、建物の色や木の本数は省いた地図のほうが役に立つ。経済のモデルも、目的に合わせて大胆に単純化している。</div>
+<ul class="dots">
+  <li>現実は複雑なので、<b>単純なモデル</b>で理解する必要がある。複雑すぎるモデルは扱えず、何も説明できない。</li>
+  <li>モデルが違えば結論も違う（例：財政政策の効果）。だから<span class="mk">どんな仮定（前提条件）を置いたか</span>が大切。</li>
+  <li>どんな場面にも使える万能のモデルはない。</li>
+</ul>
+<h3>経済学の応用</h3>
+<p>経済理論は、国際経済学、財政学・公共経済学、金融論・ファイナンス、産業組織論、開発経済学などに応用されています。さらに政治学（公共選択論）、歴史（数量経済史）、社会学（結婚や出産の経済学）、法学（法と経済学）、環境問題（環境経済学）にも使われています。</p>
+<h3>いまの日本の政策課題</h3>
+<p>景気対策と構造改革、金融政策（デフレからインフレへ）、財政政策、財政赤字と公債残高の増加、少子高齢化と社会保障、地方分権など、どれもマクロ経済学の道具で考えるテーマです。</p>
+<div class="point"><p>経済学は、目的に合わせて単純化したモデルで考える。結論を読むときは「どんな仮定を置いたか」を確かめる。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート2 ===================== -->
+<div class="part" id="kikai" data-title="機会費用と比較優位" data-desc="何かを選ぶことは、別の何かをあきらめること。この「機会費用」の考え方から、予算制約、生産可能性フロンティア、交換の利益（比較優位）を学びます。">
+
+<section id="s4" data-t="機会費用と予算制約">
+<h2><span class="sn">4</span>機会費用と予算制約</h2>
+<p>ある行動を選ぶと、別の行動はあきらめなければなりません。<span class="mk">選ばなかった行動から得られたはずの利益のうち、いちばん大きいもの</span>を<b>機会費用</b>（opportunity cost）と呼びます。</p>
+<div class="memo"><span class="who">メモ：アルバイトと授業</span>時給1,000円のアルバイトを休んで、2時間の講義に出たとする。講義の機会費用は、あきらめたバイト代の2,000円。財布からお金が出ていかなくても、費用はかかっている。</div>
+<h3>予算制約</h3>
+<p>2つの財 <span class="v">x</span>（例：パン）と <span class="v">y</span>（例：コーヒー）を買う人を考えます。<span class="v">x</span> の価格を <span class="v">p</span>、<span class="v">y</span> の価格を <span class="v">q</span>、使えるお金（所得）を <span class="v">I</span> とすると、買える組み合わせは次の式を満たします。</p>
+<div class="eq"><span class="f">px + qy ≤ I</span><span class="no">テキスト (1.1)</span></div>
+<p class="eq-read">パンへの支出 ＋ コーヒーへの支出 ≤ 使えるお金</p>
+<p>ぴったり使い切る線 <span class="v">px + qy = I</span> を<b>予算線</b>と呼びます。スライダーで価格や所得を変えて、線がどう動くか確かめてください。</p>
+<div class="sim">
+  <div class="figbox" style="border:none;padding:0"><svg id="gBudget" viewBox="0 0 520 370" width="100%" style="max-width:520px;display:block" role="img" aria-label="予算線のグラフ"></svg></div>
+  <div>
+    <div class="meter">
+      <div><small>x 軸との交点 I/p</small><strong id="bX"></strong></div>
+      <div><small>y 軸との交点 I/q</small><strong id="bY"></strong></div>
+      <div><small>傾き（の大きさ）p/q</small><strong id="bS"></strong></div>
+    </div>
+    <div class="sl"><label for="bP">x の価格 p</label><input type="range" id="bP" min="1" max="5" step="0.5" value="2"><output id="vP" for="bP"></output></div>
+    <div class="sl"><label for="bQ">y の価格 q</label><input type="range" id="bQ" min="1" max="5" step="0.5" value="4"><output id="vQ" for="bQ"></output></div>
+    <div class="sl"><label for="bI">所得 I</label><input type="range" id="bI" min="20" max="40" step="2" value="40"><output id="vI" for="bI"></output></div>
+    <p class="explain x" id="bNote"></p>
+  </div>
+</div>
+<h3>傾きが機会費用</h3>
+<p><span class="v">x</span> をもう1個買うには <span class="v">p</span> 円が必要です。所得は決まっているので、そのぶん <span class="v">y</span> を <span class="v">p/q</span> 個あきらめなければなりません。つまり、<span class="mk">予算線の傾き <span class="v">p/q</span> が、x を1個増やす機会費用</span>です。</p>
+<div class="num"><span class="h">数値例（p = 2、q = 4、I = 40）</span>
+<table class="calc-t"><tr><td>x だけ買うと</td><td class="r">40 ÷ 2 ＝ 20 個</td></tr><tr><td>y だけ買うと</td><td class="r">40 ÷ 4 ＝ 10 個</td></tr><tr><td>x を1個増やす機会費用</td><td class="r">2 ÷ 4 ＝ y を 0.5 個</td></tr></table></div>
+<p>価格が2つとも2倍になっても、<span class="v">p/q</span> は変わりません。機会費用を決めるのは価格の比（<b>相対価格</b>）で、価格の水準そのものではありません。</p>
+<div class="point"><p>機会費用は「あきらめたものの価値」。予算線の傾き p/q は、x を1個増やすためにあきらめる y の量。</p></div>
+</section>
+
+<section id="s5" data-t="生産可能性フロンティア">
+<h2><span class="sn">5</span>生産可能性フロンティア</h2>
+<p>今度は「買う」ではなく「作る」側です。財 <span class="v">x</span> を1個作るのに <span class="v">a</span> 時間、財 <span class="v">y</span> を1個作るのに <span class="v">b</span> 時間かかり、使える時間は全部で <span class="v">L</span> 時間とします。</p>
+<div class="eq"><span class="f">ax + by ≤ L</span><span class="no">テキスト (1.2)</span></div>
+<p class="eq-read">x づくりに使う時間 ＋ y づくりに使う時間 ≤ 使える時間</p>
+<p>ぴったり使い切る線 <span class="v">ax + by = L</span> を<b>生産可能性フロンティア</b>（PPF）と呼びます。1時間で作れる量 <span class="v">1/a</span>、<span class="v">1/b</span> は<b>労働生産性</b>です（<span class="v">a</span> や <span class="v">b</span> が小さいほど生産性が高い）。</p>
+<p>x を1個多く作るには <span class="v">a</span> 時間が必要で、そのぶん y は <span class="v">a/b</span> 個減ります。<span class="mk">PPF の傾き <span class="v">a/b</span> が、x を1個作る機会費用</span>です。この傾きを<b>限界変形率</b>（MRT）と呼びます。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="ppf" data-s="0" aria-pressed="true">機会費用が一定（直線）</button><button type="button" data-g="ppf" data-s="1" aria-pressed="false">機会費用が増えていく（曲線）</button></div>
+  <svg id="gPpf" viewBox="0 0 520 340" role="img" aria-label="生産可能性フロンティアのグラフ"></svg>
+  <p class="gcap" id="gPpf-cap"></p>
+</div>
+<div class="num"><span class="h">数値例（a = 1 時間、b = 2 時間、L = 24 時間）</span>
+<table class="calc-t"><tr><td>x だけ作ると</td><td class="r">24 ÷ 1 ＝ 24 個</td></tr><tr><td>y だけ作ると</td><td class="r">24 ÷ 2 ＝ 12 個</td></tr><tr><td>x を1個増やす機会費用</td><td class="r">1 ÷ 2 ＝ y を 0.5 個</td></tr></table></div>
+<p>現実には、x づくりに時間を回すほど、x づくりが苦手な人や設備まで使うことになり、生産性が落ちていくことが多いでしょう。そのときは x を増やすほど機会費用が大きくなり、PPF は外側にふくらんだ曲線になります（切り替えボタンで確かめてください）。</p>
+<div class="point"><p>PPF は「作れるものの限界」。その傾き（限界変形率）が、x を1個多く作るためにあきらめる y の量。</p></div>
+</section>
+
+<section id="s6" data-t="絶対優位と比較優位">
+<h2><span class="sn">6</span>絶対優位と比較優位</h2>
+<p>AさんとBさんの2人を考えます。数字は説明のための架空の値です。</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>x を1個作る時間</th><th>y を1個作る時間</th><th>使える時間</th><th>x の機会費用</th></tr></thead>
+<tbody>
+<tr><td>Aさん</td><td class="r">1時間</td><td class="r">2時間</td><td class="r">24時間</td><td class="r">1 ÷ 2 ＝ y 0.5個</td></tr>
+<tr><td>Bさん</td><td class="r">6時間</td><td class="r">3時間</td><td class="r">30時間</td><td class="r">6 ÷ 3 ＝ y 2個</td></tr>
+</tbody></table></div>
+<ul class="dots">
+  <li><b>絶対優位</b>：Aさんは x も y も、Bさんより短い時間で作れます。Aさんは両方の財に絶対優位を持っています。</li>
+  <li><b>比較優位</b>：x の機会費用は、Aさんが y 0.5個、Bさんが y 2個。<span class="mk">Aさんは x に、Bさんは y に比較優位</span>を持っています（Bさんにとって y の機会費用は x 0.5個で、Aさんの x 2個より小さい）。</li>
+</ul>
+<div class="memo"><span class="who">メモ：社長と秘書</span>社長は経営もタイピングも秘書より上手（絶対優位）。それでも、社長は経営に、秘書はタイピングに専念したほうが会社の業績は上がる。大事なのは「どちらが得意か」ではなく「どちらが相対的に得意か」。</div>
+<h3>1個だけ作る量を入れ替えてみる</h3>
+<p>Aさんが x を1個多く作り、Bさんが x を1個少なく作るとします。</p>
+<div class="num"><span class="h">数値例</span>
+<table class="calc-t">
+<tr><td>Aさん：x を1個増やす</td><td class="r">y は 0.5 個減る</td></tr>
+<tr><td>Bさん：x を1個減らす</td><td class="r">y は 2 個増える</td></tr>
+<tr><td>2人の合計</td><td class="r">x は同じ、y は <span class="plus">＋1.5 個</span></td></tr></table></div>
+<p>2人の機会費用が違うときは、それぞれが比較優位を持つ財の生産を増やすだけで、全体の生産量が増えます。</p>
+<div class="point"><p>交換の利益を生むのは絶対優位ではなく比較優位。機会費用が小さい財に、その人は比較優位を持つ。</p></div>
+</section>
+
+<section id="s7" data-t="特化と交換の利益">
+<h2><span class="sn">7</span>特化と交換の利益</h2>
+<p>それぞれが比較優位を持つ財の生産に専念（<b>特化</b>）し、2人の間で交換すると、2人とも得をします。これを<b>比較優位の原理</b>と呼びます。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="trade" data-s="0" aria-pressed="true">自給自足</button><button type="button" data-g="trade" data-s="1" aria-pressed="false">特化して交換</button></div>
+  <svg id="gTrade" viewBox="0 0 540 360" role="img" aria-label="2人の生産可能性フロンティアと交換の利益のグラフ"></svg>
+  <p class="gcap" id="gTrade-cap"></p>
+</div>
+<div class="tw"><table>
+<thead><tr><th></th><th>自給自足のとき</th><th>特化して作る</th><th>交換（x 1個 ＝ y 1個）</th><th>交換後に消費</th></tr></thead>
+<tbody>
+<tr><td>Aさん</td><td>x 20、y 2（点C）</td><td>x 24（点A）</td><td>x を3個渡し、y を3個もらう</td><td>x 21、y 3（点D）<span class="plus">両方増える</span></td></tr>
+<tr><td>Bさん</td><td>x 2、y 6（点E）</td><td>y 10（点B'）</td><td>y を3個渡し、x を3個もらう</td><td>x 3、y 7（点F）<span class="plus">両方増える</span></td></tr>
+</tbody></table></div>
+<h3>どんな交換比率なら2人とも得をするか</h3>
+<p>x 1個と y を何個で交換するか（交換比率 <span class="v">p/q</span>）を動かしてみてください。</p>
+<div class="calc">
+  <div class="sl" style="grid-template-columns:9.5em 1fr 4.4em"><label for="xr">交換比率 p/q</label><input type="range" id="xr" min="0" max="3" step="0.1" value="1"><output id="xrv" for="xr"></output></div>
+  <div class="meter">
+    <div><small>Aさんが x を1個売った得</small><strong id="xrA"></strong></div>
+    <div><small>Bさんが x を1個買った得</small><strong id="xrB"></strong></div>
+    <div><small>判定</small><strong id="xrJ" style="font-size:1rem"></strong></div>
+  </div>
+  <p class="sm">Aさんの得 ＝ 受け取る y（p/q）− x を作るためにあきらめた y（0.5）。Bさんの得 ＝ 自分で作ったらあきらめる y（2）− 払う y（p/q）。</p>
+</div>
+<div class="eq"><span class="f">a₁/b₁ &lt; p/q &lt; a₂/b₂</span><span class="no">テキスト p.16</span></div>
+<p class="eq-read">交換比率が、2人の機会費用（PPFの傾き）の間にあれば、2人とも得をする</p>
+<div class="point"><p>比較優位に従って特化し、2人の機会費用の間の比率で交換すれば、2人とも自給自足より多く消費できる。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート3 ===================== -->
+<div class="part" id="shijo" data-title="市場の機能" data-desc="需要曲線と供給曲線で市場の働きを見ます。曲線の高さが「限界便益」と「限界費用」を表すこと、余剰の考え方、そして市場がうまく働かない「市場の失敗」を学びます。">
+
+<section id="s8" data-t="需要と供給">
+<h2><span class="sn">8</span>需要と供給：価格が需給をそろえる</h2>
+<p>縦軸に価格 <span class="v">p</span>、横軸に数量 <span class="v">Q</span> をとります。<b>需要曲線 D</b> は右下がり（安いほどたくさん買われる）、<b>供給曲線 S</b> は右上がり（高いほどたくさん売りに出される）です。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="価格の切り替え"><button type="button" data-g="mkt" data-s="0" aria-pressed="false">価格が高い（p₁）</button><button type="button" data-g="mkt" data-s="1" aria-pressed="true">均衡価格（p*）</button><button type="button" data-g="mkt" data-s="2" aria-pressed="false">価格が低い（p₂）</button></div>
+  <svg id="gMkt" viewBox="0 0 520 340" role="img" aria-label="需要曲線と供給曲線のグラフ"></svg>
+  <p class="gcap" id="gMkt-cap"></p>
+</div>
+<ul class="dots">
+  <li>価格が高すぎると、売りたい量が買いたい量を上回り（<b>超過供給</b>）、売れ残りが出て価格が下がる。</li>
+  <li>価格が低すぎると、買いたい量が売りたい量を上回り（<b>超過需要</b>）、品不足になって価格が上がる。</li>
+  <li>2本の線が交わる点 <b>E</b> では需要と供給が一致し、価格はもう動かない。これが<b>市場均衡</b>。</li>
+</ul>
+<div class="point"><p>価格は、売れ残りがあれば下がり、品不足があれば上がり、需要と供給が一致する点（市場均衡）に落ち着く。</p></div>
+</section>
+
+<section id="s9" data-t="曲線の高さを読む">
+<h2><span class="sn">9</span>曲線の高さを読む：限界便益と限界費用</h2>
+<p>需要曲線と供給曲線は、ふつうは「縦（価格）から横（数量）へ」読みます。逆に<span class="mk">「横から縦へ」読む</span>と、消費者や生産者が何を考えているかが見えてきます。</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>曲線の高さが表すもの</th><th>呼び名</th></tr></thead>
+<tbody>
+<tr><td>需要曲線</td><td>次の1個に、消費者が払ってもよいと思う最高の価格</td><td><b>限界便益</b>（marginal benefit）</td></tr>
+<tr><td>供給曲線</td><td>次の1個を、生産者が売ってもよいと思う最低の価格</td><td><b>限界費用</b>（marginal cost）</td></tr>
+</tbody></table></div>
+<div class="memo"><span class="who">メモ：「限界」は「ぎりぎり」ではない</span>経済学の「限界（marginal）」は、「もう1個増やしたら」という意味。「我慢の限界」の限界とは違う。限界便益は「もう1個買うと増える満足」、限界費用は「もう1個作ると増える費用」。</div>
+<p>生産者は、次の1個を売って得られる収入（競争的な市場では価格 <span class="v">p</span>）が、その1個を作る費用（限界費用 <span class="v">MC</span>）以上なら作ります（<span class="v">p ≥ MC</span>）。だから、供給曲線の高さは限界費用に等しくなります。</p>
+<div class="point"><p>需要曲線の高さ＝限界便益、供給曲線の高さ＝限界費用。曲線を「横から縦へ」読むと、人々の意思決定が見える。</p></div>
+</section>
+
+<section id="s10" data-t="余剰と市場均衡の望ましさ">
+<h2><span class="sn">10</span>余剰と市場均衡の望ましさ</h2>
+<h3>消費者余剰と生産者余剰</h3>
+<p>1個ずつの取引で考えます。価格は5円で、消費者が払ってもよい価格と、生産者の限界費用は次のとおりです（架空の値）。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="step" data-s="0" aria-pressed="true">消費者余剰</button><button type="button" data-g="step" data-s="1" aria-pressed="false">生産者余剰</button></div>
+  <svg id="gStep" viewBox="0 0 520 320" role="img" aria-label="1個ずつの余剰を表す棒グラフ"></svg>
+  <p class="gcap" id="gStep-cap"></p>
+</div>
+<div class="tw"><table>
+<thead><tr><th>何個目</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead>
+<tbody>
+<tr><td>払ってもよい価格（限界便益）</td><td class="r">9</td><td class="r">8</td><td class="r">7</td><td class="r">6</td><td class="r">5</td><td class="r">4</td></tr>
+<tr><td>消費者の得（− 価格5）</td><td class="r">4</td><td class="r">3</td><td class="r">2</td><td class="r">1</td><td class="r">0</td><td class="r">買わない</td></tr>
+<tr><td>限界費用</td><td class="r">1</td><td class="r">2</td><td class="r">3</td><td class="r">4</td><td class="r">5</td><td class="r">6</td></tr>
+<tr><td>生産者の得（価格5 −）</td><td class="r">4</td><td class="r">3</td><td class="r">2</td><td class="r">1</td><td class="r">0</td><td class="r">作らない</td></tr>
+</tbody></table></div>
+<ul class="dots">
+  <li><b>消費者余剰</b>（CS）＝ 払ってもよい額の合計 − 実際に払った額 ＝ 4 + 3 + 2 + 1 ＝ <b>10</b></li>
+  <li><b>生産者余剰</b>（PS）＝ 収入 − 限界費用の合計（可変費用）＝ 4 + 3 + 2 + 1 ＝ <b>10</b>（固定費用は含めない）</li>
+  <li><b>社会的余剰</b>（SS、総余剰）＝ CS + PS ＝ <b>20</b></li>
+</ul>
+<h3>取引量を変えると社会的余剰はどうなるか</h3>
+<p>需要曲線 <span class="v">p = 10 − Q</span>、供給曲線 <span class="v">p = Q</span> の市場で、取引量を動かしてみてください（架空の値）。均衡は <span class="v">Q* = 5</span>、<span class="v">p* = 5</span> です。</p>
+<div class="sim">
+  <div class="figbox" style="border:none;padding:0"><svg id="gSurp" viewBox="0 0 520 360" width="100%" style="max-width:520px;display:block" role="img" aria-label="取引量を動かしたときの社会的余剰のグラフ"></svg></div>
+  <div>
+    <div class="meter">
+      <div><small>取引量 Q</small><strong id="sQ"></strong></div>
+      <div><small>社会的余剰</small><strong id="sSS"></strong></div>
+      <div><small>失われた余剰</small><strong id="sDW"></strong></div>
+    </div>
+    <div class="sl"><label for="sq">取引量 Q</label><input type="range" id="sq" min="1" max="9" step="0.5" value="5"><output id="vq" for="sq"></output></div>
+    <p class="explain x" id="sNote"></p>
+  </div>
+</div>
+<div class="eq"><span class="f">SS = CS + PS = 総便益 − 生産費用</span></div>
+<p class="eq-read">支払いと収入は打ち消し合うので、社会的余剰は「満足の合計 − 作るのにかかった費用」になる</p>
+<ul class="dots">
+  <li>均衡より少ない量（<span class="v">Q₁</span>）では、限界便益 &gt; 限界費用。量を増やすと社会的余剰が増える。</li>
+  <li>均衡より多い量（<span class="v">Q₂</span>）では、限界便益 &lt; 限界費用。量を減らすと社会的余剰が増える。</li>
+  <li>限界便益 ＝ 限界費用 となる市場均衡 <b>E</b> で、社会的余剰は最大になる。</li>
+</ul>
+<p>なお、社会的余剰は「効率」を測る物差しで、「公平」（所得の分け方）については何も言っていない点に注意しましょう。</p>
+<div class="point"><p>市場均衡では限界便益と限界費用が等しく、社会的余剰（CS＋PS）が最大になる。この意味で市場均衡は望ましい。</p></div>
+</section>
+
+<section id="s11" data-t="市場の失敗">
+<h2><span class="sn">11</span>市場の失敗</h2>
+<p>市場均衡が社会的余剰を最大にするのは「ふつうの場合」です。市場がうまく働かないケースを<b>市場の失敗</b>と呼び、代表例は次の4つです。</p>
+<div class="tw"><table>
+<thead><tr><th>ケース</th><th>どういうことか</th><th>例</th></tr></thead>
+<tbody>
+<tr><td><b>公共財</b></td><td>一度供給されると多くの人が同時に恩恵を受けられ（<b>非競合性</b>）、お金を払った人だけに限定できない（<b>排除不可能性</b>）。市場では供給できず、政府の役割になる</td><td>国防、警察</td></tr>
+<tr><td><b>外部性</b></td><td>取引の当事者以外に影響が漏れる。生産者が被害の費用を考えずに生産するので、望ましい生産量にならない</td><td>工場の排水による川の汚染</td></tr>
+<tr><td><b>競争条件の阻害</b></td><td>独占企業が、わざと量を絞って利益を大きくする</td><td>独占市場</td></tr>
+<tr><td><b>情報上の失敗</b></td><td>売り手と買い手で、品質について知っている情報に差がある</td><td>中古車の品質</td></tr>
+</tbody></table></div>
+<p>古典派とケインズ派の違いも、「市場がどこまで理想的に働くか」の判断の違いでした。市場の働きを理解することは、マクロ経済学でも欠かせません。</p>
+<div class="point"><p>公共財・外部性・独占・情報の偏りがあると、市場に任せても社会的余剰は最大にならない（市場の失敗）。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート4 ===================== -->
+<div class="part" id="sugaku" data-title="経済学と数学" data-desc="経済原論で使う数学の道具を、高校で習った内容から順に確認します。関数と傾き、微分、無限等比級数と乗数、ΣとΠ、積分の意味を、グラフを動かしながら学びます。">
+
+<section id="s12" data-t="最適化と関数の傾き">
+<h2><span class="sn">12</span>制約付きの最適化と、関数の傾き</h2>
+<p>数学は経済学者どうしの共通言語であり、道具です。大事なのは難しい計算よりも、<span class="mk">式やグラフから経済的な意味を読み取ること</span>です。</p>
+<h3>制約条件付き最適化</h3>
+<p>現代の経済学では、多くの問題を「制約のもとで、何かをいちばん大きくする」問題として考えます。消費者なら、予算の範囲で満足（効用）をいちばん大きくします。</p>
+<div class="eq mxeq"><span class="f"><span class="mx">max&nbsp;<i>U</i>(<i>x</i>, <i>y</i>)&nbsp;&nbsp;&nbsp;s.t.&nbsp;<i>px</i> + <i>qy</i> ≤ <i>I</i></span></span></div>
+<p class="eq-read">予算 px + qy ≤ I を守りながら（s.t. ＝ 〜という条件のもとで）、効用 U をいちばん大きくする</p>
+<p>いちばん大きくしたいもの（効用関数）を<b>目的関数</b>、守らなければならない式（予算制約）を<b>制約条件</b>と呼びます。予算線の描き方は <a href="#s4" data-goto="s4">第4節</a> で確かめました。</p>
+<h3>関数と傾き</h3>
+<p><span class="v">C = C(Y)</span> のように書くと、「消費 <span class="v">C</span> は所得 <span class="v">Y</span> で決まる（<span class="v">Y</span> の関数）」という意味です。具体的な形を決めたものの例が、<b>ケインズ型消費関数</b>です。</p>
+<div class="eq"><span class="f">C = c₀ + c₁Y　（0 &lt; c₁ &lt; 1）</span></div>
+<p class="eq-read">消費 ＝ 所得がゼロでも必要な消費 ＋ 所得のうち消費に回す割合 × 所得</p>
+<div class="sim">
+  <div class="figbox" style="border:none;padding:0"><svg id="gCons" viewBox="0 0 520 360" width="100%" style="max-width:520px;display:block" role="img" aria-label="消費関数のグラフ"></svg></div>
+  <div>
+    <div class="sl"><label for="c0">切片 c₀</label><input type="range" id="c0" min="0" max="100" step="10" value="40"><output id="vc0" for="c0"></output></div>
+    <div class="sl"><label for="c1">傾き c₁</label><input type="range" id="c1" min="0.1" max="0.95" step="0.05" value="0.6"><output id="vc1" for="c1"></output></div>
+    <p class="explain x" id="cNote"></p>
+  </div>
+</div>
+<ul class="dots">
+  <li><b>切片 c₀ ＝ 基礎消費</b>：所得がゼロでも生きるために必要な消費。</li>
+  <li><b>傾き c₁ ＝ 限界消費性向</b>：所得が1円増えたときに増える消費。「もう1円増えたら」なので「限界」と呼ぶ。</li>
+</ul>
+<p>式からグラフの形が描けること、係数の意味が分かること、グラフから式が書けることの3つを目標にしましょう。</p>
+<div class="point"><p>経済学の基本は「制約のもとでの最適化」。直線の式では、切片と傾きがそれぞれ経済的な意味を持つ。</p></div>
+</section>
+
+<section id="s13" data-t="限界概念と微分">
+<h2><span class="sn">13</span>限界概念と微分</h2>
+<p>限界効用、限界消費性向、限界費用など、経済学には「限界」がたくさん出てきます。どれも<span class="mk">少し増やしたら結果がどれだけ変わるか</span>を表し、数学では「傾き」や「微分」に当たります。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="frac"><span>Δ<i>U</i></span><span>Δ<i>x</i></span></span>　→　<span class="bop"><span class="s" style="font-size:1em">lim</span><small>Δ<i>x</i>→0</small></span><span class="frac"><span>Δ<i>U</i></span><span>Δ<i>x</i></span></span> = <i>U</i>′(<i>x</i>)</span></span></div>
+<p class="eq-read">x を少し増やしたときの U の増え方。増やす幅を限りなく小さくしたものが微分（導関数）</p>
+<p>下のグラフは <span class="v">f(x) = x²</span> です。2点を結ぶ線の傾き（平均の変化率）は、幅 Δx を小さくすると、接線の傾き（微分）に近づきます。</p>
+<div class="sim">
+  <div class="figbox" style="border:none;padding:0"><svg id="gDiff" viewBox="0 0 520 360" width="100%" style="max-width:520px;display:block" role="img" aria-label="関数 x の2乗のグラフと、2点を結ぶ線、接線"></svg></div>
+  <div>
+    <div class="meter">
+      <div><small>2点を結ぶ線の傾き</small><strong id="dSec"></strong></div>
+      <div><small>接線の傾き 2x</small><strong id="dTan"></strong></div>
+      <div><small>差</small><strong id="dGap"></strong></div>
+    </div>
+    <div class="sl"><label for="dx0">位置 x</label><input type="range" id="dx0" min="0.5" max="2.5" step="0.1" value="1"><output id="vdx0" for="dx0"></output></div>
+    <div class="sl"><label for="ddx">幅 Δx</label><input type="range" id="ddx" min="0.1" max="1.5" step="0.1" value="1"><output id="vddx" for="ddx"></output></div>
+  </div>
+</div>
+<h3>微分の計算（べき関数）</h3>
+<div class="eq"><span class="f">f(x) = xᵅ　⇒　f′(x) = αxᵅ⁻¹</span></div>
+<p class="eq-read">肩の数字を前に下ろし、肩の数字を1つ減らす。定数を微分すると0</p>
+<div class="num"><span class="h">例</span>
+<table class="calc-t"><tr><td>x² を微分</td><td class="r">2x</td></tr><tr><td>5x を微分（x¹ なので）</td><td class="r">5</td></tr><tr><td>7（定数）を微分</td><td class="r">0</td></tr></table></div>
+<h3>2つ以上の変数がある関数：偏微分</h3>
+<p><span class="v">F(K, L)</span> のように変数が2つ以上あるとき、<span class="mk">1つの変数だけを動かし、ほかは定数とみなして微分する</span>のが<b>偏微分</b>です。<span class="v">K</span> について偏微分したものを <span class="v">F<sub>K</sub></span> や ∂F/∂K と書きます。</p>
+<div class="eq"><span class="f">F(K, L, G) = AKᵅLᵝGᵞ　⇒　F<sub>K</sub> = αAKᵅ⁻¹LᵝGᵞ</span></div>
+<p class="eq-read">K だけを変数とみて微分。A、L、G は定数のまま残る</p>
+<p>なぜ限界の考え方が大事なのでしょう。企業の利潤（収入 − 費用）がいちばん大きくなるのは、<b>限界収入 ＝ 限界費用</b>のときです。第10節で見た「限界便益 ＝ 限界費用」も同じ考え方です。</p>
+<p class="xref">微分と偏微分は <a href="#s22" data-goto="s22">課題 演習(2)の(1)(3)</a> で使います</p>
+<div class="point"><p>「限界」＝少し増やしたときの変化＝傾き＝微分。最適な点では「限界○○＝限界△△」が成り立つ。</p></div>
+</section>
+
+<section id="s14" data-t="無限等比級数と乗数">
+<h2><span class="sn">14</span>無限等比級数の和と乗数</h2>
+<p>マクロ経済学では、あるショックが次々に波及していく効果（<b>乗数</b>）を計算します。例えば政府支出を増やすと、GDP は何倍に増えるでしょうか。</p>
+<div class="eq"><span class="f">Y = C + I + G　①　　C = a + bY　②</span></div>
+<p class="eq-read">①需要と供給が等しい　②消費は所得で決まる（b は限界消費性向）</p>
+<p>政府支出を ΔG 増やすと、①より Y が ΔG 増える → ②より C が bΔG 増える → ①より Y が bΔG 増える → ②より C が b²ΔG 増える…と、波及が永遠に続きます。</p>
+<div class="eq mxeq"><span class="f"><span class="mx">Δ<i>Y</i> = (1 + <i>b</i> + <i>b</i><sup>2</sup> + <i>b</i><sup>3</sup> + ⋯)Δ<i>G</i> = <span class="frac"><span>1</span><span>1 − <i>b</i></span></span>Δ<i>G</i></span></span></div>
+<p class="eq-read">波及の合計は無限等比級数。初項1、公比 b の和は 1/(1 − b)</p>
+<div class="sim">
+  <div class="figbox" style="border:none;padding:0"><svg id="gMult" viewBox="0 0 520 340" width="100%" style="max-width:520px;display:block" role="img" aria-label="乗数効果の波及を表す棒グラフ"></svg></div>
+  <div>
+    <div class="meter">
+      <div><small>12回目までの合計</small><strong id="mSum"></strong></div>
+      <div><small>乗数 1/(1−b)</small><strong id="mLim"></strong></div>
+      <div><small>ΔG = 1 のとき ΔY</small><strong id="mDY"></strong></div>
+    </div>
+    <div class="sl"><label for="mb">限界消費性向 b</label><input type="range" id="mb" min="0.5" max="0.9" step="0.05" value="0.8"><output id="vmb" for="mb"></output></div>
+    <p class="sm">棒は各回の増加（1, b, b², …）、折れ線はそこまでの合計。合計は 1/(1−b) に近づいていく。</p>
+  </div>
+</div>
+<h3>公式（テキスト付録A）</h3>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>S<sub>n</sub></i> = <i>a</i> + <i>ar</i> + <i>ar</i><sup>2</sup> + ⋯ + <i>ar</i><sup><i>n</i>−1</sup> = <span class="frac"><span><i>a</i>(1 − <i>r<sup>n</sup></i>)</span><span>1 − <i>r</i></span></span></span></span></div>
+<p class="eq-read">初項 a、公比 r の等比数列の、n 項目までの和</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="bop"><span class="s" style="font-size:1em">lim</span><small><i>n</i>→∞</small></span><i>S<sub>n</sub></i> = <span class="frac"><span><i>a</i></span><span>1 − <i>r</i></span></span>　（0 &lt; <i>r</i> &lt; 1）</span></span></div>
+<p class="eq-read">公比が1より小さければ、r<sup>n</sup> はどんどん0に近づくので、和は a/(1 − r) に落ち着く</p>
+<div class="num"><span class="h">数値例（b = 0.8）</span>
+<table class="calc-t"><tr><td>乗数 1/(1 − 0.8)</td><td class="r">1 ÷ 0.2 ＝ 5</td></tr><tr><td>政府支出を1兆円増やすと</td><td class="r">GDP は 5兆円増える</td></tr></table></div>
+<p class="xref">この公式は <a href="#s21" data-goto="s21">課題 演習(1)の(3)</a> の補足でも使います</p>
+<div class="point"><p>波及効果の合計は無限等比級数 a/(1 − r) で計算できる。政府支出乗数は 1/(1 − b)。</p></div>
+</section>
+
+<section id="s15" data-t="総和記号Σと総積記号Π">
+<h2><span class="sn">15</span>総和記号 Σ と総積記号 Π</h2>
+<p>たくさんの項を足したり掛けたりする式は、記号でまとめて書きます。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="bop"><small><i>n</i></small><span class="s">Σ</span><small><i>i</i>=1</small></span><i>X<sub>i</sub></i> = <i>X</i><sub>1</sub> + <i>X</i><sub>2</sub> + ⋯ + <i>X<sub>n</sub></i></span></span><span class="no">総和（シグマ）</span></div>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="bop"><small><i>n</i></small><span class="s">Π</span><small><i>i</i>=1</small></span><i>X<sub>i</sub></i> = <i>X</i><sub>1</sub> × <i>X</i><sub>2</sub> × ⋯ × <i>X<sub>n</sub></i></span></span><span class="no">総積（パイ）</span></div>
+<p class="eq-read">下の「i = 1」から上の「n」まで、i を1ずつ増やしながら、右の式に i を入れて足す（Σ）、または掛ける（Π）</p>
+<div class="memo"><span class="who">メモ：Σ は「くり返しの指示書」</span>「i を1から順に入れて、出てきたものを全部足しなさい」という命令文だと思えばよい。i はくり返しのたびに変わる番号で、最後には式から消える。</div>
+<h3>書き下してみよう</h3>
+<div class="calc">
+  <div class="sl" style="grid-template-columns:9.5em 1fr 4.4em"><label for="sn">項の数 n</label><input type="range" id="sn" min="1" max="6" step="1" value="3"><output id="vsn" for="sn"></output></div>
+  <div class="gsw" role="group" aria-label="例の切り替え" style="margin-top:8px"><button type="button" data-g="sig" data-s="0" aria-pressed="true">Σ 2i</button><button type="button" data-g="sig" data-s="1" aria-pressed="false">Σ 1/2ⁱ</button><button type="button" data-g="sig" data-s="2" aria-pressed="false">Π (1 + i)</button></div>
+  <div class="out" id="sigOut" style="font-family:var(--font-math);font-size:1.1rem;margin-top:10px" aria-live="polite"></div>
+</div>
+<h3>よく使う性質</h3>
+<ul class="dots">
+  <li>定数は Σ の外に出せる：Σ cX<sub>i</sub> ＝ c Σ X<sub>i</sub></li>
+  <li>番号の文字は何でもよい：Σ<sub>i=1</sub> X<sub>i</sub> と Σ<sub>t=1</sub> X<sub>t</sub> は同じ</li>
+  <li>Π で同じものを n 回掛けると累乗：Π<sub>i=1</sub><sup>n</sup> c ＝ cⁿ</li>
+</ul>
+<p class="xref">Σ と Π は <a href="#s20" data-goto="s20">課題 演習(1)</a> で使います</p>
+<div class="point"><p>Σ は「番号を変えながら足す」、Π は「番号を変えながら掛ける」。下が始まり、上が終わりの番号。</p></div>
+</section>
+
+<section id="s16" data-t="積分は面積">
+<h2><span class="sn">16</span>微分と積分の関係、積分は面積</h2>
+<p>微分と積分は逆の操作です。元の関数 <span class="v">f(x)</span> を<b>原始関数</b>、微分した <span class="v">f′(x)</span> を<b>導関数</b>と呼びます。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="bop"><small></small><span class="s">∫</span><small></small></span><i>f</i>′(<i>x</i>)<i>dx</i> = <i>f</i>(<i>x</i>) + <i>C</i></span></span><span class="no">C は積分定数</span></div>
+<p class="eq-read">導関数を積分すると、元の関数に戻る（定数のぶんだけ分からないので C を付ける）</p>
+<p>積分する範囲を決めたものを<b>定積分</b>と呼びます。定積分は、<span class="mk">グラフと x 軸に挟まれた部分の面積</span>を表します。</p>
+<div class="sim">
+  <div class="figbox" style="border:none;padding:0"><svg id="gInt" viewBox="0 0 520 340" width="100%" style="max-width:520px;display:block" role="img" aria-label="y=2x のグラフと、0から t までの面積"></svg></div>
+  <div>
+    <div class="meter">
+      <div><small>範囲の終わり t</small><strong id="iT"></strong></div>
+      <div><small>面積（三角形）</small><strong id="iA"></strong></div>
+      <div><small>原始関数 t² で計算</small><strong id="iF"></strong></div>
+    </div>
+    <div class="sl"><label for="it">範囲の終わり t</label><input type="range" id="it" min="0.5" max="3" step="0.5" value="2"><output id="vit" for="it"></output></div>
+    <p class="sm">y = 2x を 0 から t まで積分すると、底辺 t・高さ 2t の三角形の面積 t² になる。これは 2x の原始関数 x² に t を入れた値と一致する。</p>
+  </div>
+</div>
+<p>経済学でも、消費者余剰（第10節）は需要曲線と価格の線に挟まれた面積でした。面積を計算する道具が積分です。</p>
+<p class="xref">積分の図示は <a href="#s23" data-goto="s23">課題 演習(2)の(2)</a> で使います</p>
+<div class="point"><p>微分と積分は逆の操作。定積分は、グラフと x 軸に挟まれた面積を表す。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート5 ===================== -->
+<div class="part" id="matome" data-title="まとめと演習" data-desc="章全体の要点を振り返り、確認問題で理解を確かめます。理解できたら、次のタブで課題に挑戦しましょう。">
+<section id="s17" data-t="まとめ">
+<h2><span class="sn">17</span>まとめ</h2>
+<div class="tw"><table>
+<thead><tr><th>テーマ</th><th>要点</th></tr></thead>
+<tbody>
+<tr><td>ミクロとマクロ</td><td>ミクロは個々の家計・企業・市場、マクロは国全体の集計量を見る。マクロは一種の一般均衡モデル</td></tr>
+<tr><td>古典派とケインズ派</td><td>価格がすぐ調整されるか（古典派）、硬直的か（ケインズ派）。供給が需要を決めるか、需要が供給を決めるか</td></tr>
+<tr><td>機会費用</td><td>選ばなかった行動の最大の利益。予算線の傾き p/q、PPF の傾き a/b（限界変形率）</td></tr>
+<tr><td>比較優位</td><td>交換の利益を生むのは比較優位。交換比率が2人の機会費用の間なら、2人とも得をする</td></tr>
+<tr><td>市場の機能</td><td>需要曲線の高さ＝限界便益、供給曲線の高さ＝限界費用。市場均衡で社会的余剰が最大</td></tr>
+<tr><td>市場の失敗</td><td>公共財、外部性、競争条件の阻害、情報上の失敗</td></tr>
+<tr><td>数学の道具</td><td>関数と傾き、微分（限界）、無限等比級数（乗数）、Σ と Π、積分（面積）</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s18" data-t="確認問題">
+<h2><span class="sn">18</span>確認問題</h2>
+<p>答えを考えてから「解答を見る」を押してください。</p>
+<div class="q"><div class="qq"><span class="qn">Q1</span><span>時給1,200円のアルバイトを3時間休んで映画（チケット1,800円）を見た。映画を見ることの機会費用はいくら？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>あきらめたバイト代 1,200 × 3 ＝ 3,600円に、チケット代1,800円を加えた 5,400円。お金を払った分だけでなく、あきらめた利益も費用に入る。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q2</span><span>x の価格 3円、y の価格 6円、所得 60円のとき、予算線の x 軸・y 軸との交点と、傾きの大きさは？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>x 軸との交点 60 ÷ 3 ＝ 20、y 軸との交点 60 ÷ 6 ＝ 10、傾きの大きさ 3 ÷ 6 ＝ 0.5。x を1個増やすには y を 0.5 個あきらめる。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q3</span><span>Cさんは x を1個作るのに2時間、y を1個に4時間。Dさんは x に3時間、y に3時間。それぞれ何に比較優位を持つ？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>x の機会費用は、Cさん 2 ÷ 4 ＝ y 0.5個、Dさん 3 ÷ 3 ＝ y 1個。Cさんは x に、Dさんは y に比較優位を持つ。交換比率が 0.5 と 1 の間なら2人とも得をする。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q4</span><span>需要曲線 p = 12 − Q、供給曲線 p = Q のとき、均衡の価格と数量、消費者余剰は？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>12 − Q ＝ Q より Q* ＝ 6、p* ＝ 6。消費者余剰は底辺6、高さ 12 − 6 ＝ 6 の三角形で、6 × 6 ÷ 2 ＝ 18。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q5</span><span>限界消費性向が 0.75 のとき、政府支出乗数はいくら？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>1 ÷ (1 − 0.75) ＝ 1 ÷ 0.25 ＝ 4。政府支出を1増やすと GDP は4増える。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q6</span><span>f(x) = 4x² − 3x + 5 を微分すると？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>f′(x) ＝ 8x − 3。x² は 2x、x は 1、定数5 は 0 になる。</div></div>
+</section>
+<p class="src">出典：麻生良文『マクロ経済学入門』第1章「経済学の基礎」（pp.3–24）、付録A、講義スライド第1章（近藤春生）をもとに、初学者向けに再構成しました。数値例は説明のための架空の値です。</p>
+</div>
+
+<!-- ===================== パート6 ===================== -->
+<div class="part" id="kadai" data-title="課題に挑戦" data-desc="講義スライドの演習(1)(2)を、ヒントから順に解いていきます。解説と答案例は、表示スイッチがオンのときだけ見られます。">
+
+<section id="s19" data-t="課題の設定と準備">
+<h2><span class="sn">19</span>課題の設定と準備</h2>
+<div class="ansSwitch">
+  <label class="sw-l" for="ansToggle"><input type="checkbox" id="ansToggle" role="switch"><span class="sw-ui" aria-hidden="true"></span><span>解説と答案例を表示する</span></label>
+  <span class="sw-note" id="ansNote">オフ：問題とヒントだけを表示しています。</span>
+</div>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch1.docx" download="第1章課題_解答例.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+<div class="kq"><span class="lab">課題（講義スライド 演習(1)(2)）</span>
+<p><b>演習(1)</b>　以下の式を Σ や Π を使わずに書き下せ。</p>
+<p>(1) <span class="mx"><span class="bop"><small><i>s</i></small><span class="s">Σ</span><small><i>i</i>=1</small></span><span class="frac"><span><i>δ</i><sub><i>t</i>+<i>s</i>−<i>i</i></sub></span><span>(1+<i>n</i>)<sup><i>i</i></sup></span></span></span>（テキスト p.286）　(2) <span class="mx"><span class="bop"><small><i>T</i></small><span class="s">Π</span><small><i>i</i>=1</small></span><span class="frac"><span>1+<i>r</i><sub><i>t</i>+<i>i</i></sub></span><span>1+<i>n</i></span></span></span>（テキスト p.320）</p>
+<p>以下の式を Σ や Π を使って表記せよ（<span class="v">C</span> は定数とする）。</p>
+<p>(3) <span class="mx"><span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)</span></span>+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup>2</sup></span></span>+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup>3</sup></span></span>+⋯+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup><i>T</i></sup></span></span></span></p>
+<p>(4) <span class="mx"><span class="frac"><span><i>C</i></span><span>(1+<i>r</i><sub>1</sub>)</span></span>+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i><sub>1</sub>)(1+<i>r</i><sub>2</sub>)</span></span>+⋯+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i><sub>1</sub>)(1+<i>r</i><sub>2</sub>)⋯(1+<i>r<sub>T</sub></i>)</span></span></span></p>
+<p><b>演習(2)</b>　(1) 以下の関数を微分せよ：<span class="mx"><i>f</i>(<i>x</i>) = 3<i>x</i><sup>3</sup> + 2<i>x</i><sup>2</sup> + <i>x</i> + <i>C</i></span>（<span class="v">C</span> は定数）　(2) 以下を図示せよ：<span class="mx"><span class="bop"><small>1</small><span class="s">∫</span><small>0</small></span><i>x dx</i></span>　(3) 以下の関数を各変数について偏微分せよ：<span class="mx"><i>F</i>(<i>K</i>, <i>L</i>) = <i>AK<sup>α</sup>L</i><sup>1−<i>α</i></sup></span></p></div>
+<h3>この課題で使う道具</h3>
+<div class="tw"><table>
+<thead><tr><th>問題</th><th>使う道具</th><th>復習</th></tr></thead>
+<tbody>
+<tr><td>演習(1) (1)〜(4)</td><td>総和記号 Σ、総積記号 Π</td><td><a href="#s15" data-goto="s15">第15節</a></td></tr>
+<tr><td>演習(2) (1)</td><td>べき関数の微分</td><td><a href="#s13" data-goto="s13">第13節</a></td></tr>
+<tr><td>演習(2) (2)</td><td>定積分＝面積</td><td><a href="#s16" data-goto="s16">第16節</a></td></tr>
+<tr><td>演習(2) (3)</td><td>偏微分（ほかの変数は定数とみなす）</td><td><a href="#s13" data-goto="s13">第13節</a></td></tr>
+</tbody></table></div>
+<h3>出てくる記号の意味（テキストの後半の章で使われるもの）</h3>
+<p>演習(1)の式は、テキストの後半（p.286、p.320）に出てくる式です。意味が分からなくても、記号のルールどおりに書き下せば解けます。</p>
+<ul class="dots">
+  <li><span class="v">t</span>：時点（何年目か）。<span class="v">δ<sub>t</sub></span> のように右下に付くと「t 年目の δ」という意味。</li>
+  <li><span class="v">n</span>：人口の成長率など、ある一定の率。<span class="v">r<sub>t</sub></span>：t 年目の利子率。</li>
+  <li><span class="v">C</span>：毎期同じ額（定数）。<span class="v">C/(1+r)<sup>t</sup></span> は「t 年後の C を今の価値に直したもの（割引現在価値）」。</li>
+</ul>
+</section>
+
+<section id="s20" data-t="演習(1) (1)(2) 書き下す">
+<h2><span class="sn">20</span>演習(1)の(1)(2)：Σ・Π を使わずに書き下す</h2>
+<div class="kq"><span class="lab">問題</span>
+<p>(1) <span class="mx"><span class="bop"><small><i>s</i></small><span class="s">Σ</span><small><i>i</i>=1</small></span><span class="frac"><span><i>δ</i><sub><i>t</i>+<i>s</i>−<i>i</i></sub></span><span>(1+<i>n</i>)<sup><i>i</i></sup></span></span></span>　　(2) <span class="mx"><span class="bop"><small><i>T</i></small><span class="s">Π</span><small><i>i</i>=1</small></span><span class="frac"><span>1+<i>r</i><sub><i>t</i>+<i>i</i></sub></span><span>1+<i>n</i></span></span></span></p></div>
+<div class="memo hint"><span class="who">ヒント</span>i に 1、2、3、… と順に数字を入れて、出てきた項を並べます。i が入っている場所（添字と肩の数字）を全部置き換えるのがポイント。最後の項は i に s（(2)では T）を入れたものです。</div>
+<p class="xref">復習：<a href="#s15" data-goto="s15">パート4「総和記号Σと総積記号Π」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>どの文字が動くかを確かめる</h3>
+<p>Σ や Π の下に「i = 1」とあるので、<span class="mk">動くのは i だけ</span>です。t、s、n、T は動かない文字（その式の中では決まった値）として、そのまま残します。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>(1) の i に順に数字を入れる</h3>
+<div class="tw"><table>
+<thead><tr><th>i</th><th>δ の添字 t + s − i</th><th>分母 (1 + n)<sup>i</sup></th><th>項</th></tr></thead>
+<tbody>
+<tr><td class="c">1</td><td>t + s − 1</td><td>(1 + n)<sup>1</sup></td><td><span class="mx"><span class="frac"><span><i>δ</i><sub><i>t</i>+<i>s</i>−1</sub></span><span>1+<i>n</i></span></span></span></td></tr>
+<tr><td class="c">2</td><td>t + s − 2</td><td>(1 + n)<sup>2</sup></td><td><span class="mx"><span class="frac"><span><i>δ</i><sub><i>t</i>+<i>s</i>−2</sub></span><span>(1+<i>n</i>)<sup>2</sup></span></span></span></td></tr>
+<tr><td class="c">3</td><td>t + s − 3</td><td>(1 + n)<sup>3</sup></td><td><span class="mx"><span class="frac"><span><i>δ</i><sub><i>t</i>+<i>s</i>−3</sub></span><span>(1+<i>n</i>)<sup>3</sup></span></span></span></td></tr>
+<tr><td class="c">⋮</td><td>⋮</td><td>⋮</td><td>⋮</td></tr>
+<tr><td class="c">s</td><td>t + s − s ＝ t</td><td>(1 + n)<sup>s</sup></td><td><span class="mx"><span class="frac"><span><i>δ</i><sub><i>t</i></sub></span><span>(1+<i>n</i>)<sup><i>s</i></sup></span></span></span></td></tr>
+</tbody></table></div>
+<p>i が1つ増えるごとに、<span class="mk">δ の添字は1つ減り、分母の肩の数字は1つ増える</span>ことに注意しましょう。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>(2) の i に順に数字を入れる</h3>
+<p>Π なので、出てきた項を<b>掛け</b>ます。分母の 1 + n は i によらないので、T 回掛けると (1 + n)<sup>T</sup> になります。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="frac"><span>1+<i>r</i><sub><i>t</i>+1</sub></span><span>1+<i>n</i></span></span>×<span class="frac"><span>1+<i>r</i><sub><i>t</i>+2</sub></span><span>1+<i>n</i></span></span>×⋯×<span class="frac"><span>1+<i>r</i><sub><i>t</i>+<i>T</i></sub></span><span>1+<i>n</i></span></span> = <span class="frac"><span>(1+<i>r</i><sub><i>t</i>+1</sub>)(1+<i>r</i><sub><i>t</i>+2</sub>)⋯(1+<i>r</i><sub><i>t</i>+<i>T</i></sub>)</span><span>(1+<i>n</i>)<sup><i>T</i></sup></span></span></span></span></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>数字を入れて確かめる</h3>
+<div class="num"><span class="h">(1) で s = 3 のとき</span>
+<p style="margin:0">i ＝ 1, 2, 3 の3項：<span class="mx"><span class="frac"><span><i>δ</i><sub><i>t</i>+2</sub></span><span>1+<i>n</i></span></span>+<span class="frac"><span><i>δ</i><sub><i>t</i>+1</sub></span><span>(1+<i>n</i>)<sup>2</sup></span></span>+<span class="frac"><span><i>δ<sub>t</sub></i></span><span>(1+<i>n</i>)<sup>3</sup></span></span></span>。項の数は s 個になる。</p></div>
+<div class="trap"><b>よくある間違い</b>　(1) で δ の添字を「t + s + i」のように逆向きにしてしまう、分母の肩の i を書き忘れる。(2) で分母を「T(1 + n)」としてしまう（掛け算を T 回くり返すので (1 + n)<sup>T</sup>）。</div>
+<div class="point ketsu"><p>(1) δ<sub>t+s−1</sub>/(1+n) + δ<sub>t+s−2</sub>/(1+n)² + ⋯ + δ<sub>t</sub>/(1+n)<sup>s</sup>　(2) (1+r<sub>t+1</sub>)(1+r<sub>t+2</sub>)⋯(1+r<sub>t+T</sub>)/(1+n)<sup>T</sup></p></div>
+<div class="answer">
+<p>(1) i = 1, 2, …, s を順に代入して足し合わせる。δ の添字は i が1増えるごとに1減り、分母の指数は1増える。</p>
+<p class="mxblock"><span class="mx"><span class="bop"><small><i>s</i></small><span class="s">Σ</span><small><i>i</i>=1</small></span><span class="frac"><span><i>δ</i><sub><i>t</i>+<i>s</i>−<i>i</i></sub></span><span>(1+<i>n</i>)<sup><i>i</i></sup></span></span> = <span class="frac"><span><i>δ</i><sub><i>t</i>+<i>s</i>−1</sub></span><span>1+<i>n</i></span></span>+<span class="frac"><span><i>δ</i><sub><i>t</i>+<i>s</i>−2</sub></span><span>(1+<i>n</i>)<sup>2</sup></span></span>+⋯+<span class="frac"><span><i>δ<sub>t</sub></i></span><span>(1+<i>n</i>)<sup><i>s</i></sup></span></span></span></p>
+<p>(2) i = 1, 2, …, T を順に代入して掛け合わせる。分母の 1 + n は T 回掛けるので (1 + n)<sup>T</sup> となる。</p>
+<p class="mxblock"><span class="mx"><span class="bop"><small><i>T</i></small><span class="s">Π</span><small><i>i</i>=1</small></span><span class="frac"><span>1+<i>r</i><sub><i>t</i>+<i>i</i></sub></span><span>1+<i>n</i></span></span> = <span class="frac"><span>1+<i>r</i><sub><i>t</i>+1</sub></span><span>1+<i>n</i></span></span>×⋯×<span class="frac"><span>1+<i>r</i><sub><i>t</i>+<i>T</i></sub></span><span>1+<i>n</i></span></span> = <span class="frac"><span>(1+<i>r</i><sub><i>t</i>+1</sub>)(1+<i>r</i><sub><i>t</i>+2</sub>)⋯(1+<i>r</i><sub><i>t</i>+<i>T</i></sub>)</span><span>(1+<i>n</i>)<sup><i>T</i></sup></span></span></span></p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s21" data-t="演習(1) (3)(4) 記号で表す">
+<h2><span class="sn">21</span>演習(1)の(3)(4)：Σ・Π を使って表す</h2>
+<div class="kq"><span class="lab">問題</span>
+<p>(3) <span class="mx"><span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)</span></span>+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup>2</sup></span></span>+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup>3</sup></span></span>+⋯+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup><i>T</i></sup></span></span></span></p>
+<p>(4) <span class="mx"><span class="frac"><span><i>C</i></span><span>(1+<i>r</i><sub>1</sub>)</span></span>+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i><sub>1</sub>)(1+<i>r</i><sub>2</sub>)</span></span>+⋯+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i><sub>1</sub>)(1+<i>r</i><sub>2</sub>)⋯(1+<i>r<sub>T</sub></i>)</span></span></span>（C は定数）</p></div>
+<div class="memo hint"><span class="who">ヒント</span>項ごとに「何が変わり、何が変わらないか」を見て、変わる部分を番号 t で表します。(4) は、分母が「掛け算の列」で、その長さが項ごとに1つずつ伸びていきます。Σ の中に Π を入れることを考えましょう。</div>
+<p class="xref">復習：<a href="#s15" data-goto="s15">パート4「総和記号Σと総積記号Π」</a>、<a href="#s14" data-goto="s14">「無限等比級数と乗数」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>(3) で変わる部分を見つける</h3>
+<div class="tw"><table>
+<thead><tr><th>何項目</th><th>1</th><th>2</th><th>3</th><th>⋯</th><th>T</th></tr></thead>
+<tbody><tr><td>分子</td><td>C</td><td>C</td><td>C</td><td>⋯</td><td>C</td></tr>
+<tr><td>分母の肩の数字</td><td>1</td><td>2</td><td>3</td><td>⋯</td><td>T</td></tr></tbody></table></div>
+<p>変わるのは<span class="mk">分母の肩の数字だけ</span>で、それは「何項目か」と同じです。番号を t とすると、t 項目は C/(1 + r)<sup>t</sup>。t を1から T まで動かして足します。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="bop"><small><i>T</i></small><span class="s">Σ</span><small><i>t</i>=1</small></span><span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup><i>t</i></sup></span></span> = <i>C</i><span class="bop"><small><i>T</i></small><span class="s">Σ</span><small><i>t</i>=1</small></span><span class="frac"><span>1</span><span>(1+<i>r</i>)<sup><i>t</i></sup></span></span></span></span></div>
+<p class="eq-read">定数 C は Σ の外に出してもよい。番号の文字は i でもよい</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>(4) で変わる部分を見つける</h3>
+<p>(4) の t 項目の分母は、(1 + r<sub>1</sub>) から (1 + r<sub>t</sub>) までの <b>t 個の掛け算</b>です。これを Π で書くと次のようになります。</p>
+<div class="eq mxeq"><span class="f"><span class="mx">（t 項目の分母）= (1+<i>r</i><sub>1</sub>)(1+<i>r</i><sub>2</sub>)⋯(1+<i>r<sub>t</sub></i>) = <span class="bop"><small><i>t</i></small><span class="s">Π</span><small><i>i</i>=1</small></span>(1+<i>r<sub>i</sub></i>)</span></span></div>
+<p>あとは t を1から T まで動かして足します。<span class="mk">Σ の番号（t）と Π の番号（i）を別の文字にする</span>のがポイントです。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="bop"><small><i>T</i></small><span class="s">Σ</span><small><i>t</i>=1</small></span><span class="frac"><span><i>C</i></span><span><span class="bop"><small><i>t</i></small><span class="s">Π</span><small><i>i</i>=1</small></span>(1+<i>r<sub>i</sub></i>)</span></span></span></span></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>意味を確かめる：割引現在価値</h3>
+<p>(3) は「毎年 C を T 年間受け取るとき、その合計を今の価値に直したもの」です。(4) は、年によって利子率が r<sub>1</sub>、r<sub>2</sub>、… と変わる場合の同じ計算です。利子率がずっと r なら、(4) は (3) と同じになります。</p>
+<p>(3) は初項 C/(1 + r)、公比 1/(1 + r) の等比数列の和なので、<a href="#s14" data-goto="s14">第14節</a>の公式で計算もできます。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="bop"><small><i>T</i></small><span class="s">Σ</span><small><i>t</i>=1</small></span><span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup><i>t</i></sup></span></span> = <span class="frac"><span><i>C</i></span><span><i>r</i></span></span><span style="font-size:1.4em">{</span>1 − <span class="frac"><span>1</span><span>(1+<i>r</i>)<sup><i>T</i></sup></span></span><span style="font-size:1.4em">}</span></span></span><span class="no">（補足）</span></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>数字を入れて確かめる</h3>
+<div class="num"><span class="h">C = 100、T = 3 の場合（架空の値）</span>
+<table class="calc-t">
+<tr><td>(3) r = 10%：100/1.1 + 100/1.1² + 100/1.1³</td><td class="r">90.91 + 82.64 + 75.13 ＝ 248.69</td></tr>
+<tr><td>　補足の公式：100/0.1 × (1 − 1/1.1³)</td><td class="r">248.69（一致）</td></tr>
+<tr><td>(4) r₁ = 10%、r₂ = 5%、r₃ = 2%：100/1.1 + 100/(1.1×1.05) + 100/(1.1×1.05×1.02)</td><td class="r">90.91 + 86.58 + 84.88 ＝ 262.37</td></tr>
+</table></div>
+<div class="trap"><b>よくある間違い</b>　(3) で Σ の範囲を t = 0 から始めてしまう（最初の項の肩は1）。(4) で分母を (1 + r<sub>t</sub>) だけにしてしまう（t 項目の分母は r<sub>1</sub> から r<sub>t</sub> までの掛け算）。Σ と Π に同じ番号の文字を使ってしまう。</div>
+<div class="point ketsu"><p>(3) Σ<sub>t=1</sub><sup>T</sup> C/(1+r)<sup>t</sup>　(4) Σ<sub>t=1</sub><sup>T</sup> C / Π<sub>i=1</sub><sup>t</sup>(1+r<sub>i</sub>)</p></div>
+<div class="answer">
+<p>(3) 各項は分子が定数 C で、分母の指数が項の番号と等しい。番号を t とすれば、t 項目は C/(1 + r)<sup>t</sup> であり、t = 1 から T まで足し合わせる。</p>
+<p class="mxblock"><span class="mx"><span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)</span></span>+⋯+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup><i>T</i></sup></span></span> = <span class="bop"><small><i>T</i></small><span class="s">Σ</span><small><i>t</i>=1</small></span><span class="frac"><span><i>C</i></span><span>(1+<i>r</i>)<sup><i>t</i></sup></span></span></span></p>
+<p>(4) t 項目の分母は (1 + r<sub>1</sub>) から (1 + r<sub>t</sub>) までの積であり、Π<sub>i=1</sub><sup>t</sup>(1 + r<sub>i</sub>) と表せる。これを t = 1 から T まで足し合わせる。</p>
+<p class="mxblock"><span class="mx"><span class="frac"><span><i>C</i></span><span>(1+<i>r</i><sub>1</sub>)</span></span>+⋯+<span class="frac"><span><i>C</i></span><span>(1+<i>r</i><sub>1</sub>)⋯(1+<i>r<sub>T</sub></i>)</span></span> = <span class="bop"><small><i>T</i></small><span class="s">Σ</span><small><i>t</i>=1</small></span><span class="frac"><span><i>C</i></span><span><span class="bop"><small><i>t</i></small><span class="s">Π</span><small><i>i</i>=1</small></span>(1+<i>r<sub>i</sub></i>)</span></span></span></p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s22" data-t="演習(2) (1)(3) 微分と偏微分">
+<h2><span class="sn">22</span>演習(2)の(1)(3)：微分と偏微分</h2>
+<div class="kq"><span class="lab">問題</span>
+<p>(1) <span class="mx"><i>f</i>(<i>x</i>) = 3<i>x</i><sup>3</sup> + 2<i>x</i><sup>2</sup> + <i>x</i> + <i>C</i></span> を微分せよ（C は定数）。　(3) <span class="mx"><i>F</i>(<i>K</i>, <i>L</i>) = <i>AK<sup>α</sup>L</i><sup>1−<i>α</i></sup></span> を各変数について偏微分せよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>(1) 項ごとに「肩の数字を前に下ろし、肩を1つ減らす」。定数を微分すると0。(3) K で偏微分するときは L を定数、L で偏微分するときは K を定数とみなします。L の肩は 1 − α なので、1つ減らすと −α。</div>
+<p class="xref">復習：<a href="#s13" data-goto="s13">パート4「限界概念と微分」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>(1) 項ごとに微分する</h3>
+<div class="tw"><table>
+<thead><tr><th>項</th><th>計算</th><th>微分した結果</th></tr></thead>
+<tbody>
+<tr><td>3x³</td><td>3 × 3x³⁻¹</td><td>9x²</td></tr>
+<tr><td>2x²</td><td>2 × 2x²⁻¹</td><td>4x</td></tr>
+<tr><td>x（＝ x¹）</td><td>1 × x⁰</td><td>1</td></tr>
+<tr><td>C（定数）</td><td>変化しない</td><td>0</td></tr>
+</tbody></table></div>
+<div class="eq"><span class="f">f′(x) = 9x² + 4x + 1</span></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>(3) K について偏微分する</h3>
+<p>L<sup>1−α</sup> と A を定数とみなし、K<sup>α</sup> だけを微分します（α を前に下ろし、肩を α − 1 にする）。</p>
+<div class="eq"><span class="f">F<sub>K</sub> = ∂F/∂K = αAK<sup>α−1</sup>L<sup>1−α</sup></span></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>(3) L について偏微分する</h3>
+<p>A と K<sup>α</sup> を定数とみなし、L<sup>1−α</sup> だけを微分します（1 − α を前に下ろし、肩を (1 − α) − 1 ＝ −α にする）。</p>
+<div class="eq"><span class="f">F<sub>L</sub> = ∂F/∂L = (1 − α)AK<sup>α</sup>L<sup>−α</sup></span></div>
+<p>F<sub>K</sub> は「資本を少し増やしたら生産がどれだけ増えるか」（資本の限界生産物）、F<sub>L</sub> は労働の限界生産物です。それぞれ F<sub>K</sub> = αF/K、F<sub>L</sub> = (1 − α)F/L とも書けます。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>数字を入れて確かめる</h3>
+<div class="num"><span class="h">架空の値で確かめる</span>
+<table class="calc-t">
+<tr><td>(1) x = 1 のとき f′(1) ＝ 9 + 4 + 1</td><td class="r">14</td></tr>
+<tr><td>(3) A = 2、α = 0.5、K = 4、L = 9 のとき F ＝ 2 × 2 × 3</td><td class="r">12</td></tr>
+<tr><td>　F<sub>K</sub> ＝ 0.5 × 2 × 4<sup>−0.5</sup> × 9<sup>0.5</sup> ＝ 0.5 × 2 × 0.5 × 3</td><td class="r">1.5（＝ αF/K ＝ 0.5 × 12 ÷ 4）</td></tr>
+<tr><td>　F<sub>L</sub> ＝ 0.5 × 2 × 4<sup>0.5</sup> × 9<sup>−0.5</sup> ＝ 0.5 × 2 × 2 × (1/3)</td><td class="r">0.667（＝ (1−α)F/L ＝ 0.5 × 12 ÷ 9）</td></tr>
+</table></div>
+<div class="trap"><b>よくある間違い</b>　(1) で定数 C を残してしまう、x の項を x のまま残す（微分すると1）。(3) で L の肩を「1 − α − 1」と書いたまま整理しない、偏微分したいのと別の変数まで微分してしまう。</div>
+<div class="point ketsu"><p>(1) f′(x) = 9x² + 4x + 1　(3) F<sub>K</sub> = αAK<sup>α−1</sup>L<sup>1−α</sup>、F<sub>L</sub> = (1−α)AK<sup>α</sup>L<sup>−α</sup></p></div>
+<div class="answer">
+<p>(1) べき関数の微分 (x<sup>n</sup>)′ = nx<sup>n−1</sup> を項ごとに用いる。定数 C の微分は0である。</p>
+<p class="mxblock"><span class="mx"><i>f</i>′(<i>x</i>) = 9<i>x</i><sup>2</sup> + 4<i>x</i> + 1</span></p>
+<p>(3) K について偏微分するときは A と L を定数とみなし、L について偏微分するときは A と K を定数とみなす。</p>
+<p class="mxblock"><span class="mx"><i>F<sub>K</sub></i> = <span class="frac"><span>∂<i>F</i></span><span>∂<i>K</i></span></span> = <i>αAK</i><sup><i>α</i>−1</sup><i>L</i><sup>1−<i>α</i></sup>,　<i>F<sub>L</sub></i> = <span class="frac"><span>∂<i>F</i></span><span>∂<i>L</i></span></span> = (1−<i>α</i>)<i>AK<sup>α</sup>L</i><sup>−<i>α</i></sup></span></p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s23" data-t="演習(2) (2) 積分を図示する">
+<h2><span class="sn">23</span>演習(2)の(2)：積分を図示する</h2>
+<div class="kq"><span class="lab">問題</span>
+<p>(2) <span class="mx"><span class="bop"><small>1</small><span class="s">∫</span><small>0</small></span><i>x dx</i></span> を図示せよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>定積分は「グラフと x 軸に挟まれた部分の面積」でした。まず y = x のグラフを描き、x = 0 から x = 1 までの範囲に色を塗りましょう。どんな図形になるでしょうか。</div>
+<p class="xref">復習：<a href="#s16" data-goto="s16">パート4「積分は面積」</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>積分の中身のグラフを描く</h3>
+<p>∫ の中身は x なので、<span class="mk">y = x のグラフ</span>（原点を通る傾き1の直線）を描きます。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>範囲を決めて塗る</h3>
+<p>∫ の下の 0 と上の 1 が範囲です。x = 0 から x = 1 まで、直線 y = x と x 軸に挟まれた部分を塗ります。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="int1" data-s="0" aria-pressed="true">グラフを描く</button><button type="button" data-g="int1" data-s="1" aria-pressed="false">面積を塗る</button></div>
+  <svg id="gInt1" viewBox="0 0 440 340" role="img" aria-label="y=x のグラフと、0から1までの三角形の面積"></svg>
+  <p class="gcap" id="gInt1-cap"></p>
+</div>
+<h3>答案にグラフを描くときの手順</h3>
+<ol class="howto">
+  <li>横軸に x、縦軸に y と書き、原点 O を書く。</li>
+  <li>原点を通る傾き1の直線を描き、「y = x」と書き込む。</li>
+  <li>x = 1 に縦の点線を引き、直線との交点 (1, 1) に印を付ける。</li>
+  <li>原点、(1, 0)、(1, 1) を頂点とする三角形に斜線を引き、「∫₀¹ x dx」と書く。</li>
+</ol>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>面積を計算して確かめる</h3>
+<p>塗った部分は、底辺1、高さ1の直角三角形です。面積は 1 × 1 ÷ 2 ＝ 1/2。原始関数を使って計算しても同じになります。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="bop"><small>1</small><span class="s">∫</span><small>0</small></span><i>x dx</i> = <span style="font-size:1.4em">[</span><span class="frac"><span><i>x</i><sup>2</sup></span><span>2</span></span><span style="font-size:1.4em">]</span><sub>0</sub><sup>1</sup> = <span class="frac"><span>1</span><span>2</span></span> − 0 = <span class="frac"><span>1</span><span>2</span></span></span></span></div>
+<p class="eq-read">x²/2 を微分すると x に戻る（x²/2 は x の原始関数）</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　直線だけ描いて範囲を塗らない（問われているのは面積）。範囲を x = 0〜1 ではなく y = 0〜1 として塗ってしまう。</div>
+<div class="point ketsu"><p>y = x と x 軸、x = 1 で囲まれた三角形の面積として図示できる。面積は 1/2。</p></div>
+<div class="answer">
+<p>∫₀¹ x dx は、直線 y = x と x 軸、および直線 x = 1 で囲まれた部分の面積を表す。これは原点 O、点 (1, 0)、点 (1, 1) を頂点とする直角三角形であり、図のように斜線で示される。</p>
+<p>その面積は底辺1、高さ1より 1 × 1 ÷ 2 = 1/2 である（原始関数 x²/2 を用いても [x²/2]₀¹ = 1/2 となり一致する）。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s24" data-t="課題のまとめ">
+<h2><span class="sn">24</span>課題のまとめ</h2>
+<p class="locked">まとめは、解説の公開後に表示されます。</p>
+<div class="sol open-when-on">
+<div class="tw"><table>
+<thead><tr><th>問題</th><th>答え</th><th>ポイント</th></tr></thead>
+<tbody>
+<tr><td>演習(1) (1)</td><td>δ<sub>t+s−1</sub>/(1+n) + δ<sub>t+s−2</sub>/(1+n)² + ⋯ + δ<sub>t</sub>/(1+n)<sup>s</sup></td><td>i が増えると添字は減り、肩は増える</td></tr>
+<tr><td>演習(1) (2)</td><td>(1+r<sub>t+1</sub>)(1+r<sub>t+2</sub>)⋯(1+r<sub>t+T</sub>)/(1+n)<sup>T</sup></td><td>Π は掛け算。1 + n を T 回掛ける</td></tr>
+<tr><td>演習(1) (3)</td><td>Σ<sub>t=1</sub><sup>T</sup> C/(1+r)<sup>t</sup></td><td>変わるのは分母の肩だけ</td></tr>
+<tr><td>演習(1) (4)</td><td>Σ<sub>t=1</sub><sup>T</sup> C/Π<sub>i=1</sub><sup>t</sup>(1+r<sub>i</sub>)</td><td>Σ と Π で番号の文字を分ける</td></tr>
+<tr><td>演習(2) (1)</td><td>9x² + 4x + 1</td><td>定数の微分は0</td></tr>
+<tr><td>演習(2) (2)</td><td>y = x、x 軸、x = 1 で囲まれた三角形（面積 1/2）</td><td>定積分は面積</td></tr>
+<tr><td>演習(2) (3)</td><td>F<sub>K</sub> = αAK<sup>α−1</sup>L<sup>1−α</sup>、F<sub>L</sub> = (1−α)AK<sup>α</sup>L<sup>−α</sup></td><td>ほかの変数は定数とみなす</td></tr>
+</tbody></table></div>
+<h3>解くときの3つの問い</h3>
+<ol class="steps">
+  <li><b>動く文字はどれか？</b>　Σ・Π の下に書かれた番号だけが動く。ほかの文字はそのまま残す。</li>
+  <li><b>何が変わり、何が変わらないか？</b>　項を並べて比べ、変わる部分を番号で表す。</li>
+  <li><b>数字を入れて確かめたか？</b>　小さな数（s = 3 など）で書き出すと、間違いに気づきやすい。</li>
+</ol>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch1.docx" download="第1章課題_解答例.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+</div>
+</section>
+<p class="src">課題：講義スライド第1章 演習(1)(2)。数値例は説明のための架空の値です。</p>
+</div>
+
+<div class="pager" id="pager"></div>
+</main>
+
+<script>
+/* 解説と答案例を最初から表示するときは true に変える */
+const ANSWERS_DEFAULT_ON=false;
+/* 第1章：グラフとシミュレーター */
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const K={ink:"#22252b",sub:"#5e6470",grid:"#e3e7ed",blue:"#1f4e9c",teal:"#0b6b5d",red:"#c8361f",base:"#a9b0bb",csf:"rgba(31,78,156,.20)",psf:"rgba(200,54,31,.18)",dwf:"rgba(94,100,112,.22)"};
+  const $=id=>document.getElementById(id);
+  const f1=v=>(Math.round(v*10)/10).toString();
+  const f2=v=>(Math.round(v*100)/100).toString();
+
+  function plot(id,o){
+    const svg=$(id);while(svg.firstChild)svg.removeChild(svg.firstChild);
+    const vb=svg.viewBox.baseVal,W=vb.width,H=vb.height;
+    const L=o.left||56,R=W-(o.right||24),T=o.top||24,B=H-(o.bottom||40);
+    const X=v=>L+(v-o.xmin)/(o.xmax-o.xmin)*(R-L), Y=v=>B-(v-o.ymin)/(o.ymax-o.ymin)*(B-T);
+    const el=(t,a,txt,fill)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;if(fill)e.style.fill=fill;svg.appendChild(e);return e;};
+    (o.xt||[]).forEach(v=>{el("line",{x1:X(v),x2:X(v),y1:T,y2:B,stroke:K.grid});el("text",{x:X(v),y:B+16,"text-anchor":"middle","font-size":11},String(v),K.sub);});
+    (o.yt||[]).forEach(v=>{el("line",{x1:L,x2:R,y1:Y(v),y2:Y(v),stroke:K.grid});el("text",{x:L-8,y:Y(v)+4,"text-anchor":"end","font-size":11},String(v),K.sub);});
+    el("line",{x1:L,y1:B,x2:R,y2:B,stroke:K.ink,"stroke-width":1.5});
+    el("line",{x1:L,y1:B,x2:L,y2:T-6,stroke:K.ink,"stroke-width":1.5});
+    el("text",{x:L-8,y:T-8,"text-anchor":"end","font-size":15,class:"m"},o.ylab||"y");
+    el("text",{x:R,y:B+32,"text-anchor":"end","font-size":15,class:"m"},o.xlab||"x");
+    el("text",{x:L-8,y:B+16,"text-anchor":"end","font-size":13,class:"m"},"O");
+    const api={X,Y,el,L,R,T,B,
+      line:(x1,y1,x2,y2,c,w,d)=>el("line",{x1:X(x1),y1:Y(y1),x2:X(x2),y2:Y(y2),stroke:c||K.ink,"stroke-width":w||2.5,"stroke-dasharray":d||""}),
+      path:(pts,c,w,d)=>el("polyline",{points:pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" "),fill:"none",stroke:c||K.ink,"stroke-width":w||2.5,"stroke-dasharray":d||""}),
+      area:(pts,f)=>el("polygon",{points:pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" "),fill:f,stroke:"none"}),
+      dot:(x,y,c,r)=>el("circle",{cx:X(x),cy:Y(y),r:r||4.5,fill:c||K.ink}),
+      txt:(x,y,s,a)=>{a=a||{};const t=el("text",{x:X(x)+(a.dx||0),y:Y(y)+(a.dy||0),"text-anchor":a.anchor||"start","font-size":a.size||13,"font-weight":a.bold?700:400,class:a.m?"m":""},s,a.color);return t;}
+    };
+    return api;
+  }
+  const state={};
+  const R={};
+  function caption(id,t){const e=$(id+"-cap");if(e)e.innerHTML=t;}
+  document.querySelectorAll(".gsw button").forEach(b=>b.addEventListener("click",()=>{const g=b.dataset.g;state[g]=+b.dataset.s;document.querySelectorAll('.gsw button[data-g="'+g+'"]').forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));if(R[g])R[g]();}));
+  document.querySelectorAll(".gsw").forEach(box=>{const on=box.querySelector('[aria-pressed="true"]');if(on)state[on.dataset.g]=+on.dataset.s;});
+
+  /* 予算線 */
+  R.budget=function(){
+    const p=+$("bP").value,q=+$("bQ").value,I=+$("bI").value;
+    $("vP").textContent=p;$("vQ").textContent=q;$("vI").textContent=I;
+    const g=plot("gBudget",{xmin:0,xmax:44,ymin:0,ymax:44,xt:[10,20,30,40],yt:[10,20,30,40]});
+    if(!(p===2&&q===4&&I===40))g.line(0,10,20,0,K.base,2,"5 5");
+    g.area([[0,0],[I/p,0],[0,I/q]],"rgba(31,78,156,.10)");
+    g.line(0,I/q,I/p,0,K.blue,3);
+    g.dot(I/p,0,K.blue);g.dot(0,I/q,K.blue);
+    g.txt(I/p,0,"I/p = "+f1(I/p),{dy:-10,anchor:"middle",color:K.blue,bold:true});
+    g.txt(0,I/q,"I/q = "+f1(I/q),{dx:8,dy:-8,color:K.blue,bold:true});
+    g.txt(I/p*0.25,I/q*0.3,"買える範囲",{size:12,color:K.sub,anchor:"middle"});
+    g.txt(I/p*0.5,I/q*0.5,"px + qy = I",{m:true,color:K.blue,dx:12,dy:-4});
+    $("bX").textContent=f1(I/p);$("bY").textContent=f1(I/q);$("bS").textContent=f2(p/q);
+    $("bNote").textContent="x を1個増やすには、y を "+f2(p/q)+" 個あきらめる（機会費用）。灰色の破線は p = 2、q = 4、I = 40 の基準。";
+  };
+  ["bP","bQ","bI"].forEach(i=>$(i).addEventListener("input",R.budget));
+
+  /* 生産可能性フロンティア */
+  R.ppf=function(){
+    const g=plot("gPpf",{xmin:0,xmax:28,ymin:0,ymax:14,xt:[6,12,18,24],yt:[3,6,9,12]});
+    if(!state.ppf){
+      g.line(0,12,24,0,K.ink,3);
+      g.txt(14,5,"x + 2y = 24",{m:true,dx:10});
+      g.line(8,8,10,8,K.red,2);g.line(10,8,10,7,K.red,2);
+      g.txt(9,8,"Δx = 1",{anchor:"middle",dy:-6,color:K.red,size:12});g.txt(10,7.5,"Δy = 0.5",{dx:6,color:K.red,size:12});
+      g.txt(0,12,"12",{dx:-24,dy:4,color:K.sub});g.txt(24,0,"24",{dy:-8,anchor:"middle",color:K.sub});
+      caption("gPpf","a = 1、b = 2、L = 24 の例。どこで測っても、x を1個増やすと y は 0.5 個減る（傾き a/b ＝ 0.5 で一定）。");
+    }else{
+      const pts=[];for(let k=0;k<=60;k++){const th=k/60*Math.PI/2;pts.push([22*Math.sin(th),12*Math.cos(th)]);}
+      g.path(pts,K.ink,3);
+      [[0.35,K.teal],[1.15,K.red]].forEach(([th,c])=>{const x=22*Math.sin(th),y=12*Math.cos(th),s=12*Math.sin(th)/(22*Math.cos(th));g.line(x-3,y+3*s,x+3,y-3*s,c,2);g.dot(x,y,c);g.txt(x,y,"傾き "+f2(s),{dx:8,dy:-8,color:c,bold:true,size:12});});
+      caption("gPpf","x を増やすほど傾きが急になる。x を1個増やす機会費用（限界変形率）が、だんだん大きくなる。");
+    }
+  };
+
+  /* 交換の利益 */
+  R.trade=function(){
+    const g=plot("gTrade",{xmin:0,xmax:26,ymin:0,ymax:14,xt:[5,10,15,20,25],yt:[2,4,6,8,10,12]});
+    g.line(0,12,24,0,K.blue,3);g.txt(9,7.5,"Aさんの PPF",{color:K.blue,bold:true,size:12});
+    g.line(0,10,5,0,K.red,3);g.txt(3.4,4.5,"Bさんの PPF",{color:K.red,bold:true,size:12,dx:8});
+    g.dot(20,2,K.blue);g.txt(20,2,"C",{dx:-6,dy:18,bold:true,color:K.blue});
+    g.dot(2,6,K.red);g.txt(2,6,"E",{dx:-16,dy:4,bold:true,color:K.red});
+    if(state.trade){
+      g.line(11,13,24,0,K.blue,2,"6 5");g.line(0,10,10,0,K.red,2,"6 5");
+      g.dot(24,0,K.blue,6);g.txt(24,0,"A",{dx:-4,dy:-10,bold:true,color:K.blue});
+      g.dot(0,10,K.red,6);g.txt(0,10,"B'",{dx:8,dy:-6,bold:true,color:K.red});
+      g.dot(21,3,K.teal,6);g.txt(21,3,"D",{dx:8,dy:-6,bold:true,color:K.teal});
+      g.dot(3,7,K.teal,6);g.txt(3,7,"F",{dx:8,dy:-6,bold:true,color:K.teal});
+      g.txt(12.5,12.6,"交換後に消費できる範囲（破線）",{size:11,color:K.sub});
+      caption("gTrade","Aさんは x、Bさんは y だけを作り、x 1個 ＝ y 1個で3個ずつ交換する。2人とも C、E より右上の D、F で消費でき、x も y も増える。");
+    }else{
+      caption("gTrade","自給自足では、Aさんは C（x 20、y 2）、Bさんは E（x 2、y 6）で生産し、そのまま消費する。");
+    }
+  };
+
+  /* 交換比率 */
+  R.xr=function(){
+    const v=+$("xr").value;$("xrv").textContent=f1(v);
+    const a=v-0.5,b=2-v;
+    const s=x=>(x>0?"+":"")+f1(x);
+    $("xrA").textContent=s(a);$("xrA").className=a>0?"plus":a<0?"minus":"";
+    $("xrB").textContent=s(b);$("xrB").className=b>0?"plus":b<0?"minus":"";
+    const j=$("xrJ");if(a>0&&b>0){j.textContent="2人とも得";j.className="plus";}else if(a<=0&&b<=0){j.textContent="—";j.className="";}else{j.textContent=a<=0?"Aさんが損":"Bさんが損";j.className="minus";}
+  };
+  $("xr").addEventListener("input",R.xr);
+
+  /* 需要と供給 */
+  R.mkt=function(){
+    const s=state.mkt===undefined?1:state.mkt;
+    const g=plot("gMkt",{xmin:0,xmax:11,ymin:0,ymax:11,xt:[2,5,8],yt:[2,5,8],xlab:"Q",ylab:"p"});
+    g.line(0.5,9.5,10,0,K.ink,3);g.txt(10,0,"D",{dx:-4,dy:-8,m:true,bold:true});
+    g.line(0,0,10,10,K.ink,3);g.txt(10,10,"S",{dx:6,m:true,bold:true});
+    g.dot(5,5,K.ink);g.txt(5,5,"E",{dx:-18,dy:-6,m:true,bold:true});
+    if(s===1){g.line(0,5,5,5,K.sub,1.2,"4 4");g.line(5,0,5,5,K.sub,1.2,"4 4");g.txt(0,5,"p*",{dx:-28,dy:4,m:true});caption("gMkt","p* ＝ 5 では、買いたい量も売りたい量も5で一致する（市場均衡）。価格はもう動かない。");}
+    else{
+      const p=s===0?8:2,qd=10-p,qs=p,c=s===0?K.red:K.blue;
+      g.line(0,p,10,p,K.sub,1.2,"4 4");g.txt(0,p,s===0?"p₁":"p₂",{dx:-28,dy:4,m:true});
+      g.dot(qd,p,K.ink);g.dot(qs,p,K.ink);
+      g.line(Math.min(qd,qs),p,Math.max(qd,qs),p,c,6);
+      g.txt((qd+qs)/2,p,s===0?"超過供給 "+(qs-qd):"超過需要 "+(qd-qs),{anchor:"middle",dy:-12,bold:true,color:c});
+      g.txt(5,s===0?6.6:3.2,s===0?"↓ 価格が下がる":"↑ 価格が上がる",{anchor:"middle",color:c,bold:true});
+      caption("gMkt",s===0?"価格8では、買いたい量2に対して売りたい量8。6個が売れ残るので価格は下がる。":"価格2では、買いたい量8に対して売りたい量2。6個が足りないので価格は上がる。");
+    }
+  };
+
+  /* 1個ずつの余剰 */
+  R.step=function(){
+    const s=state.step||0;
+    const g=plot("gStep",{xmin:0,xmax:7,ymin:0,ymax:10,xt:[1,2,3,4,5,6],yt:[2,4,6,8,10],xlab:"Q（何個目）",ylab:"p"});
+    const mb=[9,8,7,6,5,4],mc=[1,2,3,4,5,6];
+    for(let i=0;i<6;i++){
+      const x0=i+0.55,x1=i+1.45,h=s===0?mb[i]:mc[i];
+      const traded=s===0?mb[i]>=5:mc[i]<=5;
+      g.area([[x0,0],[x1,0],[x1,h],[x0,h]],traded?"#eef1f5":"#f8f9fa");
+      g.el("rect",{x:g.X(x0),y:g.Y(h),width:g.X(x1)-g.X(x0),height:g.Y(0)-g.Y(h),fill:"none",stroke:K.ink,"stroke-width":1.2});
+      if(traded){
+        if(s===0&&mb[i]>5)g.area([[x0,5],[x1,5],[x1,mb[i]],[x0,mb[i]]],K.csf);
+        if(s===1&&mc[i]<5)g.area([[x0,mc[i]],[x1,mc[i]],[x1,5],[x0,5]],K.psf);
+      }
+      g.txt(i+1,h,String(h),{anchor:"middle",dy:-6,size:12,color:K.sub});
+    }
+    g.line(0,5,7,5,K.ink,2.5);g.txt(7,5,"価格 5",{anchor:"end",dy:-8,bold:true});
+    caption("gStep",s===0?"棒の高さは「払ってもよい価格」。価格5との差（青）が消費者の得で、合計 4 + 3 + 2 + 1 ＝ 10。6個目は価格より低いので買わない。":"棒の高さは限界費用。価格5との差（赤）が生産者の得で、合計 4 + 3 + 2 + 1 ＝ 10。6個目は費用が価格より高いので作らない。");
+  };
+
+  /* 取引量と社会的余剰 */
+  R.surp=function(){
+    const Q=+$("sq").value;$("vq").textContent=f1(Q);
+    const g=plot("gSurp",{xmin:0,xmax:11,ymin:0,ymax:11,xt:[2,4,5,6,8,10],yt:[2,4,5,6,8,10],xlab:"Q",ylab:"p"});
+    if(Q<=5){
+      if(Q<5)g.area([[Q,10-Q],[5,5],[Q,Q]],"url(#hatch)");
+      if(Math.abs(Q-5)<1e-9){g.area([[0,10],[5,5],[0,5]],K.csf);g.area([[0,5],[5,5],[0,0]],K.psf);g.txt(1.2,6.4,"CS",{bold:true,color:K.blue});g.txt(1.2,3.2,"PS",{bold:true,color:K.red});}
+      else{g.area([[0,10],[Q,10-Q],[Q,Q],[0,0]],"rgba(11,107,93,.16)");}
+    }else{
+      g.area([[0,10],[5,5],[0,0]],"rgba(11,107,93,.16)");
+      g.area([[5,5],[Q,Q],[Q,10-Q]],"rgba(200,54,31,.25)");
+    }
+    const defs=document.createElementNS(NS,"defs");defs.innerHTML='<pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="rgba(94,100,112,.08)"/><line x1="0" y1="0" x2="0" y2="6" stroke="#5e6470" stroke-width="1.4"/></pattern>';$("gSurp").prepend(defs);
+    g.line(0,10,10,0,K.ink,3);g.txt(10,0,"D",{dx:-4,dy:-8,m:true,bold:true});
+    g.line(0,0,10,10,K.ink,3);g.txt(10,10,"S",{dx:6,m:true,bold:true});
+    g.dot(5,5,K.ink);g.txt(5,5,"E",{dx:6,dy:-8,m:true,bold:true});
+    g.line(Q,0,Q,Math.max(Q,10-Q),K.blue,2,"5 4");g.txt(Q,0,"Q = "+f1(Q),{anchor:"middle",dy:-6,color:K.blue,bold:true,size:12});
+    const ss=10*Q-Q*Q - (Q>5?2*(Q-5)*(Q-5):0);
+    const ssv=Q<=5?10*Q-Q*Q:25-(Q-5)*(Q-5);
+    $("sQ").textContent=f1(Q);$("sSS").textContent=f1(ssv);
+    const dw=25-ssv;$("sDW").textContent=f1(dw);$("sDW").className=dw>0?"minus":"";
+    $("sNote").innerHTML=Q<5?"Q が均衡より少ない：限界便益（D の高さ）が限界費用（S の高さ）を上回る。斜線の三角形の余剰が失われている。":Q>5?"Q が均衡より多い：限界費用が限界便益を上回る。赤い三角形のぶん、費用が便益を上回って余剰が減る。":"Q = Q* = 5：限界便益 ＝ 限界費用。CS 12.5 ＋ PS 12.5 ＝ 社会的余剰 25 で最大。";
+  };
+  $("sq").addEventListener("input",R.surp);
+
+  /* 消費関数 */
+  R.cons=function(){
+    const c0=+$("c0").value,c1=+$("c1").value;$("vc0").textContent=c0;$("vc1").textContent=f2(c1);
+    const g=plot("gCons",{xmin:0,xmax:500,ymin:0,ymax:500,xt:[100,200,300,400,500],yt:[100,200,300,400,500],xlab:"Y",ylab:"C"});
+    g.line(0,40,500,40+0.6*500,K.base,2,"5 5");
+    g.line(0,c0,500,c0+c1*500,K.blue,3);
+    g.dot(0,c0,K.blue);g.txt(0,c0,"切片 c₀ = "+c0,{dx:8,dy:-8,color:K.blue,bold:true,size:12});
+    const y0=250;g.line(y0,c0+c1*y0,y0+100,c0+c1*y0,K.red,2);g.line(y0+100,c0+c1*y0,y0+100,c0+c1*(y0+100),K.red,2);
+    g.txt(y0+50,c0+c1*y0,"ΔY = 100",{anchor:"middle",dy:16,color:K.red,size:12});
+    g.txt(y0+100,c0+c1*(y0+50),"ΔC = "+f1(100*c1),{dx:6,color:K.red,size:12});
+    g.txt(470,c0+c1*470,"C = c₀ + c₁Y",{anchor:"end",dy:-10,m:true,color:K.blue});
+    $("cNote").textContent="所得が100増えると、消費は "+f1(100*c1)+" 増える（限界消費性向 "+f2(c1)+"）。灰色の破線は c₀ = 40、c₁ = 0.6 の基準。";
+  };
+  ["c0","c1"].forEach(i=>$(i).addEventListener("input",R.cons));
+
+  /* 微分 */
+  R.diff=function(){
+    const x0=+$("dx0").value,dx=+$("ddx").value;$("vdx0").textContent=f1(x0);$("vddx").textContent=f1(dx);
+    const g=plot("gDiff",{xmin:0,xmax:4.2,ymin:0,ymax:16,xt:[1,2,3,4],yt:[4,8,12,16],xlab:"x",ylab:"y"});
+    const pts=[];for(let k=0;k<=80;k++){const x=k/80*4;pts.push([x,x*x]);}
+    g.path(pts,K.ink,3);g.txt(3.9,15.2,"y = x²",{anchor:"end",m:true});
+    const x1=x0+dx,sec=(x1*x1-x0*x0)/dx,tan=2*x0;
+    const clipLine=(m,c)=>{const xa=0,xb=4.2;g.line(xa,Math.max(-5,m*(xa-x0)+x0*x0),xb,m*(xb-x0)+x0*x0,c,2);};
+    // 接線と割線（範囲外はSVGで切れる）
+    g.el("clipPath",{id:"cpD"}).innerHTML='<rect x="'+g.L+'" y="'+g.T+'" width="'+(g.R-g.L)+'" height="'+(g.B-g.T)+'"/>';
+    const tl=g.line(0,tan*(0-x0)+x0*x0,4.2,tan*(4.2-x0)+x0*x0,K.teal,2.5);tl.setAttribute("clip-path","url(#cpD)");
+    const sl=g.line(0,sec*(0-x0)+x0*x0,4.2,sec*(4.2-x0)+x0*x0,K.red,2,"6 4");sl.setAttribute("clip-path","url(#cpD)");
+    g.dot(x0,x0*x0,K.teal);g.dot(x1,x1*x1,K.red);
+    g.txt(x0,x0*x0,"x",{dx:-14,dy:-6,m:true,color:K.teal,bold:true});g.txt(x1,x1*x1,"x + Δx",{dx:8,dy:4,m:true,color:K.red,bold:true});
+    $("dSec").textContent=f2(sec);$("dTan").textContent=f2(tan);$("dGap").textContent=f2(sec-tan);
+  };
+  ["dx0","ddx"].forEach(i=>$(i).addEventListener("input",R.diff));
+
+  /* 乗数 */
+  R.mult=function(){
+    const b=+$("mb").value;$("vmb").textContent=f2(b);
+    const lim=1/(1-b),n=12;
+    const g=plot("gMult",{xmin:0,xmax:13,ymin:0,ymax:Math.max(10.5,Math.ceil(lim)+0.5),xt:[1,4,8,12],yt:[1,2,4,6,8,10],xlab:"回目",ylab:"ΔY"});
+    let s=0;const cum=[];
+    for(let k=0;k<n;k++){const v=Math.pow(b,k);s+=v;cum.push([k+1,s]);g.area([[k+0.65,0],[k+1.35,0],[k+1.35,v],[k+0.65,v]],"rgba(31,78,156,.35)");}
+    g.path(cum,K.teal,2.5);cum.forEach(p=>g.dot(p[0],p[1],K.teal,3));
+    g.line(0,lim,13,lim,K.red,1.5,"6 4");g.txt(13,lim,"1/(1−b) = "+f2(lim),{anchor:"end",dy:-6,color:K.red,bold:true,size:12});
+    $("mSum").textContent=f2(s);$("mLim").textContent=f2(lim);$("mDY").textContent=f2(lim);
+  };
+  $("mb").addEventListener("input",R.mult);
+
+  /* Σ・Π の書き下し */
+  R.sig=function(){
+    const n=+$("sn").value;$("vsn").textContent=n;const s=state.sig||0;
+    let head,terms=[],val;
+    if(s===0){head="Σ<sub>i=1</sub><sup>"+n+"</sup> 2i";for(let i=1;i<=n;i++)terms.push("2×"+i);val=n*(n+1);}
+    else if(s===1){head="Σ<sub>i=1</sub><sup>"+n+"</sup> 1/2<sup>i</sup>";for(let i=1;i<=n;i++)terms.push("1/2<sup>"+i+"</sup>");val=1-Math.pow(0.5,n);}
+    else{head="Π<sub>i=1</sub><sup>"+n+"</sup> (1 + i)";for(let i=1;i<=n;i++)terms.push("(1+"+i+")");val=1;for(let i=1;i<=n;i++)val*=1+i;}
+    $("sigOut").innerHTML=head+" ＝ "+terms.join(s===2?" × ":" + ")+" ＝ "+(s===1?f2(val)+"…":val);
+  };
+  $("sn").addEventListener("input",R.sig);
+
+  /* 積分（y = 2x） */
+  R.int=function(){
+    const t=+$("it").value;$("vit").textContent=f1(t);
+    const g=plot("gInt",{xmin:0,xmax:3.4,ymin:0,ymax:6.8,xt:[1,2,3],yt:[2,4,6],xlab:"x",ylab:"y"});
+    g.area([[0,0],[t,0],[t,2*t]],"rgba(31,78,156,.22)");
+    g.line(0,0,3.3,6.6,K.ink,3);g.txt(3.3,6.6,"y = 2x",{anchor:"end",dx:-6,m:true});
+    g.line(t,0,t,2*t,K.blue,2,"5 4");g.dot(t,2*t,K.blue);
+    g.txt(t*0.62,t*0.45,"面積 "+f2(t*t),{anchor:"middle",bold:true,color:K.blue});
+    $("iT").textContent=f1(t);$("iA").textContent=f2(t*2*t/2);$("iF").textContent=f2(t*t);
+  };
+  $("it").addEventListener("input",R.int);
+
+  /* 演習(2)(2) の図示 */
+  R.int1=function(){
+    const s=state.int1||0;
+    const g=plot("gInt1",{xmin:0,xmax:1.5,ymin:0,ymax:1.5,xt:[0.5,1],yt:[0.5,1],xlab:"x",ylab:"y"});
+    if(s){
+      const defs=document.createElementNS(NS,"defs");defs.innerHTML='<pattern id="hatch2" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="rgba(31,78,156,.12)"/><line x1="0" y1="0" x2="0" y2="7" stroke="#1f4e9c" stroke-width="1.6"/></pattern>';$("gInt1").prepend(defs);
+      g.area([[0,0],[1,0],[1,1]],"url(#hatch2)");
+      g.line(1,0,1,1,K.blue,2,"5 4");g.dot(1,1,K.blue);g.txt(1,1,"(1, 1)",{dx:8,dy:4,color:K.blue,bold:true});
+      g.txt(0.72,0.22,"∫₀¹ x dx ＝ 1/2",{anchor:"middle",bold:true,color:K.blue});
+      caption("gInt1","y = x、x 軸、x = 1 で囲まれた直角三角形（底辺1、高さ1）。面積は 1/2。");
+    }else caption("gInt1","まず、積分の中身 y = x のグラフ（原点を通る傾き1の直線）を描く。");
+    g.line(0,0,1.45,1.45,K.ink,3);g.txt(1.45,1.45,"y = x",{anchor:"end",dx:-8,m:true});
+  };
+
+  R.budget();R.ppf();R.trade();R.xr();R.mkt();R.step();R.surp();R.cons();R.diff();R.mult();R.sig();R.int();R.int1();
+})();
+
+/* lily 共通：タブ・目次・前後ナビ・確認問題・内部タブ・解説スイッチ・相互リンク
+   各章のHTMLは、.part（data-title, data-desc）と section（data-t, h2 .sn）を並べるだけでよい。
+   パートが表示されたときに "partshown" イベント（detail.id）を発行する。 */
+(function(){
+  const parts=[...document.querySelectorAll(".part")];
+  const tabs=document.getElementById("tabs");
+  const drawerList=document.getElementById("drawerList");
+  const body=document.body, menuBtn=document.getElementById("menuBtn"), drawer=document.getElementById("drawer");
+  let current=0;
+
+  parts.forEach((p,i)=>{
+    p.setAttribute("role","tabpanel");
+    const secs=[...p.querySelectorAll("section")];
+    const head=document.createElement("div");head.className="part-head";
+    head.innerHTML='<div class="ph-main"><div class="pn">Part '+(i+1)+' / '+parts.length+'</div><h1>'+p.dataset.title+'</h1><p>'+p.dataset.desc+'</p></div>';
+    const mini=document.createElement("div");mini.className="toc-mini";
+    secs.forEach(s=>{const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>s.scrollIntoView({behavior:"smooth",block:"start"}));mini.appendChild(b);});
+    head.querySelector(".ph-main").appendChild(mini);p.prepend(head);
+
+    const t=document.createElement("button");t.type="button";t.className="tab";t.setAttribute("role","tab");t.id="tab-"+p.id;t.setAttribute("aria-controls",p.id);
+    t.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;
+    t.addEventListener("click",()=>go(i,true));
+    t.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%parts.length;go(k,true);tabs.children[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+parts.length)%parts.length;go(k,true);tabs.children[k].focus();}});
+    tabs.appendChild(t);p.setAttribute("aria-labelledby",t.id);
+
+    const h=document.createElement("h4");const hb=document.createElement("button");hb.type="button";hb.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;hb.addEventListener("click",()=>{go(i,true);closeMenu();});h.appendChild(hb);drawerList.appendChild(h);
+    const ul=document.createElement("ul");
+    secs.forEach(s=>{const li=document.createElement("li");const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>{go(i,false);closeMenu();setTimeout(()=>s.scrollIntoView({block:"start"}),30);});li.appendChild(b);ul.appendChild(li);});
+    drawerList.appendChild(ul);
+  });
+
+  function go(i,top){
+    current=i;
+    parts.forEach((p,k)=>p.classList.toggle("on",k===i));
+    [...tabs.children].forEach((t,k)=>{t.setAttribute("aria-selected",k===i?"true":"false");t.tabIndex=k===i?0:-1;});
+    [...drawerList.querySelectorAll("h4")].forEach((h,k)=>h.classList.toggle("cur",k===i));
+    tabs.children[i].scrollIntoView({block:"nearest",inline:"nearest"});
+    const pg=document.getElementById("pager");pg.innerHTML="";
+    if(i>0){const b=document.createElement("button");b.type="button";b.innerHTML="<small>前のパート</small>← "+parts[i-1].dataset.title;b.addEventListener("click",()=>go(i-1,true));pg.appendChild(b);}
+    if(i<parts.length-1){const b=document.createElement("button");b.type="button";b.className="next";b.innerHTML="<small>次のパート</small>"+parts[i+1].dataset.title+" →";b.addEventListener("click",()=>go(i+1,true));pg.appendChild(b);}
+    try{if(location.hash!=="#"+parts[i].id)history.replaceState(null,"","#"+parts[i].id);}catch(e){}
+    if(top)window.scrollTo(0,0);
+    document.dispatchEvent(new CustomEvent("partshown",{detail:{id:parts[i].id}}));
+  }
+  function openMenu(){body.classList.add("menu-open");drawer.setAttribute("aria-hidden","false");menuBtn.setAttribute("aria-expanded","true");document.getElementById("closeBtn").focus();}
+  function closeMenu(){body.classList.remove("menu-open");drawer.setAttribute("aria-hidden","true");menuBtn.setAttribute("aria-expanded","false");}
+  menuBtn.addEventListener("click",openMenu);
+  document.getElementById("closeBtn").addEventListener("click",()=>{closeMenu();menuBtn.focus();});
+  document.getElementById("scrim").addEventListener("click",closeMenu);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&body.classList.contains("menu-open")){closeMenu();menuBtn.focus();}});
+  window.addEventListener("hashchange",()=>{const k=parts.findIndex(p=>"#"+p.id===location.hash);if(k>=0&&k!==current)go(k,true);});
+
+  /* 内部タブ（.itabs の button[aria-controls]） */
+  document.querySelectorAll(".itabs").forEach(box=>{
+    const bs=[...box.querySelectorAll("button")];
+    const sel=i=>bs.forEach((b,k)=>{b.setAttribute("aria-selected",k===i?"true":"false");b.tabIndex=k===i?0:-1;document.getElementById(b.getAttribute("aria-controls")).hidden=k!==i;});
+    bs.forEach((b,i)=>{b.addEventListener("click",()=>sel(i));b.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%bs.length;sel(k);bs[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+bs.length)%bs.length;sel(k);bs[k].focus();}});});
+    sel(0);
+  });
+
+  /* 確認問題・ヒント（.q の .show で .ans を開閉） */
+  document.querySelectorAll(".q").forEach(q=>{const b=q.querySelector(".show"),a=q.querySelector(".ans");if(!b||!a)return;const lab=b.textContent;b.setAttribute("aria-expanded","false");b.addEventListener("click",()=>{a.hidden=!a.hidden;b.textContent=a.hidden?lab:"閉じる";b.setAttribute("aria-expanded",a.hidden?"false":"true");});});
+
+  /* 解説と答案例の表示スイッチ */
+  const tg=document.getElementById("ansToggle"),note=document.getElementById("ansNote");
+  if(tg){
+    const setAns=on=>{document.body.classList.toggle("ans-off",!on);tg.checked=on;if(note)note.textContent=on?"オン：解説と答案例を表示しています。":"オフ：問題とヒントだけを表示しています。";};
+    tg.addEventListener("change",()=>setAns(tg.checked));
+    setAns(typeof ANSWERS_DEFAULT_ON!=="undefined"&&ANSWERS_DEFAULT_ON);
+  }
+
+  /* 解説の開閉 */
+  document.querySelectorAll(".solbtn").forEach(b=>b.addEventListener("click",()=>{const bd=b.nextElementSibling;bd.hidden=!bd.hidden;b.setAttribute("aria-expanded",bd.hidden?"false":"true");b.textContent=bd.hidden?"解説を読む（手順を追って説明）":"解説を閉じる";document.dispatchEvent(new CustomEvent("solopen"));}));
+
+  /* 相互リンク */
+  document.addEventListener("click",e=>{const a=e.target.closest("[data-goto]");if(!a)return;e.preventDefault();const t=document.getElementById(a.dataset.goto);if(!t)return;const k=parts.findIndex(p=>p.contains(t));if(k<0)return;go(k,false);setTimeout(()=>t.scrollIntoView({block:"start"}),30);});
+
+  const start=parts.findIndex(p=>"#"+p.id===location.hash);
+  go(start>=0?start:0,false);
+})();
+
+</script>
+</body>
+</html>
