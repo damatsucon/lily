@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第4章 拡張モデル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* 設計: 方眼紙に書いた講義プリント。黒インクの本文、青ペンの強調、朱ペンの書き込み、黄色の蛍光ペン。上部に固定ヘッダーとパートのタブ、左からメニューが出る */
+:root{
+  --paper:#fdfdfb;
+  --grid:#e9eef3;
+  --ink:#22252b;
+  --sub:#5e6470;
+  --line:#c9cfd8;
+  --blue:#1f4e9c;
+  --red:#c8361f;
+  --teal:#0b6b5d;
+  --marker:#fff1a6;
+  --note:#fffbe3;
+  --font-body:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --font-hand:"Klee One","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --font-math:"Times New Roman",Times,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.95;
+  -webkit-text-size-adjust:100%;
+}
+a{color:var(--blue)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ヘッダー */
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid var(--ink)}
+.bar-in{max-width:960px;margin:0 auto;padding:10px 16px 0;display:flex;align-items:center;gap:12px}
+.burger{width:42px;height:42px;border:1.5px solid var(--ink);background:var(--paper);border-radius:6px;display:grid;place-items:center;cursor:pointer;flex:none}
+.burger span{display:block;width:20px;height:2px;background:var(--ink);box-shadow:0 -6px 0 var(--ink),0 6px 0 var(--ink)}
+.course{line-height:1.35;min-width:0}
+.course small{display:block;color:var(--sub);font-size:.78rem}
+.course b{font-size:1.05rem}
+.tabs{max-width:960px;margin:8px auto 0;padding:0 16px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1.5px solid var(--ink);border-bottom:none;background:#eef1f5;border-radius:8px 8px 0 0;padding:6px 14px 5px;cursor:pointer;font-size:.92rem;line-height:1.5;color:var(--sub);position:relative;top:2px}
+.tab .n{font-family:var(--font-math);font-weight:700;margin-right:6px;color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);font-weight:700;border-bottom:2px solid var(--paper);z-index:1}
+
+/* ドロワー */
+.scrim{position:fixed;inset:0;background:rgba(20,24,32,.35);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(340px,86vw);background:var(--paper);z-index:31;border-right:2px solid var(--ink);transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto;padding:16px 18px 40px}
+body.menu-open .scrim{opacity:1;pointer-events:auto}
+body.menu-open .drawer{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
+.drawer-head b{font-size:1rem}
+.close{border:1.5px solid var(--ink);background:none;border-radius:6px;width:36px;height:36px;cursor:pointer;font-size:1.2rem;line-height:1}
+.drawer h4{margin:14px 0 2px;font-size:.95rem}
+.drawer h4 button{background:none;border:none;padding:0;cursor:pointer;text-align:left;font-weight:700}
+.drawer h4 .n{font-family:var(--font-math);margin-right:6px}
+.drawer ul{list-style:none;margin:0;padding:0 0 0 12px;border-left:1.5px solid var(--line)}
+.drawer li button{background:none;border:none;padding:3px 0;cursor:pointer;color:var(--sub);text-align:left;font-size:.9rem;line-height:1.5}
+.drawer li button:hover{color:var(--blue)}
+.drawer .cur>button{color:var(--blue)}
+
+/* 本文 */
+main{max-width:960px;margin:0 auto;padding:22px 16px 80px}
+.part{display:none}
+.part.on{display:block}
+.part-head{background:var(--paper);border:1.5px solid var(--ink);border-radius:4px;padding:16px 20px;margin-bottom:26px}
+.part-head .pn{font-family:var(--font-math);font-size:.95rem;color:var(--sub)}
+.part-head h1{font-size:clamp(1.5rem,3.6vw,2rem);line-height:1.4;margin:2px 0 6px;text-wrap:balance}
+.part-head p{margin:0;color:var(--sub);max-width:42em}
+.toc-mini{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9rem}
+.toc-mini button{background:none;border:none;padding:0;cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+
+section{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 22px 24px;margin-bottom:22px;scroll-margin-top:120px}
+@media (max-width:560px){section{padding:4px 14px 18px}}
+h2{font-size:1.4rem;line-height:1.5;margin:18px 0 12px;padding-bottom:6px;border-bottom:3px double var(--ink);text-wrap:balance}
+h2 .sn{display:inline-block;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;border:1.5px solid var(--ink);border-radius:50%;font-family:var(--font-math);font-size:1rem;margin-right:10px;vertical-align:.12em}
+h3{font-size:1.1rem;margin:24px 0 6px;text-wrap:balance}
+h3::before{content:"";display:inline-block;width:10px;height:10px;background:var(--blue);margin-right:8px;vertical-align:.05em}
+p{margin:0 0 1em;max-width:44em}
+.mk{background:linear-gradient(transparent 58%,var(--marker) 58%);font-weight:700}
+.v{font-family:var(--font-math);font-style:italic;font-size:1.1em;white-space:nowrap}
+.plus{color:var(--teal);font-weight:700}
+.minus{color:var(--red);font-weight:700}
+ul.dots,ol.steps{margin:0 0 1em;padding-left:1.4em;max-width:44em}
+ul.dots li,ol.steps li{margin:3px 0}
+
+/* 数式ボックス（教科書風に式番号を右寄せ） */
+.eq{border:1.5px solid var(--ink);background:#fff;padding:12px 18px;margin:16px 0 6px;max-width:44rem;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.eq .f{font-family:var(--font-math);font-size:1.45rem;font-style:italic}
+.eq .f sub{font-size:.65em}
+.eq .no{margin-left:auto;font-size:.85rem;color:var(--sub)}
+.eq-read{max-width:44rem;margin:0 0 16px;padding-left:20px;font-size:.95rem;color:var(--sub)}
+.eq-read::before{content:"読み方　";color:var(--blue);font-weight:700}
+
+/* 先生のメモ */
+.memo{font-family:var(--font-hand);background:var(--note);border-left:4px solid var(--red);padding:12px 16px 12px 18px;margin:16px 0;max-width:44rem;font-size:1.05rem;line-height:1.85}
+.memo .who{display:block;color:var(--red);font-weight:600;font-size:.9rem}
+/* ポイント */
+.point{border:2px solid var(--blue);border-radius:2px;padding:10px 16px;margin:20px 0 4px;max-width:44rem;position:relative}
+.point::before{content:"ポイント";position:absolute;top:-.85em;left:12px;background:var(--paper);padding:0 6px;color:var(--blue);font-weight:700;font-size:.85rem}
+.point p{margin:0}
+
+/* 帯グラフ */
+.bars{background:#fff;border:1px solid var(--line);padding:14px 16px 10px;margin:14px 0 18px;max-width:44rem}
+.bars .sw{display:flex;gap:0;margin-bottom:12px;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content}
+.bars .sw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.bars .sw button+button{border-left:1.5px solid var(--ink)}
+.bars .sw button[aria-selected="true"]{background:var(--ink);color:#fff}
+.brow{display:grid;grid-template-columns:7.2em 1fr;align-items:center;gap:10px;margin:8px 0}
+.brow .lab{font-size:.88rem;line-height:1.35}
+.track{position:relative;height:34px}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;border:1.5px solid var(--ink);white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.seg.y{background:#dfe8f6}
+.seg.c{background:#f3f4f6}.seg.i{background:#e7eaee}.seg.g{background:#d9dde3}
+.seg.gap-p{background:repeating-linear-gradient(45deg,#d6efe9,#d6efe9 5px,#fff 5px,#fff 10px);color:var(--teal);font-weight:700;border-color:var(--teal);border-style:dashed}
+.seg.gap-m{background:repeating-linear-gradient(45deg,#f8ddd7,#f8ddd7 5px,#fff 5px,#fff 10px);color:var(--red);font-weight:700;border-color:var(--red);border-style:dashed}
+.seg.b{background:#e7eaee}.seg.ri{background:#fde9a8}.seg.nx{background:#d6efe9}
+.seg-lab{position:absolute;top:0;bottom:0;display:flex;align-items:center;font-size:.85rem;white-space:nowrap}
+.bars .cap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+
+/* 表 */
+.tw{overflow-x:auto;margin:12px 0 18px}
+table{border-collapse:collapse;background:#fff;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--ink);padding:7px 12px;text-align:left;vertical-align:top;line-height:1.6}
+thead th{background:#eef1f5}
+td.c{text-align:center;white-space:nowrap}
+td.r{text-align:right}
+table.calc-t td{border:none;border-bottom:1px dotted var(--line);padding:3px 14px 3px 0}
+table.calc-t tr:last-child td{border-bottom:2px solid var(--ink);font-weight:700}
+
+/* 図 */
+figure{margin:14px 0 20px}
+figcaption{font-size:.85rem;color:var(--sub);margin-top:4px}
+.figbox{background:#fff;border:1px solid var(--line);padding:8px;overflow-x:auto}
+svg text{font-family:var(--font-body);fill:var(--ink)}
+svg .m{font-family:var(--font-math);font-style:italic}
+
+/* シミュレーター */
+.sim{background:#fff;border:1.5px solid var(--ink);padding:14px;margin:16px 0;display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:860px){.sim{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.grp{margin-bottom:10px}
+.grp .gl{font-size:.78rem;color:var(--sub);display:block;margin-bottom:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips button{border:1.5px solid var(--ink);background:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.85rem;line-height:1.6}
+.chips button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.explain{border-top:1px dashed var(--line);padding-top:10px;margin-top:6px}
+.explain .t{font-weight:700;margin:0}
+.explain .x{font-size:.95rem;margin:4px 0}
+.explain .f{font-size:.8rem;color:var(--sub);margin:0}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);margin:10px 0}
+.meter div{padding:6px 8px;text-align:center}
+.meter div+div{border-left:1px solid var(--ink)}
+.meter small{display:block;font-size:.75rem;color:var(--sub);line-height:1.3}
+.meter strong{font-size:1.3rem;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:7.4em 1fr 3.6em;gap:8px;align-items:center;font-size:.88rem}
+.sl input{width:100%;accent-color:var(--blue)}
+.sl output{text-align:right;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sm{font-size:.8rem;color:var(--sub);margin:6px 0 0}
+
+/* 内部タブ（ケース別） */
+.itabs{display:flex;gap:0;border-bottom:1.5px solid var(--ink);margin:14px 0 0;overflow-x:auto}
+.itabs button{border:none;background:none;padding:6px 14px;cursor:pointer;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.itabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--blue)}
+.ipanel{padding:12px 0 0}
+.ipanel[hidden]{display:none}
+.case{border-left:3px solid var(--line);padding:2px 0 2px 14px;margin:0 0 16px;max-width:44rem}
+.case b{display:block}
+.case .res{font-size:.9rem;margin:2px 0}
+.case p{margin:2px 0 0;font-size:.97rem}
+
+/* 手順 */
+.flow{display:grid;grid-template-columns:1fr;gap:8px;max-width:44rem;margin:12px 0 16px;counter-reset:f}
+@media (min-width:700px){.flow{grid-template-columns:repeat(3,1fr)}}
+.flow div{border:1.5px solid var(--ink);background:#fff;padding:10px 12px;font-size:.93rem;line-height:1.7;counter-increment:f}
+.flow div::before{content:"手順" counter(f);display:block;font-weight:700;color:var(--blue);font-size:.82rem}
+
+/* 計算機 */
+.calc{background:#fff;border:1.5px solid var(--ink);padding:14px 16px;margin:14px 0;max-width:44rem}
+.calc .out{font-size:.98rem;margin-top:10px}
+.calc .chk{color:var(--sub);font-size:.88rem}
+
+/* 確認問題 */
+.q{border:1px solid var(--ink);background:#fff;margin:10px 0;max-width:46rem}
+.q .qq{padding:10px 14px;display:flex;gap:10px}
+.q .qn{font-family:var(--font-math);font-weight:700;color:var(--blue)}
+.q button.show{margin:0 14px 10px;border:1.5px solid var(--ink);background:#fff;border-radius:4px;padding:2px 12px;cursor:pointer;font-size:.85rem}
+.q .ans{border-top:1px dashed var(--line);padding:8px 14px 10px;font-family:var(--font-hand);font-size:1.05rem;background:var(--note)}
+.q .ans[hidden]{display:none}
+.q .ans::before{content:"解答　";color:var(--red);font-weight:600}
+
+/* 前後ナビ */
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:28px;flex-wrap:wrap}
+.pager button{border:1.5px solid var(--ink);background:#fff;padding:10px 16px;cursor:pointer;border-radius:4px;text-align:left;line-height:1.4;max-width:48%}
+.pager button small{display:block;color:var(--sub);font-size:.78rem}
+.pager .next{margin-left:auto;text-align:right}
+.src{font-size:.82rem;color:var(--sub);margin-top:30px;border-top:1px solid var(--line);padding-top:10px}
+
+/* キャラクター */
+.talk{display:flex;align-items:flex-end;gap:12px;margin:14px 0 18px;max-width:44rem}
+.talk img{width:118px;height:auto;flex:none}
+.talk .bubble{position:relative;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:10px 16px;font-family:var(--font-hand);font-size:1.08rem;line-height:1.75;margin-bottom:30px}
+.talk .bubble::before{content:"";position:absolute;left:-12px;bottom:16px;border:6px solid transparent;border-right:8px solid var(--ink)}
+.talk .bubble::after{content:"";position:absolute;left:-8px;bottom:17px;border:5px solid transparent;border-right:7px solid #fff}
+.talk.r{flex-direction:row-reverse;margin-left:auto}
+.talk.r .bubble::before{left:auto;right:-12px;border-right-color:transparent;border-left:8px solid var(--ink)}
+.talk.r .bubble::after{left:auto;right:-8px;border-right-color:transparent;border-left:7px solid #fff}
+.part-head{display:flex;gap:16px;align-items:flex-end}
+.part-head .ph-main{flex:1;min-width:0}
+.part-head .ph-fig{flex:none;width:150px;text-align:center;margin:-6px 0 -16px}
+.part-head .ph-say{font-family:var(--font-hand);font-size:.88rem;line-height:1.5;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:5px 8px;margin-bottom:6px;text-align:left;position:relative}
+.part-head .ph-say::after{content:"";position:absolute;left:50%;bottom:-7px;width:10px;height:10px;background:#fff;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+.part-head .ph-fig img{width:100%;height:auto;display:block}
+@media (max-width:560px){.talk img{width:86px}.part-head .ph-fig{width:96px}.talk .bubble{font-size:1rem}}
+.memo.withfig{display:flex;gap:14px;align-items:center}
+.memo.withfig img{width:104px;height:auto;flex:none}
+@media (max-width:560px){.memo.withfig img{width:78px}}
+
+/* 課題パート */
+.dl{margin:10px 0 16px}
+.dlbtn{display:inline-flex;align-items:center;gap:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);text-decoration:none;padding:8px 16px 8px 10px;border-radius:6px;line-height:1.4;box-shadow:3px 3px 0 var(--ink)}
+.dlbtn:hover{background:#eef2fa}
+.dlbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.dlbtn .dlico{width:34px;height:40px;background:#2b579a;color:#fff;font-weight:700;display:grid;place-items:center;border-radius:3px;font-family:var(--font-math);font-size:1.2rem}
+.dlbtn b{display:block}
+.dlbtn small{display:block;color:var(--sub);font-size:.8rem}
+
+.xref{font-size:.9rem;margin:6px 0 12px;max-width:44em}
+.xref::before{content:"→ ";color:var(--blue);font-weight:700}
+.xref a,.dots a{color:var(--blue);cursor:pointer}
+.kq{border:2px solid var(--ink);background:#fff;padding:12px 16px;margin:12px 0 14px;max-width:46rem}
+.kq .lab{display:inline-block;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px;margin-bottom:4px}
+.kq p{margin:4px 0}
+.memo.hint{border-left-color:var(--blue)}
+.memo.hint .who{color:var(--blue)}
+.locked{display:none;border:1.5px dashed var(--line);color:var(--sub);padding:8px 14px;max-width:44rem;font-size:.92rem;background:#fff}
+body.ans-off .locked{display:block}
+body.ans-off .sol{display:none}
+.solbtn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:4px;padding:6px 16px;cursor:pointer;margin:6px 0 10px}
+.solbtn[aria-expanded="true"]{background:#fff;color:var(--ink)}
+.step{border-top:1px dashed var(--line);padding-top:6px;margin-top:10px}
+h3.stp::before{display:none}
+h3.stp .st{display:inline-block;font-size:.8rem;background:var(--blue);color:#fff;padding:0 9px;border-radius:3px;margin-right:8px;vertical-align:.12em}
+.ansSwitch{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;border:2px solid var(--ink);background:#fff;padding:10px 14px;margin:14px 0 16px;max-width:46rem}
+.sw-l{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700}
+.sw-l input{position:absolute;opacity:0;width:1px;height:1px}
+.sw-ui{width:46px;height:26px;border-radius:13px;background:#c9cfd8;position:relative;flex:none;transition:background .15s}
+.sw-ui::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}
+.sw-l input:checked+.sw-ui{background:var(--teal)}
+.sw-l input:checked+.sw-ui::after{left:23px}
+.sw-l input:focus-visible+.sw-ui{outline:2px solid var(--blue);outline-offset:2px}
+.sw-note{font-size:.88rem;color:var(--sub)}
+.gwrap{background:#fff;border:1.5px solid var(--ink);padding:12px;margin:14px 0 6px;max-width:46rem}
+.gsw{display:flex;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content;max-width:100%;margin-bottom:8px;flex-wrap:wrap}
+.gsw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.gsw button+button{border-left:1.5px solid var(--ink)}
+.gsw button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.gwrap svg{width:100%;max-width:560px;height:auto;display:block}
+.gcap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+.howto{font-size:.93rem;max-width:44rem;margin:6px 0 16px;padding-left:1.3em}
+.trap{border:2px dashed var(--red);padding:10px 16px;margin:16px 0;max-width:44rem;background:#fff}
+.trap b{color:var(--red)}
+.point.ketsu::before{content:"結論"}
+.answer{border:1.5px solid var(--ink);background:#fff;padding:14px 18px 6px;margin:20px 0 16px;max-width:46rem;position:relative}
+.answer::before{content:"答案の書き方の例";position:absolute;top:-.8em;left:12px;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px}
+.answer p{font-size:.97rem}
+.num{background:#fff;border:1px solid var(--line);padding:10px 16px;margin:14px 0;max-width:44rem}
+.num .h{font-size:.82rem;color:var(--sub);display:block}
+#kadai .brow{grid-template-columns:5.5em 1fr}
+#kadai .seg.g{background:#fde9a8}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* 数式（分数・Σ/Π/∫ の上下添字）— 全章共通 */
+.mx{font-family:var(--font-math);display:inline-flex;align-items:center;gap:.12em;vertical-align:middle;white-space:nowrap;font-size:1.08em}
+.mx i{font-style:italic}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.25}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .25em}
+.frac>span:last-child{padding:0 .25em}
+.bop{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 .12em}
+.bop .s{font-size:1.7em;line-height:1}
+.bop small{font-size:.62em;line-height:1.1}
+.eq .mx{font-size:1.25rem}
+.eq.mxeq .f{font-style:normal}
+.mxblock{display:block;overflow-x:auto;padding:4px 0}
+</style>
+</head>
+<body>
+
+<div class="scrim" id="scrim"></div>
+<nav class="drawer" id="drawer" aria-label="全体の目次" aria-hidden="true">
+  <div class="drawer-head"><b>目次</b><button class="close" id="closeBtn" aria-label="目次を閉じる">×</button></div>
+  <div id="drawerList"></div>
+</nav>
+
+<header class="bar">
+  <div class="bar-in">
+    <button class="burger" id="menuBtn" aria-label="目次を開く" aria-controls="drawer" aria-expanded="false"><span></span></button>
+    <div class="course"><small>経済原論 I　マクロ経済学入門</small><b>第4章　拡張モデル　解説プリントと課題</b></div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="パート" id="tabs"></div>
+</header>
+
+<main>
+<style>.pair{display:grid;grid-template-columns:1fr;gap:4px}.pair>div+div{margin-top:6px}</style>
+
+<!-- ===================== パート1 ===================== -->
+<div class="part" id="koujou" data-title="恒常所得仮説" data-desc="第3章では「今の手取りで消費が決まる」としました。この章では「長い目で見た平均的な所得（恒常所得）で消費が決まる」と考えます。この1つの変更で、何が変わるのかをつかみます。">
+
+<section id="s1" data-t="第4章で何が変わるか">
+<h2><span class="sn">1</span>第4章で何が変わるか</h2>
+<p>この章も、第3章と同じ<b>古典派のモデル</b>（市場がうまく働き、完全雇用が成り立つ）を使います。変えるのは2点です。</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>第3章（基本モデル）</th><th>第4章（拡張モデル）</th></tr></thead>
+<tbody>
+<tr><td>消費を決めるもの</td><td>今の可処分所得 <span class="v">C = C(Y − T)</span></td><td>恒常所得 <span class="v">C = C(Yᴾ)</span>、さらに利子率 <span class="v">C = C(Yᴾ, r)</span></td></tr>
+<tr><td>財の供給</td><td>完全雇用の Ȳ で一定（垂直）</td><td>利子率が上がると今もっと働く <span class="v">Yˢ = Yˢ(r)</span>（右上がり）</td></tr>
+<tr><td>考える時間</td><td>1時点だけ（静学モデル）</td><td>今と将来のつながり（動学モデル）</td></tr>
+</tbody></table></div>
+<p>この拡張によって、<span class="mk">その変化が「一時的」か「恒常的（ずっと続く）」か</span>で、結果が大きく変わるようになります。これがこの章のいちばん大事な点です。</p>
+<div class="point"><p>第4章は、第3章のモデルに「将来の見通し」を入れたもの。変化が一時的か恒常的かを区別することが重要になる。</p></div>
+</section>
+
+<section id="s2" data-t="恒常所得と変動所得">
+<h2><span class="sn">2</span>恒常所得と変動所得</h2>
+<p>ある年の所得は、長い目で見た平均的な部分（<b>恒常所得</b>）と、その年だけの上下（<b>変動所得</b>）に分けられます。</p>
+<div class="eq"><span class="f">Y = Yᴾ + Yᵀ</span><span class="no">スライド p.4</span></div>
+<p class="eq-read">所得 ＝ 恒常所得（permanent income）＋ 変動所得（transitory income）</p>
+<div class="eq"><span class="f">C = C(Yᴾ)</span><span class="no">テキスト (4.1)</span></div>
+<p class="eq-read">消費は恒常所得だけで決まる。一時的な所得の上下には反応しない</p>
+<p>これを<b>恒常所得仮説</b>と呼びます。家計は将来の所得まで見通して、毎期なるべく同じ水準の消費を続けようとします。一定の条件のもとでは、毎期の消費は生涯所得の平均に等しくなります。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>C</i><sub>1</sub> = <i>C</i><sub>2</sub> = ⋯ = <i>C<sub>T</sub></i> = <span class="frac"><span>Σ<sub><i>t</i>=1</sub><sup><i>T</i></sup> <i>Y<sub>t</sub></i></span><span><i>T</i></span></span> ≡ <i>Y</i><sup>P</sup></span></span><span class="no">スライド p.5</span></div>
+<p class="eq-read">各期の消費 ＝ T 期間の所得の平均 ＝ 恒常所得（利子がゼロの単純な場合）</p>
+<p>所得が変動しても消費を一定にできるのは、<span class="mk">貯蓄がクッションになる</span>からです。所得が平均より多い期は貯蓄し、少ない期は貯蓄を取り崩します（S<sub>t</sub> = Y<sub>t</sub> − Yᴾ）。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="所得の変化の種類"><button type="button" data-g="pih" data-s="0" aria-pressed="true">基準</button><button type="button" data-g="pih" data-s="1" aria-pressed="false">今期だけボーナス</button><button type="button" data-g="pih" data-s="2" aria-pressed="false">ずっと昇給</button><button type="button" data-g="pih" data-s="3" aria-pressed="false">将来の昇給が決まった</button></div>
+  <svg id="gPih" viewBox="0 0 520 300" role="img" aria-label="5期間の所得と、一定の消費の水準を示すグラフ"></svg>
+  <p class="gcap" id="gPih-cap"></p>
+  <div class="tw" style="max-width:34rem"><table class="calc-t" id="pihTbl"></table></div>
+</div>
+<div class="memo"><span class="who">メモ：宝くじと昇進</span>宝くじで10万円当たった人は、たいてい生活の水準そのものは変えません（変動所得）。一方、昇進して給料がずっと上がることが決まった人は、外食や住まいを少しずつ良くしていくでしょう（恒常所得）。同じ「収入が増えた」でも、消費への影響はまったく違います。</div>
+<p>恒常所得仮説については、第11章でさらにくわしく学びます。この章では、話を簡単にするため、恒常所得が1増えると消費もちょうど1増える（恒常所得からの消費性向は1）と考えます。</p>
+<div class="point"><p>消費は恒常所得 Yᴾ で決まる。一時的な所得の変化は貯蓄で吸収され、消費はほとんど動かない。恒常的な変化だけが消費を動かす。</p></div>
+</section>
+
+<section id="s3" data-t="財市場と貸付資金市場">
+<h2><span class="sn">3</span>財市場と貸付資金市場：どの線が動くか</h2>
+<p>第3章と同じく、財市場の均衡を考えます。違うのは、需要の中の消費が<b>恒常所得</b>で決まることだけです。</p>
+<div class="eq"><span class="f">Yᵈ = C(Yᴾ) + I(r) + G</span><span class="no">テキスト (4.2)</span></div>
+<p class="eq-read">財の需要 ＝ 恒常所得で決まる消費 ＋ 利子率で決まる投資 ＋ 政府支出</p>
+<div class="eq"><span class="f">S ≡ Y − C(Yᴾ) − G</span><span class="no">テキスト (4.3)</span></div>
+<p class="eq-read">国民貯蓄は、今の所得 Y と恒常所得 Yᴾ の両方で決まる</p>
+<p>大事なのは、<span class="mk">Yˢ の線を動かすのは今の Y、Yᵈ の線を動かすのは恒常所得 Yᴾ</span>という点です。今の所得と恒常所得の変わり方の組み合わせで、どの線が動くかが決まります。</p>
+<div class="tw"><table>
+<thead><tr><th>変化</th><th>今の Y</th><th>恒常所得 Yᴾ</th><th>動く線</th></tr></thead>
+<tbody>
+<tr><td>一時的な産出量の増加</td><td class="c plus">増える</td><td class="c">変わらない</td><td>Yˢ だけ右へ</td></tr>
+<tr><td>恒常的な産出量の増加（今から）</td><td class="c plus">増える</td><td class="c plus">同じだけ増える</td><td>Yˢ も Yᵈ も右へ</td></tr>
+<tr><td>恒常的な産出量の増加（将来から）</td><td class="c">変わらない</td><td class="c plus">増える</td><td>Yᵈ だけ右へ</td></tr>
+</tbody></table></div>
+<div class="num"><span class="h">この解説で使う数値例（説明のための架空の値。第2・第3パートで使います）</span>
+<table class="calc-t">
+<tr><td>今の生産 Y ＝ 恒常所得 Yᴾ、政府支出 G ＝ 税 T</td><td class="r">500、80</td></tr>
+<tr><td>消費 C ＝ (Yᴾ − T) − 40（恒常所得が1増えると消費も1増える）</td><td class="r">380</td></tr>
+<tr><td>投資 I ＝ 80 − 10r</td><td class="r">r ＝ 4% で 40</td></tr>
+<tr><td>需要 Yᵈ ＝ 380 ＋ (80 − 10r) ＋ 80 ＝ 540 − 10r、供給 Yˢ ＝ 500</td><td class="r">r ＝ 4%</td></tr>
+<tr><td>国民貯蓄 S ＝ 500 − 380 − 80</td><td class="r">40（＝ I）</td></tr>
+</table></div>
+<div class="point"><p>Yˢ を動かすのは今の所得、Yᵈ（と消費）を動かすのは恒常所得。貯蓄 S ＝ Y − C(Yᴾ) − G は両方に左右される。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート2 ===================== -->
+<div class="part" id="sanshutsu" data-title="産出量の変化" data-desc="生産が増えたとき、それが一時的か恒常的か、今起こるか将来起こるかで、利子率・消費・投資の動きが変わります。財市場と貸付資金市場の2つの図で確かめます。">
+
+<section id="s4" data-t="一時的な産出量の増加">
+<h2><span class="sn">4</span>一時的な産出量の増加：利子率が下がる</h2>
+<p>天候に恵まれて今年だけ豊作になった、という場合です。今の生産 Y は増えますが、恒常所得は変わりません。数値例で、今年だけ生産が20増えるとします。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の前後"><button type="button" data-g="a1" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="a1" data-s="1" aria-pressed="false">変化後</button></div>
+  <div class="pair">
+    <div><svg id="ga1Y" viewBox="0 0 520 320" role="img" aria-label="財市場：供給の線だけが右へ動き利子率が下がる"></svg><p class="gcap" id="ga1Y-cap"></p></div>
+    <div><svg id="ga1S" viewBox="0 0 520 320" role="img" aria-label="貸付資金市場：貯蓄が増え利子率が下がる"></svg><p class="gcap" id="ga1S-cap"></p></div>
+  </div>
+</div>
+<p>増えた所得は消費に回らず、まるごと貯蓄になります。貸したいお金が増えるので利子率が下がり、投資が増えます。新しい均衡では、<span class="mk">利子率の低下、貯蓄と投資の増加</span>が起きています。</p>
+<p class="xref">供給曲線が右上がりの場合は <a href="#s19" data-goto="s19">課題①</a> で考えます</p>
+<div class="point"><p>一時的な産出量の増加：Yˢ だけが右へ。C 不変、S と I が増え、r が下がる。</p></div>
+</section>
+
+<section id="s5" data-t="恒常的な産出量の増加（今から）">
+<h2><span class="sn">5</span>恒常的な産出量の増加：利子率は変わらない</h2>
+<p>画期的な技術が実用化され、今年から生産がずっと20増える場合です。今の Y も恒常所得 Yᴾ も20増えます。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の前後"><button type="button" data-g="a2" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="a2" data-s="1" aria-pressed="false">変化後</button></div>
+  <div class="pair">
+    <div><svg id="ga2Y" viewBox="0 0 520 320" role="img" aria-label="財市場：供給も需要も同じだけ右へ動く"></svg><p class="gcap" id="ga2Y-cap"></p></div>
+    <div><svg id="ga2S" viewBox="0 0 520 320" role="img" aria-label="貸付資金市場：何も動かない"></svg><p class="gcap" id="ga2S-cap"></p></div>
+  </div>
+</div>
+<p>消費性向を1としているので、消費も20増えます。供給と需要が同じだけ増えるので、<span class="mk">利子率は変わらず、貯蓄も投資も変わりません</span>。増えた生産は、すべて消費に回ります。</p>
+<div class="point"><p>恒常的な産出量の増加（今から）：Yˢ と Yᵈ が同じだけ右へ。r・S・I は不変、C が Y と同じだけ増える。</p></div>
+</section>
+
+<section id="s6" data-t="恒常的な増加が将来起こる場合">
+<h2><span class="sn">6</span>恒常的な増加が将来起こる場合：利子率が上がる</h2>
+<p>新しい技術が発見されたが、実用化までに時間がかかる場合です。今の生産は変わりませんが、将来の所得が増えることがわかったので、<b>今の</b>恒常所得が増えます。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の前後"><button type="button" data-g="a3" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="a3" data-s="1" aria-pressed="false">変化後</button></div>
+  <div class="pair">
+    <div><svg id="ga3Y" viewBox="0 0 520 320" role="img" aria-label="財市場：需要の線だけが右へ動き利子率が上がる"></svg><p class="gcap" id="ga3Y-cap"></p></div>
+    <div><svg id="ga3S" viewBox="0 0 520 320" role="img" aria-label="貸付資金市場：貯蓄が減り利子率が上がる"></svg><p class="gcap" id="ga3S-cap"></p></div>
+  </div>
+</div>
+<p>家計は将来の所得をあてにして、今から消費を増やします。今の生産は増えていないので、利子率が上がり、投資が減ります。実際に生産が増えた時点では、第5節と同じ状態になり、貯蓄の線も元に戻ります。</p>
+<div class="point"><p>恒常的な増加が将来起こる：今は Yᵈ だけが右へ。C が増え、S と I が減り、r が上がる。</p></div>
+</section>
+
+<section id="s7" data-t="資本の限界生産物の増加">
+<h2><span class="sn">7</span>資本の限界生産物の増加：投資と消費の両方が増えようとする</h2>
+<p>機械の性能が上がるなどして、資本の限界生産物 MPK が上がった場合です。企業にとって最適な資本の量（MPK ＝ r となる K）が増えるので、どの利子率でも投資が増えます（投資関数が右へ）。さらに、投資で将来の生産が増えるので恒常所得も増え、消費も増えます。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の前後"><button type="button" data-g="a4" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="a4" data-s="1" aria-pressed="false">変化後</button></div>
+  <div class="pair">
+    <div><svg id="ga4Y" viewBox="0 0 520 320" role="img" aria-label="財市場：需要の線が大きく右へ動く"></svg><p class="gcap" id="ga4Y-cap"></p></div>
+    <div><svg id="ga4S" viewBox="0 0 520 320" role="img" aria-label="貸付資金市場：投資の線が右へ、貯蓄の線が左へ動く"></svg><p class="gcap" id="ga4S-cap"></p></div>
+  </div>
+</div>
+<p>今の生産は増えないので、結論は「<span class="mk">今の均衡生産量は変わらず、利子率が上がる</span>」です。第6節と比べると、投資の増加も加わるので、需要の線の動きはより大きくなります。</p>
+<p>注意したいのは、新しい均衡での投資です。今の生産は増えず消費が増えるので、貯蓄 S ＝ Y − C − G は減ります。S ＝ I なので、<b>均衡の投資は増えるどころか減ります</b>（数値例では 40 → 30）。「投資を増やそうとする力」は、利子率の上昇でおさえこまれるのです。</p>
+<div class="point"><p>MPK の上昇：I(r) が右へ、Yᴾ の増加で C も増える。今の Y は不変、r が上がる。均衡の投資は貯蓄の減少分だけ減る。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート3 ===================== -->
+<div class="part" id="zaisei" data-title="財政政策と公共投資" data-desc="政府支出の増加や減税も、一時的か恒常的かで効果が違います。リカードの等価定理と、有益な公共投資・無駄な公共投資の違いを学びます。">
+
+<section id="s8" data-t="一時的と恒常的の区別">
+<h2><span class="sn">8</span>「一時的」と「恒常的」の意味</h2>
+<p>政府が今お金を使えば、いつかは税で払わなければなりません（国債で借りても、返すのは将来の税です）。そこで、家計の税負担の合計（将来の税は割り引いて今の価値に直す）が変わるかどうかで区別します。この章の恒常所得は、すべて<b>税引き後</b>の恒常所得です。</p>
+<div class="tw"><table>
+<thead><tr><th>政策</th><th>意味</th><th>恒常所得</th></tr></thead>
+<tbody>
+<tr><td>一時的な政府支出の増加</td><td>1回限り。将来どこかで同じ額（割引価値）だけ支出を減らす</td><td>変わらない</td></tr>
+<tr><td>恒常的な政府支出の増加</td><td>今から将来までずっと増やす。税負担もずっと重くなる</td><td>増加分だけ減る</td></tr>
+<tr><td>一時的な減税</td><td>今の減税を将来の増税で埋め合わせる</td><td>変わらない</td></tr>
+<tr><td>恒常的な減税</td><td>ずっと減税する。そのためには政府支出もずっと減らす必要がある</td><td>減税分だけ増える</td></tr>
+</tbody></table></div>
+<div class="memo"><span class="who">メモ：家計のやりくりと同じ</span>親から「今月だけお小遣いを1万円増やすけど、来月は1万円減らすね」と言われたら、使い方はあまり変えないでしょう。「これからずっと1万円増やす」なら、生活を変えます。政府の政策も、家計から見ると同じように受け止められるのです。</div>
+<div class="point"><p>一時的な政策は家計の生涯の税負担を変えず、恒常所得も変えない。恒常的な政策は恒常所得を変える。</p></div>
+</section>
+
+<section id="s9" data-t="政府支出の増加">
+<h2><span class="sn">9</span>政府支出の増加：一時的と恒常的</h2>
+<p>数値例で、G を80から100に20増やします。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="政府支出の増加の種類"><button type="button" data-g="f1" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="f1" data-s="1" aria-pressed="false">一時的な増加</button><button type="button" data-g="f1" data-s="2" aria-pressed="false">恒常的な増加</button></div>
+  <div class="pair">
+    <div><svg id="gf1Y" viewBox="0 0 520 320" role="img" aria-label="財市場：政府支出の増加の効果"></svg><p class="gcap" id="gf1Y-cap"></p></div>
+    <div><svg id="gf1S" viewBox="0 0 520 320" role="img" aria-label="貸付資金市場：政府支出の増加の効果"></svg><p class="gcap" id="gf1S-cap"></p></div>
+  </div>
+</div>
+<div class="tw"><table>
+<thead><tr><th></th><th>Y</th><th>C</th><th>I</th><th>G</th><th>r</th></tr></thead>
+<tbody>
+<tr><td>変化前</td><td class="r">500</td><td class="r">380</td><td class="r">40</td><td class="r">80</td><td class="r">4%</td></tr>
+<tr><td>一時的な増加</td><td class="r">500</td><td class="r">380</td><td class="r minus">20</td><td class="r plus">100</td><td class="r">6%</td></tr>
+<tr><td>恒常的な増加</td><td class="r">500</td><td class="r minus">360</td><td class="r">40</td><td class="r plus">100</td><td class="r">4%</td></tr>
+</tbody></table></div>
+<p>一時的な増加は、第3章と同じように投資を押しのけます（クラウディング・アウト）。財源を税にしても国債にしても、結果は同じです。一方、<span class="mk">恒常的な増加は、同じ額だけ消費を減らすだけ</span>で、利子率も投資も変わりません。</p>
+<div class="memo"><span class="who">メモ：政府支出の中身も大事</span>政府支出がインフラ整備のように生産を増やすものなら、将来の生産を増やす効果も考える必要があります。それは第11節の公共投資で扱います。</div>
+<p class="xref">供給曲線が右上がりの場合は <a href="#s20" data-goto="s20">課題②</a> で考えます</p>
+<div class="point"><p>一時的な G の増加：C 不変、I が減り r が上がる。恒常的な G の増加：C が同額減り、Yᵈ は動かず r・I は不変。</p></div>
+</section>
+
+<section id="s10" data-t="減税とリカードの等価定理">
+<h2><span class="sn">10</span>減税とリカードの等価定理</h2>
+<p>税 T を20減らします。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="減税の種類"><button type="button" data-g="f2" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="f2" data-s="1" aria-pressed="false">一時的な減税</button><button type="button" data-g="f2" data-s="2" aria-pressed="false">恒常的な減税</button></div>
+  <div class="pair">
+    <div><svg id="gf2Y" viewBox="0 0 520 320" role="img" aria-label="財市場：減税の効果。線は動かない"></svg><p class="gcap" id="gf2Y-cap"></p></div>
+    <div><svg id="gf2S" viewBox="0 0 520 320" role="img" aria-label="貸付資金市場：減税の効果。線は動かない"></svg><p class="gcap" id="gf2S-cap"></p></div>
+  </div>
+</div>
+<div class="num"><span class="h">一時的な減税20のとき、貯蓄の中身はこう変わる（架空の値）</span>
+<table class="calc-t">
+<tr><td>民間貯蓄 S<sub>P</sub> ＝ Y − T − C：500 − 60 − 380</td><td class="r plus">60（＋20）</td></tr>
+<tr><td>政府貯蓄 S<sub>G</sub> ＝ T − G：60 − 80</td><td class="r minus">−20（−20）</td></tr>
+<tr><td>国民貯蓄 S</td><td class="r">40（変わらない）</td></tr>
+</table></div>
+<p>一時的な減税は、経済に何の影響も与えません。これを<b>リカードの等価定理</b>と呼びます。政府支出の流れが決まっていれば、その財源を<span class="mk">今の税で賄っても、国債（＝将来の税）で賄っても同じ</span>という命題です。家計は将来の増税に備えて、減税分を貯蓄に回します。</p>
+<div class="memo"><span class="who">メモ：等価定理が成り立たないとき</span>減税から増税までの間に世代が入れかわると、減税の恩恵だけを受けて退出する世代が消費を増やすかもしれません。将来世代のことを考えない場合、リカードの等価定理は厳密には成り立たなくなります。</div>
+<p>恒常的な減税は消費を増やしますが、政府支出を同じだけ減らす必要があるので、需要の合計は変わりません。中身が G から C に入れ替わるだけです。</p>
+<p class="xref">供給曲線が右上がりの場合は <a href="#s21" data-goto="s21">課題③</a> で考えます</p>
+<div class="point"><p>一時的な減税：何も変わらない（リカードの等価定理）。恒常的な減税：C が増え G が減るだけで、Y も r も変わらない。</p></div>
+</section>
+
+<section id="s11" data-t="公共投資の効果">
+<h2><span class="sn">11</span>公共投資：有益か無駄か</h2>
+<p>道路や港の整備などの公共投資は、将来の生産を増やすかもしれません。1単位の公共投資が、将来の生産を毎年 <span class="v">ρ</span>（ロー）増やし、その費用として毎年 <span class="v">r</span>（利子率）の税負担がかかるとします。公共投資を ΔG 増やすと、家計の恒常所得は <span class="v">(ρ − r)ΔG</span> だけ変わります。</p>
+<div class="eq"><span class="f">ΔYᵈ = ΔC + ΔG = (1 + ρ − r)ΔG</span><span class="no">テキスト p.100</span></div>
+<p class="eq-read">実施した期の需要の増加 ＝ 恒常所得の変化による消費の変化 ＋ 公共投資そのもの</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="公共投資の種類"><button type="button" data-g="pr" data-s="0" aria-pressed="true">有益（ρ &gt; r）</button><button type="button" data-g="pr" data-s="1" aria-pressed="false">無駄（ρ &lt; r）</button></div>
+  <div class="gsw" role="group" aria-label="時点"><button type="button" data-g="pi" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="pi" data-s="1" aria-pressed="false">実施した期</button><button type="button" data-g="pi" data-s="2" aria-pressed="false">次の期以降</button></div>
+  <svg id="gPI" viewBox="0 0 520 320" role="img" aria-label="公共投資の効果の模式図"></svg>
+  <p class="gcap" id="gPI-cap"></p>
+</div>
+<ul class="dots">
+  <li><b>有益な公共投資（ρ &gt; r）</b>：税負担以上に生産を増やす。恒常所得が増え、将来は生産能力の増加で利子率が下がる。</li>
+  <li><b>無駄な公共投資（ρ &lt; r）</b>：費用に見合う効果がない。恒常所得が減り、消費が減る。生活基盤のインフラ（下水道など）のように GDP に表れにくい効果もあるが、そうした効果も小さい場合や、民間でもできる投資を置きかえただけの場合が無駄にあたる。</li>
+</ul>
+<div class="memo"><span class="who">メモ：この分析の限界</span>実施した期の利子率の上昇は民間投資を減らし、将来の資本を減らすかもしれません。この効果まで含めるには、もっと本格的な動学モデルが必要で、上級の教科書で扱われます。</div>
+<div class="point"><p>公共投資の効果は ρ と r の大小で決まる。ρ &gt; r なら恒常所得が増え、ρ &lt; r なら減る。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート4 ===================== -->
+<div class="part" id="idai" data-title="異時点間の代替" data-desc="利子率は「今のモノ」と「将来のモノ」の交換比率です。2期間モデルを使って、利子率が消費と労働供給を動かすしくみを学び、需要は右下がり・供給は右上がりの図をつくります。">
+
+<section id="s12" data-t="利子率と割引現在価値">
+<h2><span class="sn">12</span>利子率は「今」と「将来」の値段の比</h2>
+<p>利子率が10%なら、今日の10,000円は来年11,000円になります。逆に言えば、<span class="mk">来年の10,000円は、今の価値では10,000円より少ない</span>のです。</p>
+<div class="eq mxeq"><span class="f"><span class="mx">来年の 10,000 円の今の価値 ＝ <span class="frac"><span>10,000</span><span>1 + 0.1</span></span> ≒ 9,091 円</span></span><span class="no">スライド p.17</span></div>
+<p class="eq-read">将来のお金を利子率で割り引いた値を<b>割引現在価値</b>と呼ぶ</p>
+<p>今のモノの値段を1とすると、1年後のモノの値段は <span class="v">1/(1 + r)</span> です。利子率が上がると、将来のモノが相対的に安くなり、<b>今のモノが相対的に高く</b>なります。これが、この部分のすべての議論の出発点です。</p>
+<div class="point"><p>現在財の価格を1とすると、将来財の価格は 1/(1 + r)。利子率の上昇は、今の消費（今の余暇）を相対的に高くする。</p></div>
+</section>
+
+<section id="s13" data-t="2期間モデルと生涯の予算制約">
+<h2><span class="sn">13</span>2期間モデルと生涯の予算制約</h2>
+<p>人生を「若いとき（第1期）」と「年をとってから（第2期）」の2期間で考えます。第1期の賃金 W<sub>1</sub> の一部を消費 C<sub>1</sub> にあて、残りを貯蓄 S します。第2期は、その元利合計と賃金 W<sub>2</sub> をすべて使い切ります。</p>
+<div class="eq"><span class="f">C₁ + S = W₁　　C₂ = (1 + r)S + W₂</span><span class="no">テキスト (4.4)(4.5)</span></div>
+<p class="eq-read">第1期の予算制約と第2期の予算制約</p>
+<p>2つの式から S を消すと、<b>生涯の予算制約</b>が得られます。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>C</i><sub>1</sub> + <span class="frac"><span><i>C</i><sub>2</sub></span><span>1 + <i>r</i></span></span> = <i>W</i><sub>1</sub> + <span class="frac"><span><i>W</i><sub>2</sub></span><span>1 + <i>r</i></span></span></span></span><span class="no">テキスト (4.6)</span></div>
+<p class="eq-read">消費の割引現在価値の合計 ＝ 賃金の割引現在価値の合計（生涯賃金）</p>
+<p>毎期同じだけ消費する（C<sub>1</sub> = C<sub>2</sub>）なら、その水準が<b>恒常所得</b> Yᴾ です。下の図で、利子率を動かしてみてください。</p>
+<div class="sim">
+  <div><svg id="gBud" viewBox="0 0 520 340" role="img" aria-label="2期間の予算線と、C1=C2となる点Eのグラフ"></svg></div>
+  <div>
+    <div class="sl"><label for="rBud">利子率 r</label><input type="range" id="rBud" min="0" max="20" step="1" value="10"><output id="rBudOut" for="rBud"></output></div>
+    <div class="meter"><div><small>生涯賃金 W₁ + W₂/(1+r)</small><strong id="budW"></strong></div><div><small>恒常所得 Yᴾ（C₁ = C₂）</small><strong id="budYP"></strong></div><div><small>第1期の貯蓄 W₁ − Yᴾ</small><strong id="budS"></strong></div></div>
+    <p class="sm">架空の例：W₁ = 100、W₂ = 110。予算線は賃金の組 F（100, 110）を必ず通り、傾きは (1 + r)。利子率が上がると、F を中心に時計回りに回って急になります。</p>
+  </div>
+</div>
+<div class="memo"><span class="who">メモ：将来の給料を担保に借りる</span>W<sub>2</sub>/(1 + r) は、第2期の給料 W<sub>2</sub> をあてにして、第1期に借りられる金額です。借りた額 x に利子をつけて返すと x(1 + r) = W<sub>2</sub> になるからです。生涯賃金は「人生の初めに給料を全部まとめてもらったら、いくらか」を表しています。</div>
+<div class="point"><p>生涯の予算制約：C₁ + C₂/(1 + r) = W₁ + W₂/(1 + r)。毎期同じ消費を続けるときの水準が恒常所得。</p></div>
+</section>
+
+<section id="s14" data-t="消費関数と所得効果・代替効果">
+<h2><span class="sn">14</span>消費も利子率に反応する：C = C(Yᴾ, r)</h2>
+<p>利子率が上がると、今の消費が相対的に高くなります。だから、恒常所得が同じでも、<span class="mk">今の消費を減らして貯蓄を増やし、将来の消費を増やそう</span>とします。消費関数は利子率の減少関数になります。</p>
+<div class="eq"><span class="f">C = C(Yᴾ, r)　　Yᵈ = C(Yᴾ, r) + I(r) + G</span><span class="no">テキスト p.103</span></div>
+<p class="eq-read">利子率が下がると、投資だけでなく消費も増える。需要曲線は右下がりのまま</p>
+<h3>所得効果と代替効果</h3>
+<p>正確には、価格の変化には2つの効果があります。ミクロ経済学の「リンゴとミカン」と同じ考え方です。</p>
+<div class="tw"><table>
+<thead><tr><th>効果</th><th>意味</th><th>利子率が上がったとき、今の消費は</th></tr></thead>
+<tbody>
+<tr><td>代替効果</td><td>相対的に安くなったものに需要が移る</td><td class="c minus">減る（将来の消費の方が安い）</td></tr>
+<tr><td>所得効果</td><td>実質的な所得が変わる効果</td><td class="c plus">増えることもある（貯蓄する人には利子収入が増える）</td></tr>
+</tbody></table></div>
+<p>最終的な効果は2つの大小で決まりますが、テキストは基本的に<b>代替効果</b>が大きいとして説明しています（スライド p.19）。</p>
+<p>貯蓄は S = Y − C(Yᴾ, r) − G なので、利子率が上がると消費が減って貯蓄が増えます。<span class="mk">貸付資金市場の貯蓄の線は右上がり</span>になります。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="消費関数の種類"><button type="button" data-g="cr" data-s="0" aria-pressed="true">C が r によらない</button><button type="button" data-g="cr" data-s="1" aria-pressed="false">C が r に反応する</button></div>
+  <svg id="gCr" viewBox="0 0 520 320" role="img" aria-label="貸付資金市場で貯蓄の線が垂直から右上がりに変わるグラフ"></svg>
+  <p class="gcap" id="gCr-cap"></p>
+</div>
+<div class="point"><p>利子率の上昇は今の消費を割高にする（代替効果）。C = C(Yᴾ, r) は r の減少関数で、貯蓄の線は右上がりになる。</p></div>
+</section>
+
+<section id="s15" data-t="労働の異時点間代替と右上がりの供給">
+<h2><span class="sn">15</span>労働の異時点間代替：供給曲線が右上がりになる</h2>
+<p>働くか休むか（余暇）の選択にも、同じ考え方が使えます。余暇の費用は、その時間働いていれば得られた賃金です。利子率が上がると、将来の余暇の費用（割引現在価値 w/(1 + r)）が下がり、<span class="mk">今の余暇が相対的に高く</span>なります。</p>
+<ol class="steps">
+  <li>利子率が上がる → 今休むのは割高、将来休む方が割安。</li>
+  <li>今もっと働き、将来はその分休む（労働供給の異時点間代替）。</li>
+  <li>今の労働が増えるので、今の生産が増える → <b>Yˢ = Yˢ(r) は r の増加関数</b>（右上がり）。</li>
+</ol>
+<div class="memo"><span class="who">メモ：働くなら今か、来年か</span>今年の残業代を貯金すると、利子がつきます。利子率が高いほど「今年がんばって働いて貯め、来年はゆっくりする」方が得になります。夏休みにアルバイトを増やして、学期中は勉強に集中する学生の選び方と似ています。</div>
+<h3>供給曲線の形で、結果が変わる</h3>
+<p>スライド p.22 の例で、一時的に政府支出を15増やしたときを比べます（数値は架空の値。<a href="#s18" data-goto="s18">課題</a>と同じモデル）。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="供給曲線の形"><button type="button" data-g="ysk" data-s="0" aria-pressed="true">供給が垂直</button><button type="button" data-g="ysk" data-s="1" aria-pressed="false">供給が右上がり</button></div>
+  <div class="gsw" role="group" aria-label="変化の前後"><button type="button" data-g="ysb" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="ysb" data-s="1" aria-pressed="false">G を15増やす</button></div>
+  <svg id="gYs" viewBox="0 0 520 320" role="img" aria-label="供給曲線が垂直か右上がりかで、政府支出増加の効果が変わるグラフ"></svg>
+  <p class="gcap" id="gYs-cap"></p>
+</div>
+<p>供給が右上がりなら、需要が増えたとき、利子率の上昇に加えて<b>生産も増えます</b>。古典派モデルでも、短い期間に生産量が動くようになるのです。一見ケインズ的なしくみに見えますが、生産が増えるのは「利子率が上がって今働く方が得になるから」で、ケインズのモデルとはまったく違う理由です。</p>
+<div class="point"><p>労働の異時点間代替で Yˢ(r) は右上がり。需要の増加は、利子率の上昇と生産の増加の両方で吸収される。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート5 ===================== -->
+<div class="part" id="matome" data-title="まとめと演習" data-desc="章全体の要点を振り返り、確認問題で理解を確かめます。理解できたら、次のタブで課題に挑戦しましょう。">
+<section id="s16" data-t="まとめ">
+<h2><span class="sn">16</span>まとめ</h2>
+<p>供給が垂直（4.2節）の場合の結果を整理します。＋は増加、−は減少、0 は不変です。</p>
+<div class="tw"><table>
+<thead><tr><th>変化</th><th>動く線</th><th>Y</th><th>C</th><th>I</th><th>r</th></tr></thead>
+<tbody>
+<tr><td>一時的な産出量の増加</td><td>Yˢ 右</td><td class="c plus">＋</td><td class="c">0</td><td class="c plus">＋</td><td class="c minus">−</td></tr>
+<tr><td>恒常的な産出量の増加（今から）</td><td>Yˢ・Yᵈ 右</td><td class="c plus">＋</td><td class="c plus">＋</td><td class="c">0</td><td class="c">0</td></tr>
+<tr><td>恒常的な産出量の増加（将来から）</td><td>Yᵈ 右</td><td class="c">0</td><td class="c plus">＋</td><td class="c minus">−</td><td class="c plus">＋</td></tr>
+<tr><td>資本の限界生産物の増加</td><td>Yᵈ 右（I と C）</td><td class="c">0</td><td class="c plus">＋</td><td class="c minus">−</td><td class="c plus">＋</td></tr>
+<tr><td>一時的な政府支出の増加</td><td>Yᵈ 右</td><td class="c">0</td><td class="c">0</td><td class="c minus">−</td><td class="c plus">＋</td></tr>
+<tr><td>恒常的な政府支出の増加</td><td>動かない</td><td class="c">0</td><td class="c minus">−</td><td class="c">0</td><td class="c">0</td></tr>
+<tr><td>一時的な減税</td><td>動かない</td><td class="c">0</td><td class="c">0</td><td class="c">0</td><td class="c">0</td></tr>
+<tr><td>恒常的な減税（G も削減）</td><td>動かない</td><td class="c">0</td><td class="c plus">＋</td><td class="c">0</td><td class="c">0</td></tr>
+</tbody></table></div>
+<p class="sm">資本の限界生産物の増加：スライド p.11 の「I の増加」は、同じ利子率のもとで企業が投資を増やそうとすること（投資の線が右へ動くこと）です。今の生産は変わらず消費が増えるので、貯蓄 S ＝ Y − C − G は減り、新しい均衡での投資は S と同じだけ減ります（第7節の数値例では 40 → 30）。</p>
+<ul class="dots">
+  <li>政府支出や減税が政府の予算制約を満たす形で行われる限り、生産量には影響しない（中立命題）。ただし、公共投資は経済効果を持ちうる。</li>
+  <li>消費と労働の異時点間代替を考えると、需要は右下がり、供給は右上がりになり、需要の変化が生産量も動かす。</li>
+</ul>
+</section>
+
+<section id="s17" data-t="確認問題">
+<h2><span class="sn">17</span>確認問題</h2>
+<p>テキストの復習問題（p.109–110）をもとにしています。答えを考えてから「解答を見る」を押してください。</p>
+<div class="q"><div class="qq"><span class="qn">Q1</span><span>（復習問題1）第3章の消費関数 C = C(Y − T) と、この章の C = C(Yᴾ) の違いは？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>第3章は今の可処分所得で消費が決まり、所得が一時的に増えても消費が増える。この章は税引き後の恒常所得（長期の平均的な所得）で決まり、一時的な所得の変化には反応しない。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q2</span><span>（復習問題2・3）一時的な産出量の増加と、恒常的な産出量の増加（今から）では、利子率はどう違うか。</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>一時的な増加では消費が増えず、増えた所得は貯蓄になるので利子率が下がる。恒常的な増加では消費も同じだけ増え、貯蓄は変わらないので、利子率は変わらない。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q3</span><span>（復習問題5）リカードの等価定理とは何か。</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>政府支出の流れが決まっていれば、その財源を税で賄っても国債で賄っても経済への効果は同じ、という命題。一時的な減税は将来の増税で埋め合わされるので恒常所得を変えず、財市場に何の影響も与えない。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q4</span><span>（復習問題6）1単位の公共投資が生産を毎年 ρ 増やし、税負担が毎年 r かかる。ρ と r の大小で何が違う？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>ρ &gt; r なら恒常所得が (ρ − r)ΔG 増えて消費が増え、将来は生産能力が増える（有益な公共投資）。ρ &lt; r なら恒常所得が減り、消費が減る（無駄な公共投資）。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q5</span><span>（復習問題7）利子率が5%のとき、1年後の1万円は今のいくらに相当するか。</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>10,000 ÷ 1.05 ≒ 9,524円。今の9,524円を5%で預けると、1年後に約1万円になるから。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q6</span><span>（復習問題8）C₁ + S = W₁ と C₂ = (1 + r)S + W₂ から、生涯の予算制約を求めよ。</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>第2期の式を (1 + r) で割ると C₂/(1 + r) = S + W₂/(1 + r)。これを第1期の式に足して S を消すと、C₁ + C₂/(1 + r) = W₁ + W₂/(1 + r)。</div></div>
+</section>
+<p class="src">出典：麻生良文『マクロ経済学入門』第4章「拡張モデル」（pp.89–110）、講義スライド第4章（近藤春生）をもとに、初学者向けに再構成しました。数値例は、特に断りのないものは説明のための架空の値です。</p>
+</div>
+
+<!-- ===================== パート6 ===================== -->
+<div class="part" id="kadai" data-title="課題に挑戦" data-desc="講義スライド p.24 の課題を、ヒントから順に解いていきます。供給曲線が右上がりのとき、財市場がどう変わるかをグラフで描きます。解説と答案例は、表示スイッチがオンのときだけ見られます。">
+
+<section id="s18" data-t="課題の設定と準備">
+<h2><span class="sn">18</span>課題の設定と準備</h2>
+<div class="ansSwitch">
+  <label class="sw-l" for="ansToggle"><input type="checkbox" id="ansToggle" role="switch"><span class="sw-ui" aria-hidden="true"></span><span>解説と答案例を表示する</span></label>
+  <span class="sw-note" id="ansNote">オフ：問題とヒントだけを表示しています。</span>
+</div>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch4.docx" download="第4章課題_解答例.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+<div class="kq"><span class="lab">課題（講義スライド第4章 p.24）</span>
+<p>スライド21について、供給曲線が右上がりの時の財市場に起こる変化を以下の場合についてそれぞれグラフで描き、簡単にコメントせよ。</p>
+<p><b>①</b>　一時的な産出量増、恒常的な産出量増</p>
+<p><b>②</b>　恒常的な政府支出増加</p>
+<p><b>③</b>　一時的な減税、恒常的な減税</p>
+</div>
+<h3>問題文の言葉を確かめる</h3>
+<div class="tw"><table>
+<thead><tr><th>言葉</th><th>意味</th></tr></thead>
+<tbody>
+<tr><td>スライド21</td><td>Yᵈ = C(Yᴾ, r) + I(r) + G（右下がり）と Yˢ = Yˢ(r)（右上がり）が交わる財市場の図</td></tr>
+<tr><td>供給曲線が右上がり</td><td>利子率が上がると今もっと働くので、今の生産が増える（労働の異時点間代替）</td></tr>
+<tr><td>一時的な産出量増</td><td>今の生産能力だけが増える（豊作など）。恒常所得は変わらない</td></tr>
+<tr><td>恒常的な産出量増</td><td>今からずっと生産能力が増える（新技術など）。恒常所得も同じだけ増える</td></tr>
+<tr><td>恒常的な政府支出増加</td><td>ずっと G を増やす。将来ずっと税負担も増えるので、恒常所得が減る</td></tr>
+<tr><td>一時的な減税／恒常的な減税</td><td>前者は将来の増税で埋め合わせ、後者は政府支出をずっと削って行う</td></tr>
+</tbody></table></div>
+<div class="memo"><span class="who">テキストと違う点</span>テキストの 4.2 節（産出量の変化・財政政策）は、供給曲線が<b>垂直</b>の場合で説明しています。課題は、それを 4.3 節の<b>右上がり</b>の供給曲線に置きかえて考えるものです。供給曲線を「右へ動かす」とは、どの利子率でも生産が同じだけ増えることを意味します。</div>
+<h3>この課題で使う道具</h3>
+<div class="tw"><table>
+<thead><tr><th>課題</th><th>使う道具</th><th>復習</th></tr></thead>
+<tbody>
+<tr><td>①</td><td>一時的・恒常的な産出量の変化で動く線</td><td><a href="#s4" data-goto="s4">第4節</a>・<a href="#s5" data-goto="s5">第5節</a></td></tr>
+<tr><td>②</td><td>恒常的な政府支出の増加と恒常所得</td><td><a href="#s9" data-goto="s9">第9節</a></td></tr>
+<tr><td>③</td><td>リカードの等価定理、恒常的な減税</td><td><a href="#s10" data-goto="s10">第10節</a></td></tr>
+<tr><td>全体</td><td>右上がりの供給曲線（スライド p.22）</td><td><a href="#s15" data-goto="s15">第15節</a></td></tr>
+</tbody></table></div>
+<h3>課題の解説で使う数値例</h3>
+<p>グラフを数字で確かめられるように、<b>説明のための架空の値</b>を使います（第15節と同じモデル）。変化の大きさは、どれも15とします。</p>
+<div class="tw"><table>
+<thead><tr><th>項目</th><th>式・値</th></tr></thead>
+<tbody>
+<tr><td>供給（右上がり）</td><td class="r">Yˢ ＝ 480 ＋ 5r</td></tr>
+<tr><td>消費（Yᴾ − T が1増えると1増え、r が上がると減る）</td><td class="r">C ＝ (Yᴾ − T) − 20 − 5r</td></tr>
+<tr><td>投資</td><td class="r">I ＝ 60 − 5r</td></tr>
+<tr><td>恒常所得 Yᴾ、政府支出 G ＝ 税 T</td><td class="r">500、80</td></tr>
+<tr><td>需要 Yᵈ ＝ (420 − 20 − 5r) ＋ (60 − 5r) ＋ 80</td><td class="r">540 − 10r</td></tr>
+<tr><td>均衡：540 − 10r ＝ 480 ＋ 5r</td><td class="r">r ＝ 4%、Y ＝ 500（C 380、I 40、G 80）</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s19" data-t="課題① 産出量の増加">
+<h2><span class="sn">19</span>課題①：一時的な産出量増、恒常的な産出量増</h2>
+<div class="kq"><span class="lab">問題</span><p>供給曲線が右上がりの時、一時的な産出量増と恒常的な産出量増で、財市場にどんな変化が起こるか。グラフで描き、簡単にコメントせよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>まず「Yˢ と Yᵈ のどちらが動くか」を決めましょう。Yˢ を動かすのは今の生産、Yᵈ を動かすのは恒常所得です（第3節の表）。そのうえで、右上がりの Yˢ と交わる点がどう動くかを読み取ります。垂直の場合（第4・5節）と比べると、コメントが書きやすくなります。</div>
+<p class="xref">復習：<a href="#s4" data-goto="s4">一時的な産出量の増加</a>、<a href="#s5" data-goto="s5">恒常的な産出量の増加</a>、<a href="#s15" data-goto="s15">右上がりの供給</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>何が変わり、何が変わらないか</h3>
+<div class="tw"><table>
+<thead><tr><th></th><th>今の生産能力</th><th>恒常所得 Yᴾ</th><th>消費 C（同じ r で）</th></tr></thead>
+<tbody>
+<tr><td>一時的な産出量増</td><td class="c plus">15増える</td><td class="c">変わらない</td><td class="c">変わらない</td></tr>
+<tr><td>恒常的な産出量増</td><td class="c plus">15増える</td><td class="c plus">15増える</td><td class="c plus">15増える</td></tr>
+</tbody></table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>どの線が動くか</h3>
+<p>どちらも、どの利子率でも今の生産が15増えるので、<b>Yˢ 曲線が右へ15</b>動きます。一時的な場合は Yᵈ は動きません。恒常的な場合は消費が15増えるので、<b>Yᵈ 曲線も右へ15</b>動きます。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフで読み取る</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の選択"><button type="button" data-g="k1" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="k1" data-s="1" aria-pressed="false">一時的な産出量増</button><button type="button" data-g="k1" data-s="2" aria-pressed="false">恒常的な産出量増</button><button type="button" data-g="k1" data-s="3" aria-pressed="false">（補足）将来の増加</button></div>
+  <svg id="gK1" viewBox="0 0 520 320" role="img" aria-label="供給曲線が右上がりの財市場で、産出量の増加による均衡の変化"></svg>
+  <p class="gcap" id="gK1-cap"></p>
+  <div class="tw" style="max-width:26rem"><table id="k1tbl"></table></div>
+</div>
+<div class="num"><span class="h">数値例（架空の値）と、供給が垂直な場合との比較</span>
+<table class="calc-t">
+<tr><td>一時的：540 − 10r ＝ 495 ＋ 5r → 15r ＝ 45</td><td class="r">r ＝ 3、Y ＝ 510</td></tr>
+<tr><td>　（供給が垂直なら 540 − 10r ＝ 515）</td><td class="r">r ＝ 2.5、Y ＝ 515</td></tr>
+<tr><td>恒常的：555 − 10r ＝ 495 ＋ 5r → 15r ＝ 60</td><td class="r">r ＝ 4、Y ＝ 515</td></tr>
+<tr><td>　（供給が垂直なら 555 − 10r ＝ 515）</td><td class="r">r ＝ 4、Y ＝ 515</td></tr>
+</table></div>
+<p>一時的な場合、利子率が下がると「今働くこと」の得が小さくなり、人々は今の労働を少し減らします。だから、生産の増え方は生産能力の増加（15）より小さくなります（Y ＝ 510）。恒常的な場合は、需要と供給が同じだけ増えるので利子率は動かず、供給曲線の傾きと関係なく、生産は15増えます。</p>
+<div class="memo"><span class="who">補足：恒常的な増加が将来起こる場合</span>今の生産能力は変わらず、Yᵈ だけが右へ15動きます。供給が垂直なら生産は変わらず利子率だけが上がりますが（第6節）、右上がりなら利子率の上昇（5%）で今もっと働くので、<b>今の生産も 505 に増えます</b>。グラフの「（補足）」で確かめてください。</div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　一時的な産出量増で「所得が増えるので消費も増え、Yᵈ も右へ動く」と描くこと。消費は恒常所得で決まるので、一時的な所得の増加では消費は（ほとんど）増えません。</div>
+<div class="point ketsu"><p>一時的な産出量増：Yˢ だけが右へ。r は下がり、Y は増えるが、増え方は垂直の場合より小さい。恒常的な産出量増：Yˢ も Yᵈ も同じだけ右へ。r は変わらず、Y は生産能力の増加分だけ増える。</p></div>
+<div class="answer">
+<p>一時的な産出量の増加では、どの利子率のもとでも今の生産が増えるので供給曲線 Yˢ が右にシフトする。一方、恒常所得は変化しないので消費は変わらず、需要曲線 Yᵈ はシフトしない。当初の利子率では超過供給となるため利子率が低下し、新しい均衡では利子率が下がり、産出量は増加する。ただし供給曲線が右上がりなので、利子率の低下によって現在の労働供給がいくらか減り、産出量の増加は供給曲線のシフト幅より小さい（垂直な場合より小さい）。</p>
+<p>恒常的な産出量の増加では、供給曲線 Yˢ が右にシフトするとともに、恒常所得が同額だけ増えて消費も増えるため、需要曲線 Yᵈ も同じ幅だけ右にシフトする。そのため均衡利子率は変化せず、産出量はシフト幅の分だけ増加する。この結果は供給曲線が垂直な場合と同じである。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s20" data-t="課題② 恒常的な政府支出増加">
+<h2><span class="sn">20</span>課題②：恒常的な政府支出増加</h2>
+<div class="kq"><span class="lab">問題</span><p>供給曲線が右上がりの時、恒常的な政府支出増加で、財市場にどんな変化が起こるか。グラフで描き、簡単にコメントせよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>G が増えると需要は増えます。しかし「恒常的」な増加では、将来ずっと税が増えます。家計の恒常所得はどうなり、消費はどう変わるでしょうか。スライド p.22 の一時的な増加の図と比べてみましょう。</div>
+<p class="xref">復習：<a href="#s9" data-goto="s9">政府支出の増加</a>、<a href="#s15" data-goto="s15">右上がりの供給（一時的な増加の図）</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>何が変わり、何が変わらないか</h3>
+<div class="tw"><table>
+<thead><tr><th>項目</th><th>変化</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td>政府支出 G</td><td class="c plus">＋15</td><td>ずっと増やす</td></tr>
+<tr><td>税引き後の恒常所得</td><td class="c minus">−15</td><td>将来ずっと税負担が15増える</td></tr>
+<tr><td>消費 C（同じ r で）</td><td class="c minus">−15</td><td>恒常所得からの消費性向は1</td></tr>
+<tr><td>投資関数、供給曲線</td><td class="c">変わらない</td><td>企業の生産能力や MPK は変わらない</td></tr>
+</tbody></table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>どの線が動くか</h3>
+<p>需要 Yᵈ ＝ C ＋ I ＋ G のうち、G が15増え、C が15減ります。差し引きゼロなので、<b>Yᵈ 曲線は動きません</b>。Yˢ 曲線も動きません。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフで読み取る</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="変化の選択"><button type="button" data-g="k2" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="k2" data-s="1" aria-pressed="false">（比較）一時的な増加</button><button type="button" data-g="k2" data-s="2" aria-pressed="false">恒常的な増加</button></div>
+  <svg id="gK2" viewBox="0 0 520 320" role="img" aria-label="恒常的な政府支出増加では需要曲線が動かないことを示すグラフ"></svg>
+  <p class="gcap" id="gK2-cap"></p>
+  <div class="tw" style="max-width:26rem"><table id="k2tbl"></table></div>
+</div>
+<div class="num"><span class="h">数値例（架空の値）</span>
+<table class="calc-t">
+<tr><td>恒常的：C ＝ (500 − 95) − 20 − 5r、Yᵈ ＝ (385 − 5r) ＋ (60 − 5r) ＋ 95</td><td class="r">540 − 10r（変わらない）</td></tr>
+<tr><td>均衡：540 − 10r ＝ 480 ＋ 5r</td><td class="r">r ＝ 4、Y ＝ 500、C ＝ 365、I ＝ 40、G ＝ 95</td></tr>
+<tr><td>（比較）一時的：Yᵈ ＝ 555 − 10r ＝ 480 ＋ 5r</td><td class="r">r ＝ 5、Y ＝ 505、C ＝ 375、I ＝ 35</td></tr>
+</table></div>
+<p>一時的な増加では、利子率が上がり、供給曲線に沿って生産も増えました（スライド p.22 の右の図）。恒常的な増加では需要曲線が動かないので、<span class="mk">供給曲線が右上がりかどうかに関係なく、利子率も生産も変わりません</span>。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　スライド p.22 の図（一時的な増加）と同じように Yᵈ を右へ動かしてしまうこと。恒常的な増加では、増税を見込んだ消費の減少が G の増加を打ち消します。</div>
+<div class="point ketsu"><p>Yᵈ も Yˢ も動かず、r も Y も変わらない。G の増加と同じだけ C が減り、需要の中身が入れ替わるだけ。</p></div>
+<div class="answer">
+<p>政府支出が恒常的に増加すると、家計は将来にわたる税負担の増加を予想するので、税引き後の恒常所得が政府支出の増加分だけ減少し、消費も同額だけ減少する（恒常所得からの消費性向を1とする）。需要 Yᵈ ＝ C(Yᴾ, r) ＋ I(r) ＋ G のうち G の増加と C の減少が打ち消し合うため、需要曲線はシフトしない。供給曲線もシフトしない。</p>
+<p>したがって、供給曲線が右上がりであっても、均衡の利子率と産出量は変化せず、投資も変わらない。変わるのは需要の構成（消費が減って政府支出が増える）だけである。一時的な政府支出の増加では需要曲線が右にシフトし、利子率の上昇とともに供給曲線に沿って産出量が増加したのとは対照的である。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s21" data-t="課題③ 一時的な減税と恒常的な減税">
+<h2><span class="sn">21</span>課題③：一時的な減税、恒常的な減税</h2>
+<div class="kq"><span class="lab">問題</span><p>供給曲線が右上がりの時、一時的な減税と恒常的な減税で、財市場にどんな変化が起こるか。グラフで描き、簡単にコメントせよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>一時的な減税は、将来の増税で埋め合わされます。家計の生涯の税負担は変わるでしょうか。恒常的な減税をずっと続けるには、政府は何をしなければならないでしょうか（スライド p.13）。</div>
+<p class="xref">復習：<a href="#s10" data-goto="s10">減税とリカードの等価定理</a></p>
+<p class="locked">解説と答案例は、まだ公開されていません。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>何が変わり、何が変わらないか</h3>
+<div class="tw"><table>
+<thead><tr><th></th><th>今の税</th><th>恒常所得</th><th>C</th><th>G</th><th>Yᵈ</th></tr></thead>
+<tbody>
+<tr><td>一時的な減税</td><td class="c minus">−15</td><td class="c">不変</td><td class="c">不変</td><td class="c">不変</td><td class="c">不変</td></tr>
+<tr><td>恒常的な減税</td><td class="c minus">−15（ずっと）</td><td class="c plus">＋15</td><td class="c plus">＋15</td><td class="c minus">−15</td><td class="c">不変</td></tr>
+</tbody></table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>どの線が動くか</h3>
+<p>どちらの場合も、<b>Yᵈ も Yˢ も動きません</b>。一時的な減税では消費が変わらず、恒常的な減税では消費の増加と政府支出の削減が打ち消し合うからです。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフで読み取る</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="減税の種類"><button type="button" data-g="k3" data-s="0" aria-pressed="true">変化前</button><button type="button" data-g="k3" data-s="1" aria-pressed="false">一時的な減税</button><button type="button" data-g="k3" data-s="2" aria-pressed="false">恒常的な減税</button></div>
+  <svg id="gK3" viewBox="0 0 520 320" role="img" aria-label="減税では需要曲線も供給曲線も動かないことを示すグラフ"></svg>
+  <p class="gcap" id="gK3-cap"></p>
+  <div class="tw" style="max-width:26rem"><table id="k3tbl"></table></div>
+</div>
+<div class="num"><span class="h">数値例（架空の値）</span>
+<table class="calc-t">
+<tr><td>一時的（T：80 → 65 を今年だけ）：C ＝ 380 のまま</td><td class="r">r ＝ 4、Y ＝ 500</td></tr>
+<tr><td>　民間貯蓄 500 − 65 − 380 ＝ 55（＋15）、政府貯蓄 65 − 80 ＝ −15</td><td class="r">国民貯蓄 40 で不変</td></tr>
+<tr><td>恒常的（T ＝ G ＝ 65）：C ＝ (500 − 65) − 20 − 5r ＝ 415 − 5r、Yᵈ ＝ (415 − 5r) ＋ (60 − 5r) ＋ 65</td><td class="r">540 − 10r（変わらない）</td></tr>
+<tr><td>均衡</td><td class="r">r ＝ 4、Y ＝ 500、C ＝ 395、I ＝ 40、G ＝ 65</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「減税で手取りが増えるので消費が増え、Yᵈ が右へ動き、右上がりの供給曲線に沿って生産が増える」と描くこと。第3章のモデル（消費が今の手取りで決まる）なら Yᵈ は動きますが、この章のモデルでは、一時的な減税は恒常所得を変えません。</div>
+<div class="point ketsu"><p>一時的な減税：Yᵈ も Yˢ も動かず、経済に何の影響もない（リカードの等価定理）。恒常的な減税：C の増加と G の削減が打ち消し合い、r も Y も変わらない。需要の中身が G から C に移るだけ。</p></div>
+<div class="answer">
+<p>一時的な減税は将来の増税によって埋め合わされるため、家計の税引き後の恒常所得を変化させない。したがって消費は変わらず、需要曲線はシフトしない。供給曲線もシフトしないので、供給曲線が右上がりであっても利子率と産出量は変化しない。家計は減税分を貯蓄し、民間貯蓄の増加が政府貯蓄の減少を打ち消す（リカードの等価定理）。</p>
+<p>恒常的な減税は、政府支出の恒常的な削減を伴ってはじめて可能である。減税によって恒常所得が増え消費が増加するが、同額の政府支出が削減されるため、需要曲線はシフトしない。したがって利子率と産出量は変化せず、需要の構成が政府支出から消費へ入れ替わるだけである。ただし、削減される政府支出がインフラ投資など生産力を高めるものであれば長期的に産出量は減り、無駄な支出であれば長期的に産出量は増える可能性がある。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s22" data-t="課題のまとめ">
+<h2><span class="sn">22</span>課題のまとめ</h2>
+<p class="locked">まとめは、解説の公開後に表示されます。</p>
+<div class="sol open-when-on">
+<div class="tw"><table>
+<thead><tr><th>変化</th><th>動く線</th><th>r</th><th>Y</th><th>供給が垂直な場合との違い</th></tr></thead>
+<tbody>
+<tr><td>① 一時的な産出量増</td><td>Yˢ 右</td><td class="c minus">下がる</td><td class="c plus">増える</td><td>Y の増え方が小さい（利子率の低下で今の労働が減る）</td></tr>
+<tr><td>① 恒常的な産出量増</td><td>Yˢ・Yᵈ 右（同じ幅）</td><td class="c">不変</td><td class="c plus">増える</td><td>同じ</td></tr>
+<tr><td>② 恒常的な政府支出増加</td><td>動かない</td><td class="c">不変</td><td class="c">不変</td><td>同じ（C が減り G が増えるだけ）</td></tr>
+<tr><td>③ 一時的な減税</td><td>動かない</td><td class="c">不変</td><td class="c">不変</td><td>同じ（リカードの等価定理）</td></tr>
+<tr><td>③ 恒常的な減税</td><td>動かない</td><td class="c">不変</td><td class="c">不変</td><td>同じ（C が増え G が減るだけ）</td></tr>
+</tbody></table></div>
+<h3>解くときの3つの問い</h3>
+<ol class="steps">
+  <li><b>恒常所得は変わるか？</b>　「一時的」か「恒常的」か、今か将来かで判断する。</li>
+  <li><b>どの線が動くか？</b>　今の生産能力 → Yˢ、恒常所得（消費）・投資・G → Yᵈ。打ち消し合う動きがないか確かめる。</li>
+  <li><b>供給の傾きは結果を変えるか？</b>　Yᵈ と Yˢ が同じだけ動くとき、どちらも動かないときは、傾きに関係なく結果は同じ。片方だけが動くときに違いが出る。</li>
+</ol>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch4.docx" download="第4章課題_解答例.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+</div>
+</section>
+<p class="src">課題：講義スライド第4章 p.24。数値例は説明のための架空の値です。</p>
+</div>
+
+<div class="pager" id="pager"></div>
+</main>
+
+<script>
+/* 解説と答案例を最初から表示するときは true に変える */
+const ANSWERS_DEFAULT_ON=false;
+
+/* 第4章：グラフとシミュレーター */
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const K={ink:"#22252b",sub:"#5e6470",grid:"#e3e7ed",blue:"#1f4e9c",teal:"#0b6b5d",red:"#c8361f",base:"#a9b0bb"};
+  const $=id=>document.getElementById(id);
+  const f1=v=>(Math.round(v*10)/10).toString();
+  const f2=v=>(Math.round(v*100)/100).toString();
+
+  function plot(id,o){
+    const svg=$(id);while(svg.firstChild)svg.removeChild(svg.firstChild);
+    const vb=svg.viewBox.baseVal,W=vb.width,H=vb.height;
+    const L=o.left||56,R=W-(o.right||24),T=o.top||28,B=H-(o.bottom||40);
+    const X=v=>L+(v-o.xmin)/(o.xmax-o.xmin)*(R-L), Y=v=>B-(v-o.ymin)/(o.ymax-o.ymin)*(B-T);
+    const el=(t,a,txt,fill)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;if(fill)e.style.fill=fill;svg.appendChild(e);return e;};
+    (o.xt||[]).forEach(v=>{el("line",{x1:X(v),x2:X(v),y1:T,y2:B,stroke:K.grid});el("text",{x:X(v),y:B+16,"text-anchor":"middle","font-size":11},String(v),K.sub);});
+    (o.yt||[]).forEach(v=>{el("line",{x1:L,x2:R,y1:Y(v),y2:Y(v),stroke:K.grid});el("text",{x:L-8,y:Y(v)+4,"text-anchor":"end","font-size":11},String(v)+(o.yu||""),K.sub);});
+    el("line",{x1:L,y1:B,x2:R,y2:B,stroke:K.ink,"stroke-width":1.5});
+    el("line",{x1:L,y1:B,x2:L,y2:T-8,stroke:K.ink,"stroke-width":1.5});
+    el("text",{x:L-8,y:T-12,"text-anchor":"end","font-size":14,class:o.ylabM===false?"":"m"},o.ylab||"y");
+    el("text",{x:R,y:B+32,"text-anchor":"end","font-size":13,class:o.xlabM===false?"":"m"},o.xlab||"x");
+    const g={X,Y,el,L,R,T,B,
+      line:(x1,y1,x2,y2,c,w,d)=>el("line",{x1:X(x1),y1:Y(y1),x2:X(x2),y2:Y(y2),stroke:c||K.ink,"stroke-width":w||2.5,"stroke-dasharray":d||""}),
+      path:(pts,c,w,d)=>el("polyline",{points:pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" "),fill:"none",stroke:c||K.ink,"stroke-width":w||2.5,"stroke-dasharray":d||""}),
+      area:(pts,f,s)=>el("polygon",{points:pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" "),fill:f,stroke:s||"none","stroke-width":1.5}),
+      dot:(x,y,c,r)=>el("circle",{cx:X(x),cy:Y(y),r:r||4.5,fill:c||K.ink}),
+      txt:(x,y,s,a)=>{a=a||{};return el("text",{x:X(x)+(a.dx||0),y:Y(y)+(a.dy||0),"text-anchor":a.anchor||"start","font-size":a.size||13,"font-weight":a.bold?700:400,class:a.m?"m":""},s,a.color);}
+    };
+    g.arrow=(x1,y1,x2,y2,c,lab,la)=>{c=c||K.red;const X1=X(x1),Y1=Y(y1),X2=X(x2),Y2=Y(y2),a=Math.atan2(Y2-Y1,X2-X1),h=10;
+      el("line",{x1:X1,y1:Y1,x2:X2-6*Math.cos(a),y2:Y2-6*Math.sin(a),stroke:c,"stroke-width":2.2});
+      el("polygon",{points:[X2,Y2,X2-h*Math.cos(a-0.42),Y2-h*Math.sin(a-0.42),X2-h*Math.cos(a+0.42),Y2-h*Math.sin(a+0.42)].map(v=>v.toFixed(1)).join(" "),fill:c});
+      if(lab){la=la||{};el("text",{x:(X1+X2)/2+(la.dx||0),y:(Y1+Y2)/2+(la.dy===undefined?-8:la.dy),"text-anchor":la.anchor||"middle","font-size":12,"font-weight":700},lab,c);}};
+    return g;
+  }
+  const state={},R={};
+  const caption=(id,t)=>{const e=$(id+"-cap");if(e)e.innerHTML=t;};
+  document.querySelectorAll(".gsw button").forEach(b=>b.addEventListener("click",()=>{const g=b.dataset.g;state[g]=+b.dataset.s;document.querySelectorAll('.gsw button[data-g="'+g+'"]').forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));if(R[g])R[g]();}));
+  document.querySelectorAll(".gsw").forEach(box=>{const on=box.querySelector('[aria-pressed="true"]');if(on)state[on.dataset.g]=+on.dataset.s;});
+
+  /* 利子率 r を縦軸にした市場の図（財市場・貸付資金市場で共通）
+     lines: {f:r→横軸の値, c, w, d, lab, lr（ラベルを付ける r）, la:{dx,dy,anchor}} */
+  function market(id,o){
+    const g=plot(id,{xmin:o.xmin,xmax:o.xmax,ymin:0,ymax:o.ymax,xt:o.xt,yt:o.yt,yu:"%",xlab:o.xlab,ylab:"r",xlabM:false,left:50,bottom:40});
+    o.lines.forEach(l=>{const pts=[];for(let k=0;k<=60;k++){const r=k/60*o.ymax;const x=l.f(r);if(x>=o.xmin-1e-9&&x<=o.xmax+1e-9)pts.push([x,r]);}
+      g.path(pts,l.c||K.ink,l.w||3,l.d);
+      if(l.lab){const r=l.lr,la=l.la||{};g.txt(l.f(r),r,l.lab,{dx:la.dx===undefined?6:la.dx,dy:la.dy||0,anchor:la.anchor,color:l.c||K.ink,bold:true,size:12});}});
+    (o.pts||[]).forEach(p=>{g.line(o.xmin,p.r,p.x,p.r,K.sub,1.2,"4 4");g.line(p.x,0,p.x,p.r,K.sub,1.2,"4 4");g.dot(p.x,p.r,p.c||K.ink);if(p.lab)g.txt(p.x,p.r,p.lab,{dx:p.dx===undefined?8:p.dx,dy:p.dy===undefined?-8:p.dy,anchor:p.anchor,bold:true,size:13,color:p.c||K.ink,m:true});});
+    return g;
+  }
+
+  /* ---------- 恒常所得仮説：5期間の所得と消費 ---------- */
+  const PIH=[
+    {y:[100,100,100,100,100],t:"基準",cap:"毎期の所得は100。恒常所得も100で、消費も毎期100。貯蓄はゼロ。"},
+    {y:[150,100,100,100,100],t:"今期だけボーナス",cap:"今期だけ所得が50増える（変動所得）。5期の平均（恒常所得）は110なので、消費は毎期110。今期は40を貯蓄し、その後の4期で10ずつ取り崩す。今期の所得が50増えても、今期の消費は10しか増えない。"},
+    {y:[150,150,150,150,150],t:"ずっと昇給",cap:"今期から毎期50増える（恒常的な増加）。恒常所得も150に上がり、消費も毎期150。所得が増えた分だけ消費が増え、貯蓄は変わらない。"},
+    {y:[100,100,150,150,150],t:"将来の昇給が決まった",cap:"今期の所得は100のままだが、3期目からの昇給が決まった。平均は130なので、今期から消費を130に増やす。最初の2期は30ずつ借りて（貯蓄を取り崩して）消費する。"}];
+  R.pih=function(){
+    const s=state.pih||0,P=PIH[s],yp=P.y.reduce((a,b)=>a+b,0)/5;
+    const g=plot("gPih",{xmin:0.4,xmax:5.6,ymin:0,ymax:170,yt:[50,100,150],xlab:"期",ylab:"金額",xlabM:false,ylabM:false,left:50});
+    P.y.forEach((v,i)=>{const x=i+1;g.area([[x-0.3,0],[x+0.3,0],[x+0.3,v],[x-0.3,v]],"rgba(31,78,156,.18)",K.blue);g.txt(x,v,String(v),{anchor:"middle",dy:-6,color:K.blue,size:12});g.txt(x,0,(i+1)+"期"+(i===0?"（今）":""),{anchor:"middle",dy:18,size:12});});
+    g.line(0.5,yp,5.5,yp,K.red,3);g.txt(5.5,yp,"消費 C = Yᴾ = "+yp,{anchor:"end",dy:yp>=120?18:-8,color:K.red,bold:true,size:12});
+    $("pihTbl").innerHTML="<tr><th>期</th>"+P.y.map((v,i)=>"<th>"+(i+1)+"</th>").join("")+"</tr><tr><td>所得 Y</td>"+P.y.map(v=>"<td class='r'>"+v+"</td>").join("")+"</tr><tr><td>消費 C</td>"+P.y.map(()=>"<td class='r'>"+yp+"</td>").join("")+"</tr><tr><td>貯蓄 Y − C</td>"+P.y.map(v=>{const d=v-yp;return "<td class='r "+(d>0?"plus":d<0?"minus":"")+"'>"+(d>0?"+":"")+d+"</td>";}).join("")+"</tr>";
+    caption("gPih",P.cap+"（架空の値。利子はゼロとして単純に平均している）");
+  };
+
+  /* ---------- 2つの図（財市場・貸付資金市場）を描く共通部品 ---------- */
+  const GX={xmin:430,xmax:580,ymax:10,xt:[460,500,540],yt:[2,4,6,8],xlab:"Yᵈ, Yˢ"};
+  const GF={xmin:0,xmax:100,ymax:10,xt:[20,40,60,80],yt:[2,4,6,8],xlab:"S, I"};
+  function twin(id,kind,c,after){
+    const isY=kind==="Y",ax=isY?GX:GF,nm=isY?["Yˢ","Yᵈ"]:["S","I(r)"];
+    const s0=c[isY?"ys0":"s0"],s1=after?c[isY?"ys1":"s1"]:null,d0=c[isY?"yd0":"i0"],d1=after?c[isY?"yd1":"i1"]:null;
+    const L=[];
+    if(s1){L.push({f:s0,c:K.base,w:2,d:"5 5",lab:nm[0],lr:9.5,la:{dx:-6,anchor:"end"}});L.push({f:s1,c:K.red,lab:nm[0]+"′",lr:9.5,la:{dx:6}});}
+    else L.push({f:s0,c:K.blue,lab:nm[0],lr:9.5});
+    if(d1){L.push({f:d0,c:K.base,w:2,d:"5 5",lab:nm[1],lr:1.2,la:{dx:-8,anchor:"end"}});L.push({f:d1,c:K.red,lab:nm[1]+"′",lr:1.2,la:{dx:6}});}
+    else L.push({f:d0,c:K.ink,lab:nm[1],lr:1.2,la:{dx:6}});
+    const E=c.E[kind],F=after?c.F[kind]:null,moved=F&&(F[0]!==E[0]||F[1]!==E[1]);
+    const P=[{x:E[0],r:E[1],lab:"E",dx:-10,anchor:"end",dy:-8,c:moved?K.sub:K.ink}];
+    if(moved)P.push({x:F[0],r:F[1],lab:"F",c:K.red});
+    const g=market(id,Object.assign({},ax,{lines:L,pts:P}));
+    if(s1){const a=s0(8.2),b=s1(8.2);g.arrow(a+(b>a?1:-1),8.2,b+(b>a?-1:1),8.2,K.red);}
+    if(d1){const a=d0(6.8),b=d1(6.8);g.arrow(a+(b>a?1:-1),6.8,b+(b>a?-1:1),6.8,K.red);}
+    const cap=after?(c.cap||{})[kind]:(isY?"変化前：Yᵈ と Yˢ が E（Y = 500、r = 4%）で交わる。":"変化前：国民貯蓄 40 と投資 40 が E（r = 4%）で一致する。");
+    caption(id,cap||"");
+  }
+  const V=()=>500,YD0=r=>540-10*r,S40=()=>40,I0=r=>80-10*r;
+  const BASE={ys0:V,yd0:YD0,s0:S40,i0:I0,E:{Y:[500,4],S:[40,4]}};
+  const CASE={
+    a1:{ys1:()=>520,s1:()=>60,F:{Y:[520,2],S:[60,2]},cap:{Y:"今年だけ生産が20増え、Yˢ が右へ20動く。恒常所得は変わらないので消費も変わらず、Yᵈ は動かない。超過供給になり、利子率が 4% → 2% に下がる。",S:"所得が20増えても消費は増えないので、国民貯蓄 S = Y − C − G が 40 → 60 に増える。利子率が下がり、投資も 60 に増える。"}},
+    a2:{ys1:()=>520,yd1:r=>560-10*r,F:{Y:[520,4],S:[40,4]},cap:{Y:"生産がずっと20増え、Yˢ が右へ20。恒常所得も20増えて消費が20増え、Yᵈ も右へ20。利子率は 4% のまま。",S:"所得も消費も20増えるので、貯蓄は 40 のまま変わらない。利子率も投資も変わらない。"}},
+    a3:{yd1:r=>560-10*r,s1:()=>20,F:{Y:[500,6],S:[20,6]},cap:{Y:"今年の生産は変わらないが、恒常所得が20増え、消費が20増える。Yᵈ だけが右へ動き、利子率が 4% → 6% に上がる。",S:"所得は変わらないのに消費が20増えるので、国民貯蓄が 40 → 20 に減る。利子率が上がり、投資も 20 に減る。"}},
+    a4:{yd1:r=>560-10*r,i1:r=>90-10*r,s1:()=>30,F:{Y:[500,6],S:[30,6]},cap:{Y:"投資の線が右へ10動き、将来の生産が増えるので恒常所得も10増えて消費が10増える。Yᵈ が右へ20動き、利子率が 6% に上がる。",S:"投資の線は右へ、消費が増えるので貯蓄の線は左へ動く。利子率が上がり、新しい均衡では S = I = 30。"}}
+  };
+  ["a1","a2","a3","a4"].forEach(k=>{const c=Object.assign({},BASE,CASE[k]);R[k]=()=>{const af=!!state[k];twin("g"+k+"Y","Y",c,af);twin("g"+k+"S","S",c,af);};});
+
+  /* 財政政策：政府支出（一時的・恒常的）と減税（一時的・恒常的） */
+  const FIS={
+    f1:[null,
+      Object.assign({},BASE,{yd1:r=>560-10*r,s1:()=>20,F:{Y:[500,6],S:[20,6]},cap:{Y:"一時的な増加：恒常所得は変わらず消費も変わらない。G が20増えた分だけ Yᵈ が右へ動き、利子率が 6% に上がる。",S:"国民貯蓄が G の増加分だけ減り（40 → 20）、利子率が上がって投資も 20 に減る。"}}),
+      Object.assign({},BASE,{F:{Y:[500,4],S:[40,4]},cap:{Y:"恒常的な増加：将来ずっと税が20重くなるので恒常所得が20減り、消費が20減る。G の +20 と C の −20 が打ち消し合い、Yᵈ は動かない。利子率は 4% のまま。",S:"G が20増え、C が20減るので、国民貯蓄 S = Y − C − G は 40 のまま。投資も変わらない。"}})],
+    f2:[null,
+      Object.assign({},BASE,{F:{Y:[500,4],S:[40,4]},cap:{Y:"一時的な減税：今の税が20減っても、将来の税がその分重くなるので恒常所得は変わらない。消費も Yᵈ も動かない。",S:"民間貯蓄が20増え、政府貯蓄が20減る。国民貯蓄は 40 のままで、何も変わらない（リカードの等価定理）。"}}),
+      Object.assign({},BASE,{F:{Y:[500,4],S:[40,4]},cap:{Y:"恒常的な減税：政府支出をずっと20減らして初めてできる。恒常所得が20増え消費が20増えるが、G が20減るので Yᵈ は動かない。",S:"C が20増え、G が20減るので、国民貯蓄は 40 のまま。需要の中身（C と G の割合）が入れ替わるだけ。"}})]
+  };
+  ["f1","f2"].forEach(k=>{R[k]=()=>{const s=state[k]||0,c=s?FIS[k][s]:BASE;twin("g"+k+"Y","Y",c,s>0);twin("g"+k+"S","S",c,s>0);};});
+
+  /* 公共投資（模式図） */
+  R.pubInv=function(){
+    const s=state.pi||0,useful=!(state.pr||0);
+    const dYd=useful?[0,26,6]:[0,14,-6],dYs=useful?[0,0,12]:[0,0,3];
+    const g=plot("gPI",{xmin:430,xmax:600,ymin:0,ymax:10,xt:[],yt:[],xlab:"Yᵈ, Yˢ",ylab:"r",xlabM:false,left:40});
+    const yd=d=>r=>540+d-10*r,lineYd=(d,c,w,dash,lab,lr)=>{const pts=[];for(let k=0;k<=50;k++){const r=k/50*10;const x=yd(d)(r);if(x>=430&&x<=600)pts.push([x,r]);}g.path(pts,c,w,dash);if(lab)g.txt(yd(d)(lr),lr,lab,{dx:6,color:c,bold:true,size:12});};
+    g.line(500,0,500,9.6,K.blue,s===2?2:3,s===2?"5 5":"");g.txt(500,9.6,"Yˢ",{dx:-6,anchor:"end",color:K.blue,bold:true,size:12});
+    lineYd(0,s?K.base:K.ink,s?2:3,s?"5 5":"","Yᵈ",1);
+    const pt=(x,r,l,c)=>{g.dot(x,r,c);g.txt(x,r,l,{dx:8,dy:-8,bold:true,m:true,color:c});};
+    pt(500,4,"E",s?K.sub:K.ink);
+    if(s===1){lineYd(dYd[1],K.red,3,"","Yᵈ′",1.6);const r=(540+dYd[1]-500)/10;pt(500,r,"F",K.red);g.arrow(yd(0)(7.5)+2,7.5,yd(dYd[1])(7.5)-2,7.5,K.red);}
+    if(s===2){const Ys=500+dYs[2];g.line(Ys,0,Ys,9.6,K.teal,3);g.txt(Ys,9.6,"Yˢ″",{dx:6,color:K.teal,bold:true,size:12});
+      lineYd(dYd[2],K.red,3,"","Yᵈ″",1.6);const r=(540+dYd[2]-Ys)/10;pt(Ys,r,"G",K.red);}
+    const cap=useful?["有益な公共投資（ρ > r）：変化前。","実施した期：G の増加に加え、恒常所得が (ρ − r)ΔG 増えて消費も増える。Yᵈ が (1 + ρ − r)ΔG だけ右へ動くが、生産はまだ増えないので利子率が上がる（E → F）。","次の期以降：G は元に戻るが、恒常所得の増加分の消費 (ρ − r)ΔG は残る（Yᵈ″）。生産能力が ρΔG 増えて Yˢ″ へ。供給の動きの方が大きいので、利子率は E より下がる（G 点）。"]
+                    :["無駄な公共投資（ρ < r）：変化前。","実施した期：G の増加の効果が大きく、Yᵈ は右へ動く。ただし恒常所得は (r − ρ)ΔG 減るので、右へ動く幅は ΔG より小さい。利子率が上がる（F）。","次の期以降：G は元に戻り、恒常所得の減少による消費の減少だけが残る。Yᵈ″ は元の Yᵈ より左。生産はわずかしか増えない（Yˢ″）。利子率は下がる（G 点）。"];
+    caption("gPI",cap[s]+"（模式図。目盛りは省略）");
+  };
+
+  /* 2期間モデル：生涯の予算制約 */
+  R.bud=function(){
+    const r=+$("rBud").value/100,W1=100,W2=110,W=W1+W2/(1+r),yp=W/(1+1/(1+r));
+    $("rBudOut").textContent=Math.round(r*100)+"%";
+    const g=plot("gBud",{xmin:0,xmax:240,ymin:0,ymax:250,xt:[50,100,150,200],yt:[50,100,150,200],xlab:"C₁（今の消費）",ylab:"C₂",left:50,xlabM:false,ylabM:true});
+    g.line(0,(1+r)*W,W,0,K.blue,3);g.txt(W,0,"生涯賃金 "+f1(W),{anchor:"end",dy:-8,color:K.blue,bold:true,size:12});
+    g.line(0,0,230,230,K.base,1.2,"4 4");g.txt(225,225,"C₁ = C₂",{anchor:"end",dy:-6,color:K.sub,size:11});
+    g.dot(100,110,K.ink);g.txt(100,110,"F（W₁, W₂）",{dx:10,dy:-14,size:12,bold:true});
+    g.line(yp,0,yp,yp,K.red,1.2,"4 4");g.line(0,yp,yp,yp,K.red,1.2,"4 4");g.dot(yp,yp,K.red);g.txt(yp,yp,"E",{dx:8,dy:18,bold:true,m:true,color:K.red});
+    $("budW").textContent=f1(W);$("budYP").textContent=f1(yp);$("budS").textContent=f1(W1-yp);
+  };
+  $("rBud").addEventListener("input",R.bud);
+
+  /* 消費が r に依存するときの貸付資金市場（図4.9） */
+  R.cr=function(){
+    const s=state.cr||0;
+    const L=s?[{f:r=>20+5*r,c:K.blue,lab:"S = 20 + 5r（右上がり）",lr:9.2,la:{dx:6}},{f:r=>60-5*r,c:K.ink,lab:"I = 60 − 5r",lr:1,la:{dx:6}}]
+             :[{f:()=>40,c:K.blue,lab:"S = 40（垂直）",lr:9.2,la:{dx:6}},{f:r=>60-5*r,c:K.ink,lab:"I = 60 − 5r",lr:1,la:{dx:6}}];
+    market("gCr",Object.assign({},GF,{lines:L,pts:[{x:40,r:4,lab:"E"}]}));
+    caption("gCr",s?"消費が利子率に反応する場合：利子率が上がると消費が減り、貯蓄が増える。S の線は右上がりになる（テキスト図4.9）。":"消費が利子率に反応しない場合（第3章・4.2節）：貯蓄は利子率によらず、S の線は垂直。");
+  };
+
+  /* 供給が垂直か右上がりか（スライド p.22）：一時的な政府支出の増加 */
+  R.ys=function(){
+    const up=!!state.ysk,af=!!state.ysb;
+    const Ys=up?(r=>480+5*r):(()=>500),F=up?[505,5]:[500,5.5];
+    const L=[{f:Ys,c:K.blue,lab:up?"Yˢ(r)（右上がり）":"Yˢ（垂直）",lr:9.5,la:{dx:6}},{f:YD0,c:af?K.base:K.ink,w:af?2:3,d:af?"5 5":"",lab:"Yᵈ",lr:1.2,la:{dx:-8,anchor:"end"}}];
+    if(af)L.push({f:r=>555-10*r,c:K.red,lab:"Yᵈ′",lr:1.2,la:{dx:6}});
+    const P=[{x:500,r:4,lab:"E",dx:-10,anchor:"end",c:af?K.sub:K.ink}];if(af)P.push({x:F[0],r:F[1],lab:"F",c:K.red});
+    const g=market("gYs",Object.assign({},GX,{lines:L,pts:P}));
+    if(af)g.arrow(YD0(7)+1,7,555-70-1,7,K.red,"G +15");
+    caption("gYs",!af?"変化前：E（Y = 500、r = 4%）。":(up?"供給が右上がり：利子率が 5% に上がると、人々は今もっと働こうとする。生産が 500 → 505 に増える（Yˢ 曲線に沿って動く）。":"供給が垂直：G が15増えても生産は 500 のまま。利子率が 5.5% に上がり、投資が減るだけ。"));
+  };
+
+  /* ---------- 課題：供給が右上がりのモデル（架空の値）
+     Yˢ = 480 + 5r、C = (Yᴾ − T) − 20 − 5r、I = 60 − 5r、Yᴾ = 500、G = T = 80 → Yᵈ = 540 − 10r ---------- */
+  const KX={xmin:430,xmax:580,ymax:10,xt:[460,500,540],yt:[2,4,6,8],xlab:"Yᵈ, Yˢ"};
+  const UP=r=>480+5*r;
+  function kplot(id,o){
+    const L=[];
+    if(o.ys1){L.push({f:UP,c:K.base,w:2,d:"5 5",lab:"Yˢ",lr:9.5,la:{dx:-6,anchor:"end"}});L.push({f:o.ys1,c:K.red,lab:"Yˢ′",lr:9.5,la:{dx:6}});}
+    else L.push({f:UP,c:K.blue,lab:"Yˢ = 480 + 5r",lr:9.3,la:{dx:6}});
+    if(o.yd1){L.push({f:YD0,c:K.base,w:2,d:"5 5",lab:"Yᵈ",lr:1.2,la:{dx:-8,anchor:"end"}});L.push({f:o.yd1,c:K.red,lab:"Yᵈ′",lr:1.2,la:{dx:6}});}
+    else L.push({f:YD0,c:K.ink,lab:"Yᵈ = 540 − 10r",lr:1.2,la:{dx:6}});
+    const moved=o.F&&(o.F[0]!==500||o.F[1]!==4);
+    const P=[{x:500,r:4,lab:"E",dx:-10,anchor:"end",c:moved?K.sub:K.ink}];if(moved)P.push({x:o.F[0],r:o.F[1],lab:"F",c:K.red});
+    const g=market(id,Object.assign({},KX,{lines:L,pts:P}));
+    if(o.ys1){const a=UP(8.4),b=o.ys1(8.4);g.arrow(a+1,8.4,b-1,8.4,K.red);}
+    if(o.yd1){const a=YD0(6.8),b=o.yd1(6.8);g.arrow(a+1,6.8,b-1,6.8,K.red);}
+    (o.pairArrows||[]).forEach(([lab1,lab2,c1,c2])=>{const x=YD0(7.2);g.arrow(x+1,7.6,x+15,7.6,c1,lab1,{dy:-8});g.arrow(x+15,6.6,x+1,6.6,c2,lab2,{dy:18});});
+    if(moved)g.txt(o.F[0],o.F[1],"Y = "+o.F[0]+"、r = "+o.F[1]+"%",{dx:10,dy:16,color:K.red,bold:true,size:12});
+    return g;
+  }
+  const tbl=(id,v)=>{const e=$(id);if(!e)return;const h=["r","Y","C","I","G"];e.innerHTML="<tr>"+h.map(x=>"<th>"+x+"</th>").join("")+"</tr><tr>"+v.map((x,i)=>"<td class='r'>"+x+(i===0?"%":"")+"</td>").join("")+"</tr>";};
+  const KB=[4,500,380,40,80];
+  R.k1=function(){
+    const s=state.k1||0;
+    const O=[{},{ys1:r=>495+5*r,F:[510,3]},{ys1:r=>495+5*r,yd1:r=>555-10*r,F:[515,4]},{yd1:r=>555-10*r,F:[505,5]}][s];
+    kplot("gK1",O);
+    tbl("k1tbl",[KB,[3,510,385,45,80],[4,515,395,40,80],[5,505,390,35,80]][s]);
+    caption("gK1",["変化前：Yᵈ = 540 − 10r と Yˢ = 480 + 5r が E（Y = 500、r = 4%）で交わる。",
+      "一時的な産出量の増加（+15）：Yˢ が右へ15動く。恒常所得は変わらないので Yᵈ は動かない。利子率が 3% に下がり、Y は 510 に増える。垂直なら Y は 515 まで増えて r は 2.5% だが、右上がりでは利子率の低下で今働く量が減るので、生産の増え方は15より小さい。",
+      "恒常的な産出量の増加（+15、今から）：Yˢ も Yᵈ も右へ15動く。利子率は 4% のままで、Y は 515。供給が垂直でも右上がりでも結果は同じ。",
+      "（補足）恒常的な増加が将来起こると予想された場合：今の供給は変わらず、Yᵈ だけが右へ15動く。利子率が 5% に上がり、人々が今もっと働くので、Y は 505 に増える。"][s]);
+  };
+  R.k2=function(){
+    const s=state.k2||0;
+    const O=[{},{yd1:r=>555-10*r,F:[505,5]},{F:[500,4],pairArrows:[["G +15","C −15",K.red,K.teal]]}][s];
+    kplot("gK2",O);
+    tbl("k2tbl",[KB,[5,505,375,35,95],[4,500,365,40,95]][s]);
+    caption("gK2",["変化前：E（Y = 500、r = 4%）。",
+      "（比較）一時的な増加：恒常所得は変わらないので C は不変。Yᵈ が右へ15動き、r が 5% に、Y が 505 に上がる（スライド p.22 の右の図）。",
+      "恒常的な増加：G が15増えるが、将来ずっと税が15重くなるので恒常所得が15減り、C が15減る。G の増加と C の減少が打ち消し合い、Yᵈ は動かない。供給曲線が右上がりでも、Y も r も変わらない。"][s]);
+  };
+  R.k3=function(){
+    const s=state.k3||0;
+    const O=[{},{F:[500,4]},{F:[500,4],pairArrows:[["C +15","G −15",K.red,K.teal]]}][s];
+    const g=kplot("gK3",O);
+    if(s===1)g.txt(YD0(7.2),7.2,"Yᵈ は動かない（C 不変）",{dx:10,color:K.red,bold:true,size:12});
+    tbl("k3tbl",[KB,[4,500,380,40,80],[4,500,395,40,65]][s]);
+    caption("gK3",["変化前：E（Y = 500、r = 4%）。",
+      "一時的な減税（T：80 → 65 を今年だけ）：将来の増税で埋め合わされるので恒常所得は変わらず、C も変わらない。Yᵈ も Yˢ も動かない。家計は減税分をそのまま貯蓄し（民間貯蓄 +15）、政府貯蓄の減少（−15）を打ち消す。",
+      "恒常的な減税（T と G をずっと15減らす）：恒常所得が15増え C が15増えるが、G が15減るので Yᵈ は動かない。Y も r も変わらず、需要の中身が G から C に入れ替わるだけ。"][s]);
+  };
+
+  R.pih();R.a1();R.a2();R.a3();R.a4();R.f1();R.f2();R.pubInv();R.pi=R.pubInv;R.pr=R.pubInv;R.bud();R.cr();R.ys();R.ysk=R.ys;R.ysb=R.ys;R.k1();R.k2();R.k3();
+})();
+
+/* lily 共通：タブ・目次・前後ナビ・確認問題・内部タブ・解説スイッチ・相互リンク
+   各章のHTMLは、.part（data-title, data-desc）と section（data-t, h2 .sn）を並べるだけでよい。
+   パートが表示されたときに "partshown" イベント（detail.id）を発行する。 */
+(function(){
+  const parts=[...document.querySelectorAll(".part")];
+  const tabs=document.getElementById("tabs");
+  const drawerList=document.getElementById("drawerList");
+  const body=document.body, menuBtn=document.getElementById("menuBtn"), drawer=document.getElementById("drawer");
+  let current=0;
+
+  parts.forEach((p,i)=>{
+    p.setAttribute("role","tabpanel");
+    const secs=[...p.querySelectorAll("section")];
+    const head=document.createElement("div");head.className="part-head";
+    head.innerHTML='<div class="ph-main"><div class="pn">Part '+(i+1)+' / '+parts.length+'</div><h1>'+p.dataset.title+'</h1><p>'+p.dataset.desc+'</p></div>';
+    const mini=document.createElement("div");mini.className="toc-mini";
+    secs.forEach(s=>{const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>s.scrollIntoView({behavior:"smooth",block:"start"}));mini.appendChild(b);});
+    head.querySelector(".ph-main").appendChild(mini);p.prepend(head);
+
+    const t=document.createElement("button");t.type="button";t.className="tab";t.setAttribute("role","tab");t.id="tab-"+p.id;t.setAttribute("aria-controls",p.id);
+    t.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;
+    t.addEventListener("click",()=>go(i,true));
+    t.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%parts.length;go(k,true);tabs.children[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+parts.length)%parts.length;go(k,true);tabs.children[k].focus();}});
+    tabs.appendChild(t);p.setAttribute("aria-labelledby",t.id);
+
+    const h=document.createElement("h4");const hb=document.createElement("button");hb.type="button";hb.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;hb.addEventListener("click",()=>{go(i,true);closeMenu();});h.appendChild(hb);drawerList.appendChild(h);
+    const ul=document.createElement("ul");
+    secs.forEach(s=>{const li=document.createElement("li");const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>{go(i,false);closeMenu();setTimeout(()=>s.scrollIntoView({block:"start"}),30);});li.appendChild(b);ul.appendChild(li);});
+    drawerList.appendChild(ul);
+  });
+
+  function go(i,top){
+    current=i;
+    parts.forEach((p,k)=>p.classList.toggle("on",k===i));
+    [...tabs.children].forEach((t,k)=>{t.setAttribute("aria-selected",k===i?"true":"false");t.tabIndex=k===i?0:-1;});
+    [...drawerList.querySelectorAll("h4")].forEach((h,k)=>h.classList.toggle("cur",k===i));
+    tabs.children[i].scrollIntoView({block:"nearest",inline:"nearest"});
+    const pg=document.getElementById("pager");pg.innerHTML="";
+    if(i>0){const b=document.createElement("button");b.type="button";b.innerHTML="<small>前のパート</small>← "+parts[i-1].dataset.title;b.addEventListener("click",()=>go(i-1,true));pg.appendChild(b);}
+    if(i<parts.length-1){const b=document.createElement("button");b.type="button";b.className="next";b.innerHTML="<small>次のパート</small>"+parts[i+1].dataset.title+" →";b.addEventListener("click",()=>go(i+1,true));pg.appendChild(b);}
+    try{if(location.hash!=="#"+parts[i].id)history.replaceState(null,"","#"+parts[i].id);}catch(e){}
+    if(top)window.scrollTo(0,0);
+    document.dispatchEvent(new CustomEvent("partshown",{detail:{id:parts[i].id}}));
+  }
+  function openMenu(){body.classList.add("menu-open");drawer.setAttribute("aria-hidden","false");menuBtn.setAttribute("aria-expanded","true");document.getElementById("closeBtn").focus();}
+  function closeMenu(){body.classList.remove("menu-open");drawer.setAttribute("aria-hidden","true");menuBtn.setAttribute("aria-expanded","false");}
+  menuBtn.addEventListener("click",openMenu);
+  document.getElementById("closeBtn").addEventListener("click",()=>{closeMenu();menuBtn.focus();});
+  document.getElementById("scrim").addEventListener("click",closeMenu);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&body.classList.contains("menu-open")){closeMenu();menuBtn.focus();}});
+  window.addEventListener("hashchange",()=>{const k=parts.findIndex(p=>"#"+p.id===location.hash);if(k>=0&&k!==current)go(k,true);});
+
+  /* 内部タブ（.itabs の button[aria-controls]） */
+  document.querySelectorAll(".itabs").forEach(box=>{
+    const bs=[...box.querySelectorAll("button")];
+    const sel=i=>bs.forEach((b,k)=>{b.setAttribute("aria-selected",k===i?"true":"false");b.tabIndex=k===i?0:-1;document.getElementById(b.getAttribute("aria-controls")).hidden=k!==i;});
+    bs.forEach((b,i)=>{b.addEventListener("click",()=>sel(i));b.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%bs.length;sel(k);bs[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+bs.length)%bs.length;sel(k);bs[k].focus();}});});
+    sel(0);
+  });
+
+  /* 確認問題・ヒント（.q の .show で .ans を開閉） */
+  document.querySelectorAll(".q").forEach(q=>{const b=q.querySelector(".show"),a=q.querySelector(".ans");if(!b||!a)return;const lab=b.textContent;b.setAttribute("aria-expanded","false");b.addEventListener("click",()=>{a.hidden=!a.hidden;b.textContent=a.hidden?lab:"閉じる";b.setAttribute("aria-expanded",a.hidden?"false":"true");});});
+
+  /* 解説と答案例の表示スイッチ */
+  const tg=document.getElementById("ansToggle"),note=document.getElementById("ansNote");
+  if(tg){
+    const setAns=on=>{document.body.classList.toggle("ans-off",!on);tg.checked=on;if(note)note.textContent=on?"オン：解説と答案例を表示しています。":"オフ：問題とヒントだけを表示しています。";};
+    tg.addEventListener("change",()=>setAns(tg.checked));
+    setAns(typeof ANSWERS_DEFAULT_ON!=="undefined"&&ANSWERS_DEFAULT_ON);
+  }
+
+  /* 解説の開閉 */
+  document.querySelectorAll(".solbtn").forEach(b=>b.addEventListener("click",()=>{const bd=b.nextElementSibling;bd.hidden=!bd.hidden;b.setAttribute("aria-expanded",bd.hidden?"false":"true");b.textContent=bd.hidden?"解説を読む（手順を追って説明）":"解説を閉じる";document.dispatchEvent(new CustomEvent("solopen"));}));
+
+  /* 相互リンク */
+  document.addEventListener("click",e=>{const a=e.target.closest("[data-goto]");if(!a)return;e.preventDefault();const t=document.getElementById(a.dataset.goto);if(!t)return;const k=parts.findIndex(p=>p.contains(t));if(k<0)return;go(k,false);setTimeout(()=>t.scrollIntoView({block:"start"}),30);});
+
+  const start=parts.findIndex(p=>"#"+p.id===location.hash);
+  go(start>=0?start:0,false);
+})();
+
+</script>
+</body>
+</html>
