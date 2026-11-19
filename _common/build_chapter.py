@@ -31,6 +31,7 @@ html = f'''<!DOCTYPE html>
   <div class="bar-in">
     <button class="burger" id="menuBtn" aria-label="目次を開く" aria-controls="drawer" aria-expanded="false"><span></span></button>
     <div class="course"><small>経済原論 I　マクロ経済学入門</small><b>第{num}章　{title}　解説プリントと課題</b></div>
+    <a class="home" href="../">トップへ戻る</a>
   </div>
   <div class="tabs" role="tablist" aria-label="パート" id="tabs"></div>
 </header>
