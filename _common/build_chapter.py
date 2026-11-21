@@ -47,6 +47,7 @@ const ANSWERS_DEFAULT_ON=false;
 {cjs}
 {core}
 </script>
+<a class="totop" href="../" aria-label="トップページへ戻る" title="トップページへ戻る"><img src="../assets/back_to_top.webp" alt="TOPへ戻る" width="240" height="428"></a>
 </body>
 </html>
 '''

@@ -279,6 +279,15 @@ h3.stp .st{display:inline-block;font-size:.8rem;background:var(--blue);color:#ff
 #kadai .brow{grid-template-columns:5.5em 1fr}
 #kadai .seg.g{background:#fde9a8}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* TOPへ戻る（イラストのボタン） */
+.totop{position:fixed;right:14px;bottom:14px;z-index:15;display:block;width:92px;line-height:0;border-radius:10px;transition:transform .15s}
+.totop img{width:100%;height:auto;display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
+.totop:hover{transform:translateY(-4px)}
+.totop:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+@media (max-width:560px){.totop{width:64px;right:8px;bottom:8px}}
+@media (prefers-reduced-motion: reduce){.totop{transition:none}.totop:hover{transform:none}}
+@media print{.totop{display:none}}
 </style>
 </head>
 <body>
@@ -1161,5 +1170,6 @@ const ANSWERS_DEFAULT_ON=false;
   go(start>=0?start:0,false);
 })();
 </script>
+<a class="totop" href="../" aria-label="トップページへ戻る" title="トップページへ戻る"><img src="../assets/back_to_top.webp" alt="TOPへ戻る" width="240" height="428"></a>
 </body>
 </html>
