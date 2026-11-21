@@ -14,6 +14,10 @@
 python3 _common/build_chapter.py <章番号> <章タイトル> <本文.html> <章.js> <出力.html>
 # 例
 python3 _common/build_chapter.py 1 経済学の基礎 body.html ch1.js ch01/index.html
+# 教科書だけで作った予習版は、最後に yoshu を付ける（ヘッダーに「予習版」の印が付く）
+python3 _common/build_chapter.py 6 物価水準の決定 body.html ch6.js ch06/index.html yoshu
 ```
+
+予習版の印は `.yoshu`（ヘッダーの章名の後ろ、目次）と `.yoshu-note`（パート1の冒頭、課題タブの冒頭）。仕上げのときは yoshu を外して組み立て直し、本文の `.yoshu-note` も消す。
 
 本文 HTML は、`<div class="part" id="..." data-title="..." data-desc="...">` の中に `<section id="sN" data-t="..."><h2><span class="sn">N</span>見出し</h2>…</section>` を並べます。最後のパートを「課題に挑戦」（`id="kadai"`）にし、表示スイッチ（`#ansToggle`）、解説（`.sol` / `.solbtn` / `.solbody`）、ダウンロードボタン（`.dlbtn`、href は `kaitou_chN.docx`）を置きます。

@@ -1,9 +1,12 @@
 """lily 共通ビルド：共通CSS・共通JSと、章ごとの本文・JSを1つのHTMLにまとめる。
-使い方: python3 build_chapter.py <章番号> <章タイトル> <本文html> <章js> <出力html>
+使い方: python3 build_chapter.py <章番号> <章タイトル> <本文html> <章js> <出力html> [yoshu]
+  6番目に yoshu を付けると、ヘッダーの章名の後ろに「予習版」の印を付ける（教科書だけで作った予習版）。
 """
 import sys, pathlib
 here = pathlib.Path(__file__).parent
 num, title, body_p, js_p, out_p = sys.argv[1:6]
+yoshu = len(sys.argv) > 6 and sys.argv[6] == 'yoshu'
+mark = '<span class="yoshu">予習版</span>' if yoshu else ''
 css = (here / 'base.css').read_text(encoding='utf-8')
 core = (here / 'core.js').read_text(encoding='utf-8')
 body = pathlib.Path(body_p).read_text(encoding='utf-8')
@@ -13,7 +16,7 @@ html = f'''<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第{num}章 {title}</title>
+<title>第{num}章 {title}{'（予習版）' if yoshu else ''}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
@@ -30,7 +33,7 @@ html = f'''<!DOCTYPE html>
 <header class="bar">
   <div class="bar-in">
     <button class="burger" id="menuBtn" aria-label="目次を開く" aria-controls="drawer" aria-expanded="false"><span></span></button>
-    <div class="course"><small>経済原論 I　マクロ経済学入門</small><b>第{num}章　{title}　解説プリントと課題</b></div>
+    <div class="course"><small>経済原論 I　マクロ経済学入門</small><b>第{num}章　{title}{mark}　解説プリントと課題</b></div>
     <a class="home" href="../">トップへ戻る</a>
   </div>
   <div class="tabs" role="tablist" aria-label="パート" id="tabs"></div>

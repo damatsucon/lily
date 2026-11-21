@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第6章 物価水準の決定（予習版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* 設計: 方眼紙に書いた講義プリント。黒インクの本文、青ペンの強調、朱ペンの書き込み、黄色の蛍光ペン。上部に固定ヘッダーとパートのタブ、左からメニューが出る */
+:root{
+  --paper:#fdfdfb;
+  --grid:#e9eef3;
+  --ink:#22252b;
+  --sub:#5e6470;
+  --line:#c9cfd8;
+  --blue:#1f4e9c;
+  --red:#c8361f;
+  --teal:#0b6b5d;
+  --marker:#fff1a6;
+  --note:#fffbe3;
+  --font-body:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  --font-hand:"Klee One","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --font-math:"Times New Roman",Times,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.95;
+  -webkit-text-size-adjust:100%;
+}
+a{color:var(--blue)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ヘッダー */
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:2px solid var(--ink)}
+.bar-in{max-width:960px;margin:0 auto;padding:10px 16px 0;display:flex;align-items:center;gap:12px}
+.burger{width:42px;height:42px;border:1.5px solid var(--ink);background:var(--paper);border-radius:6px;display:grid;place-items:center;cursor:pointer;flex:none}
+.burger span{display:block;width:20px;height:2px;background:var(--ink);box-shadow:0 -6px 0 var(--ink),0 6px 0 var(--ink)}
+.course{line-height:1.35;min-width:0}
+.course small{display:block;color:var(--sub);font-size:.78rem}
+.course b{font-size:1.05rem}
+.home{margin-left:auto;flex:none;padding:7px 12px;border:1.5px solid var(--ink);border-radius:6px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:.85rem;font-weight:700;white-space:nowrap}
+.home:hover,.home:focus-visible{background:var(--ink);color:var(--paper);outline:none}
+.tabs{max-width:960px;margin:8px auto 0;padding:0 16px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1.5px solid var(--ink);border-bottom:none;background:#eef1f5;border-radius:8px 8px 0 0;padding:6px 14px 5px;cursor:pointer;font-size:.92rem;line-height:1.5;color:var(--sub);position:relative;top:2px}
+.tab .n{font-family:var(--font-math);font-weight:700;margin-right:6px;color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);font-weight:700;border-bottom:2px solid var(--paper);z-index:1}
+
+/* ドロワー */
+.scrim{position:fixed;inset:0;background:rgba(20,24,32,.35);z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(340px,86vw);background:var(--paper);z-index:31;border-right:2px solid var(--ink);transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto;padding:16px 18px 40px}
+body.menu-open .scrim{opacity:1;pointer-events:auto}
+body.menu-open .drawer{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
+.drawer-head b{font-size:1rem}
+.close{border:1.5px solid var(--ink);background:none;border-radius:6px;width:36px;height:36px;cursor:pointer;font-size:1.2rem;line-height:1}
+.drawer h4{margin:14px 0 2px;font-size:.95rem}
+.drawer h4 button{background:none;border:none;padding:0;cursor:pointer;text-align:left;font-weight:700}
+.drawer h4 .n{font-family:var(--font-math);margin-right:6px}
+.drawer ul{list-style:none;margin:0;padding:0 0 0 12px;border-left:1.5px solid var(--line)}
+.drawer li button{background:none;border:none;padding:3px 0;cursor:pointer;color:var(--sub);text-align:left;font-size:.9rem;line-height:1.5}
+.drawer li button:hover{color:var(--blue)}
+.drawer .cur>button{color:var(--blue)}
+
+/* 本文 */
+main{max-width:960px;margin:0 auto;padding:22px 16px 80px}
+.part{display:none}
+.part.on{display:block}
+.part-head{background:var(--paper);border:1.5px solid var(--ink);border-radius:4px;padding:16px 20px;margin-bottom:26px}
+.part-head .pn{font-family:var(--font-math);font-size:.95rem;color:var(--sub)}
+.part-head h1{font-size:clamp(1.5rem,3.6vw,2rem);line-height:1.4;margin:2px 0 6px;text-wrap:balance}
+.part-head p{margin:0;color:var(--sub);max-width:42em}
+.toc-mini{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:.9rem}
+.toc-mini button{background:none;border:none;padding:0;cursor:pointer;color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+
+section{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 22px 24px;margin-bottom:22px;scroll-margin-top:120px}
+@media (max-width:560px){section{padding:4px 14px 18px}}
+h2{font-size:1.4rem;line-height:1.5;margin:18px 0 12px;padding-bottom:6px;border-bottom:3px double var(--ink);text-wrap:balance}
+h2 .sn{display:inline-block;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;border:1.5px solid var(--ink);border-radius:50%;font-family:var(--font-math);font-size:1rem;margin-right:10px;vertical-align:.12em}
+h3{font-size:1.1rem;margin:24px 0 6px;text-wrap:balance}
+h3::before{content:"";display:inline-block;width:10px;height:10px;background:var(--blue);margin-right:8px;vertical-align:.05em}
+p{margin:0 0 1em;max-width:44em}
+.mk{background:linear-gradient(transparent 58%,var(--marker) 58%);font-weight:700}
+.v{font-family:var(--font-math);font-style:italic;font-size:1.1em;white-space:nowrap}
+.plus{color:var(--teal);font-weight:700}
+.minus{color:var(--red);font-weight:700}
+ul.dots,ol.steps{margin:0 0 1em;padding-left:1.4em;max-width:44em}
+ul.dots li,ol.steps li{margin:3px 0}
+
+/* 数式ボックス（教科書風に式番号を右寄せ） */
+.eq{border:1.5px solid var(--ink);background:#fff;padding:12px 18px;margin:16px 0 6px;max-width:44rem;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.eq .f{font-family:var(--font-math);font-size:1.45rem;font-style:italic}
+.eq .f sub{font-size:.65em}
+.eq .no{margin-left:auto;font-size:.85rem;color:var(--sub)}
+.eq-read{max-width:44rem;margin:0 0 16px;padding-left:20px;font-size:.95rem;color:var(--sub)}
+.eq-read::before{content:"読み方　";color:var(--blue);font-weight:700}
+
+/* 先生のメモ */
+.memo{font-family:var(--font-hand);background:var(--note);border-left:4px solid var(--red);padding:12px 16px 12px 18px;margin:16px 0;max-width:44rem;font-size:1.05rem;line-height:1.85}
+.memo .who{display:block;color:var(--red);font-weight:600;font-size:.9rem}
+/* ポイント */
+.point{border:2px solid var(--blue);border-radius:2px;padding:10px 16px;margin:20px 0 4px;max-width:44rem;position:relative}
+.point::before{content:"ポイント";position:absolute;top:-.85em;left:12px;background:var(--paper);padding:0 6px;color:var(--blue);font-weight:700;font-size:.85rem}
+.point p{margin:0}
+
+/* 帯グラフ */
+.bars{background:#fff;border:1px solid var(--line);padding:14px 16px 10px;margin:14px 0 18px;max-width:44rem}
+.bars .sw{display:flex;gap:0;margin-bottom:12px;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content}
+.bars .sw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.bars .sw button+button{border-left:1.5px solid var(--ink)}
+.bars .sw button[aria-selected="true"]{background:var(--ink);color:#fff}
+.brow{display:grid;grid-template-columns:7.2em 1fr;align-items:center;gap:10px;margin:8px 0}
+.brow .lab{font-size:.88rem;line-height:1.35}
+.track{position:relative;height:34px}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;border:1.5px solid var(--ink);white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.seg.y{background:#dfe8f6}
+.seg.c{background:#f3f4f6}.seg.i{background:#e7eaee}.seg.g{background:#d9dde3}
+.seg.gap-p{background:repeating-linear-gradient(45deg,#d6efe9,#d6efe9 5px,#fff 5px,#fff 10px);color:var(--teal);font-weight:700;border-color:var(--teal);border-style:dashed}
+.seg.gap-m{background:repeating-linear-gradient(45deg,#f8ddd7,#f8ddd7 5px,#fff 5px,#fff 10px);color:var(--red);font-weight:700;border-color:var(--red);border-style:dashed}
+.seg.b{background:#e7eaee}.seg.ri{background:#fde9a8}.seg.nx{background:#d6efe9}
+.seg-lab{position:absolute;top:0;bottom:0;display:flex;align-items:center;font-size:.85rem;white-space:nowrap}
+.bars .cap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+
+/* 表 */
+.tw{overflow-x:auto;margin:12px 0 18px}
+table{border-collapse:collapse;background:#fff;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--ink);padding:7px 12px;text-align:left;vertical-align:top;line-height:1.6}
+thead th{background:#eef1f5}
+td.c{text-align:center;white-space:nowrap}
+td.r{text-align:right}
+table.calc-t td{border:none;border-bottom:1px dotted var(--line);padding:3px 14px 3px 0}
+table.calc-t tr:last-child td{border-bottom:2px solid var(--ink);font-weight:700}
+
+/* 図 */
+figure{margin:14px 0 20px}
+figcaption{font-size:.85rem;color:var(--sub);margin-top:4px}
+.figbox{background:#fff;border:1px solid var(--line);padding:8px;overflow-x:auto}
+svg text{font-family:var(--font-body);fill:var(--ink)}
+svg .m{font-family:var(--font-math);font-style:italic}
+
+/* シミュレーター */
+.sim{background:#fff;border:1.5px solid var(--ink);padding:14px;margin:16px 0;display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:860px){.sim{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.grp{margin-bottom:10px}
+.grp .gl{font-size:.78rem;color:var(--sub);display:block;margin-bottom:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips button{border:1.5px solid var(--ink);background:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:.85rem;line-height:1.6}
+.chips button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.explain{border-top:1px dashed var(--line);padding-top:10px;margin-top:6px}
+.explain .t{font-weight:700;margin:0}
+.explain .x{font-size:.95rem;margin:4px 0}
+.explain .f{font-size:.8rem;color:var(--sub);margin:0}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);margin:10px 0}
+.meter div{padding:6px 8px;text-align:center}
+.meter div+div{border-left:1px solid var(--ink)}
+.meter small{display:block;font-size:.75rem;color:var(--sub);line-height:1.3}
+.meter strong{font-size:1.3rem;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:7.4em 1fr 3.6em;gap:8px;align-items:center;font-size:.88rem}
+.sl input{width:100%;accent-color:var(--blue)}
+.sl output{text-align:right;font-family:var(--font-math);font-variant-numeric:tabular-nums}
+.sm{font-size:.8rem;color:var(--sub);margin:6px 0 0}
+
+/* 内部タブ（ケース別） */
+.itabs{display:flex;gap:0;border-bottom:1.5px solid var(--ink);margin:14px 0 0;overflow-x:auto}
+.itabs button{border:none;background:none;padding:6px 14px;cursor:pointer;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.itabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--blue)}
+.ipanel{padding:12px 0 0}
+.ipanel[hidden]{display:none}
+.case{border-left:3px solid var(--line);padding:2px 0 2px 14px;margin:0 0 16px;max-width:44rem}
+.case b{display:block}
+.case .res{font-size:.9rem;margin:2px 0}
+.case p{margin:2px 0 0;font-size:.97rem}
+
+/* 手順 */
+.flow{display:grid;grid-template-columns:1fr;gap:8px;max-width:44rem;margin:12px 0 16px;counter-reset:f}
+@media (min-width:700px){.flow{grid-template-columns:repeat(3,1fr)}}
+.flow div{border:1.5px solid var(--ink);background:#fff;padding:10px 12px;font-size:.93rem;line-height:1.7;counter-increment:f}
+.flow div::before{content:"手順" counter(f);display:block;font-weight:700;color:var(--blue);font-size:.82rem}
+
+/* 計算機 */
+.calc{background:#fff;border:1.5px solid var(--ink);padding:14px 16px;margin:14px 0;max-width:44rem}
+.calc .out{font-size:.98rem;margin-top:10px}
+.calc .chk{color:var(--sub);font-size:.88rem}
+
+/* 確認問題 */
+.q{border:1px solid var(--ink);background:#fff;margin:10px 0;max-width:46rem}
+.q .qq{padding:10px 14px;display:flex;gap:10px}
+.q .qn{font-family:var(--font-math);font-weight:700;color:var(--blue)}
+.q button.show{margin:0 14px 10px;border:1.5px solid var(--ink);background:#fff;border-radius:4px;padding:2px 12px;cursor:pointer;font-size:.85rem}
+.q .ans{border-top:1px dashed var(--line);padding:8px 14px 10px;font-family:var(--font-hand);font-size:1.05rem;background:var(--note)}
+.q .ans[hidden]{display:none}
+.q .ans::before{content:"解答　";color:var(--red);font-weight:600}
+
+/* 前後ナビ */
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:28px;flex-wrap:wrap}
+.pager button{border:1.5px solid var(--ink);background:#fff;padding:10px 16px;cursor:pointer;border-radius:4px;text-align:left;line-height:1.4;max-width:48%}
+.pager button small{display:block;color:var(--sub);font-size:.78rem}
+.pager .next{margin-left:auto;text-align:right}
+.src{font-size:.82rem;color:var(--sub);margin-top:30px;border-top:1px solid var(--line);padding-top:10px}
+
+/* キャラクター */
+.talk{display:flex;align-items:flex-end;gap:12px;margin:14px 0 18px;max-width:44rem}
+.talk img{width:118px;height:auto;flex:none}
+.talk .bubble{position:relative;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:10px 16px;font-family:var(--font-hand);font-size:1.08rem;line-height:1.75;margin-bottom:30px}
+.talk .bubble::before{content:"";position:absolute;left:-12px;bottom:16px;border:6px solid transparent;border-right:8px solid var(--ink)}
+.talk .bubble::after{content:"";position:absolute;left:-8px;bottom:17px;border:5px solid transparent;border-right:7px solid #fff}
+.talk.r{flex-direction:row-reverse;margin-left:auto}
+.talk.r .bubble::before{left:auto;right:-12px;border-right-color:transparent;border-left:8px solid var(--ink)}
+.talk.r .bubble::after{left:auto;right:-8px;border-right-color:transparent;border-left:7px solid #fff}
+.part-head{display:flex;gap:16px;align-items:flex-end}
+.part-head .ph-main{flex:1;min-width:0}
+.part-head .ph-fig{flex:none;width:150px;text-align:center;margin:-6px 0 -16px}
+.part-head .ph-say{font-family:var(--font-hand);font-size:.88rem;line-height:1.5;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:5px 8px;margin-bottom:6px;text-align:left;position:relative}
+.part-head .ph-say::after{content:"";position:absolute;left:50%;bottom:-7px;width:10px;height:10px;background:#fff;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+.part-head .ph-fig img{width:100%;height:auto;display:block}
+@media (max-width:560px){.talk img{width:86px}.part-head .ph-fig{width:96px}.talk .bubble{font-size:1rem}}
+.memo.withfig{display:flex;gap:14px;align-items:center}
+.memo.withfig img{width:104px;height:auto;flex:none}
+@media (max-width:560px){.memo.withfig img{width:78px}}
+
+/* 課題パート */
+.dl{margin:10px 0 16px}
+.dlbtn{display:inline-flex;align-items:center;gap:12px;border:2px solid var(--ink);background:#fff;color:var(--ink);text-decoration:none;padding:8px 16px 8px 10px;border-radius:6px;line-height:1.4;box-shadow:3px 3px 0 var(--ink)}
+.dlbtn:hover{background:#eef2fa}
+.dlbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.dlbtn .dlico{width:34px;height:40px;background:#2b579a;color:#fff;font-weight:700;display:grid;place-items:center;border-radius:3px;font-family:var(--font-math);font-size:1.2rem}
+.dlbtn b{display:block}
+.dlbtn small{display:block;color:var(--sub);font-size:.8rem}
+
+.xref{font-size:.9rem;margin:6px 0 12px;max-width:44em}
+.xref::before{content:"→ ";color:var(--blue);font-weight:700}
+.xref a,.dots a{color:var(--blue);cursor:pointer}
+.kq{border:2px solid var(--ink);background:#fff;padding:12px 16px;margin:12px 0 14px;max-width:46rem}
+.kq .lab{display:inline-block;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px;margin-bottom:4px}
+.kq p{margin:4px 0}
+.memo.hint{border-left-color:var(--blue)}
+.memo.hint .who{color:var(--blue)}
+.locked{display:none;border:1.5px dashed var(--line);color:var(--sub);padding:8px 14px;max-width:44rem;font-size:.92rem;background:#fff}
+body.ans-off .locked{display:block}
+body.ans-off .sol{display:none}
+.solbtn{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:4px;padding:6px 16px;cursor:pointer;margin:6px 0 10px}
+.solbtn[aria-expanded="true"]{background:#fff;color:var(--ink)}
+.step{border-top:1px dashed var(--line);padding-top:6px;margin-top:10px}
+h3.stp::before{display:none}
+h3.stp .st{display:inline-block;font-size:.8rem;background:var(--blue);color:#fff;padding:0 9px;border-radius:3px;margin-right:8px;vertical-align:.12em}
+.ansSwitch{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;border:2px solid var(--ink);background:#fff;padding:10px 14px;margin:14px 0 16px;max-width:46rem}
+.sw-l{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700}
+.sw-l input{position:absolute;opacity:0;width:1px;height:1px}
+.sw-ui{width:46px;height:26px;border-radius:13px;background:#c9cfd8;position:relative;flex:none;transition:background .15s}
+.sw-ui::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}
+.sw-l input:checked+.sw-ui{background:var(--teal)}
+.sw-l input:checked+.sw-ui::after{left:23px}
+.sw-l input:focus-visible+.sw-ui{outline:2px solid var(--blue);outline-offset:2px}
+.sw-note{font-size:.88rem;color:var(--sub)}
+.gwrap{background:#fff;border:1.5px solid var(--ink);padding:12px;margin:14px 0 6px;max-width:46rem}
+.gsw{display:flex;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;width:max-content;max-width:100%;margin-bottom:8px;flex-wrap:wrap}
+.gsw button{border:none;background:#fff;padding:3px 14px;cursor:pointer;font-size:.88rem}
+.gsw button+button{border-left:1.5px solid var(--ink)}
+.gsw button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.gwrap svg{width:100%;max-width:560px;height:auto;display:block}
+.gcap{font-size:.88rem;color:var(--sub);margin:6px 0 0}
+.howto{font-size:.93rem;max-width:44rem;margin:6px 0 16px;padding-left:1.3em}
+.trap{border:2px dashed var(--red);padding:10px 16px;margin:16px 0;max-width:44rem;background:#fff}
+.trap b{color:var(--red)}
+.point.ketsu::before{content:"結論"}
+.answer{border:1.5px solid var(--ink);background:#fff;padding:14px 18px 6px;margin:20px 0 16px;max-width:46rem;position:relative}
+.answer::before{content:"答案の書き方の例";position:absolute;top:-.8em;left:12px;background:var(--ink);color:#fff;font-size:.8rem;padding:0 8px;border-radius:3px}
+.answer p{font-size:.97rem}
+.num{background:#fff;border:1px solid var(--line);padding:10px 16px;margin:14px 0;max-width:44rem}
+.num .h{font-size:.82rem;color:var(--sub);display:block}
+#kadai .brow{grid-template-columns:5.5em 1fr}
+#kadai .seg.g{background:#fde9a8}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* 数式（分数・Σ/Π/∫ の上下添字）— 全章共通 */
+.mx{font-family:var(--font-math);display:inline-flex;align-items:center;gap:.12em;vertical-align:middle;white-space:nowrap;font-size:1.08em}
+.mx i{font-style:italic}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.25}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .25em}
+.frac>span:last-child{padding:0 .25em}
+.bop{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 .12em}
+.bop .s{font-size:1.7em;line-height:1}
+.bop small{font-size:.62em;line-height:1.1}
+.eq .mx{font-size:1.25rem}
+.eq.mxeq .f{font-style:normal}
+.mxblock{display:block;overflow-x:auto;padding:4px 0}
+
+/* TOPへ戻る（イラストのボタン） */
+.totop{position:fixed;right:14px;bottom:14px;z-index:15;display:block;width:92px;line-height:0;border-radius:10px;transition:transform .15s}
+.totop img{width:100%;height:auto;display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
+.totop:hover{transform:translateY(-4px)}
+.totop:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+@media (max-width:560px){.totop{width:64px;right:8px;bottom:8px}}
+@media (prefers-reduced-motion: reduce){.totop{transition:none}.totop:hover{transform:none}}
+@media print{.totop{display:none}}
+
+/* 予習版の印（朱の枠線と文字。全章共通） */
+.yoshu{display:inline-block;border:1.5px solid var(--red);color:var(--red);background:#fff;font-size:.72rem;font-weight:700;line-height:1.5;padding:0 7px;border-radius:3px;margin-left:8px;vertical-align:.15em;white-space:nowrap}
+.yoshu-note{border:1.5px solid var(--red);background:#fff;color:var(--ink);padding:8px 14px;margin:0 0 20px;max-width:46rem;font-size:.95rem;line-height:1.7}
+.yoshu-note b{color:var(--red);margin-right:10px}
+</style>
+</head>
+<body>
+
+<div class="scrim" id="scrim"></div>
+<nav class="drawer" id="drawer" aria-label="全体の目次" aria-hidden="true">
+  <div class="drawer-head"><b>目次</b><button class="close" id="closeBtn" aria-label="目次を閉じる">×</button></div>
+  <div id="drawerList"></div>
+</nav>
+
+<header class="bar">
+  <div class="bar-in">
+    <button class="burger" id="menuBtn" aria-label="目次を開く" aria-controls="drawer" aria-expanded="false"><span></span></button>
+    <div class="course"><small>経済原論 I　マクロ経済学入門</small><b>第6章　物価水準の決定<span class="yoshu">予習版</span>　解説プリントと課題</b></div>
+    <a class="home" href="../">トップへ戻る</a>
+  </div>
+  <div class="tabs" role="tablist" aria-label="パート" id="tabs"></div>
+</header>
+
+<main>
+<!-- ===================== パート1 ===================== -->
+<div class="part" id="yakuwari" data-title="貨幣の役割" data-desc="これまでの古典派モデルには、お金（貨幣）が登場しませんでした。では、物価の水準は何で決まるのでしょうか。まず、貨幣がなぜ必要で、どんな働きをしているのかを確かめます。">
+
+<div class="yoshu-note"><b>予習版</b>教科書をもとに作った予習版です。講義の内容に合わせて更新します。</div>
+
+<section id="s1" data-t="古典派モデルと物価水準">
+<h2><span class="sn">1</span>古典派モデルで決まるもの、決まらないもの</h2>
+<p>第3章から第5章の古典派モデルでは、生産量 <span class="v">Y</span>、利子率 <span class="v">r</span>、資本や労働の値段が、モデルの中で決まりました。ただし、ここで決まったのはすべて<b>実物変数</b>です。<span class="v">Y</span> は実質 GDP、<span class="v">r</span> は実質利子率、賃金も「最終財の価格を1としたときの値段」（実質賃金）でした。</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>実物変数</th><th>名目変数</th></tr></thead>
+<tbody>
+<tr><td>意味</td><td>モノの量や、モノどうしの交換比率</td><td>お金（円）で測った金額や値段</td></tr>
+<tr><td>例</td><td>実質 GDP、雇用量、実質利子率、実質賃金</td><td>物価水準、名目 GDP、名目利子率、名目賃金</td></tr>
+<tr><td>古典派モデルでは</td><td class="plus">第3〜5章のモデルで決まる</td><td class="minus">まだ決まっていない（この章で扱う）</td></tr>
+</tbody></table></div>
+<p>実質利子率は「今のモノ」と「将来のモノ」の交換比率、つまり<b>相対価格</b>でした。古典派モデルは相対価格を説明しますが、<span class="mk">すべての値段がそろって上がる・下がる（物価水準）</span>ことは説明していません。物価水準を説明するために古典派が用意したのが<b>貨幣数量説</b>です。</p>
+<h3>物価の上昇はなぜ起こるか：3つの見方</h3>
+<div class="tw"><table>
+<thead><tr><th>見方</th><th>物価が上がる原因</th><th>古典派（貨幣数量説）の評価</th></tr></thead>
+<tbody>
+<tr><td>コスト・プッシュ説</td><td>賃金やエネルギー価格の上昇</td><td>一部の財が<b>相対的に</b>高くなるだけで、物価全体は決めない</td></tr>
+<tr><td>デマンド・プル説</td><td>戦争などで一時的に需要が増える</td><td>利子率（今と将来の相対価格）が上がるだけで、物価全体は決めない</td></tr>
+<tr><td>貨幣数量説</td><td>貨幣の量が多すぎる（デフレは少なすぎる）</td><td><b>物価水準を決めるのは貨幣の量</b></td></tr>
+</tbody></table></div>
+<div class="memo"><span class="who">メモ：八百屋の値札で考えよう</span>ある年、キャベツが不作でキャベツだけ値上がりしたら、それは「キャベツが他の野菜に比べて高くなった」という相対価格の変化。一方、店じゅうの値札がそろって2倍に書き換わったら、それは物価水準の変化。古典派は、前者は需要と供給で、後者はお金の量で説明する、と考えます。</div>
+<div class="point"><p>古典派モデルで決まるのは実物変数（相対価格）だけ。物価水準のような名目変数は、貨幣数量説という別の理論で説明する。</p></div>
+</section>
+
+<section id="s2" data-t="貨幣の3つの機能">
+<h2><span class="sn">2</span>貨幣の3つの機能</h2>
+<p>市場での取引は、ふつう<b>貨幣</b>（お金）を仲立ちにして行われます。貨幣には次の3つの機能があります。</p>
+<ol class="steps">
+<li><b>交換手段</b>：モノとモノの取引を仲立ちする</li>
+<li><b>計算の単位</b>：いろいろなモノの価値を同じ物差しで測る</li>
+<li><b>価値の保蔵</b>（資産としての役割）：今の購買力を将来に持ち越す</li>
+</ol>
+<h3>交換手段：欲求の二重の一致がいらなくなる</h3>
+<p>貨幣がなく、モノとモノを直接交換する（物々交換）しかない世界を考えます。取引が成り立つには、<span class="mk">相手が欲しいモノを自分が持ち、自分が欲しいモノを相手が持っている</span>という偶然が必要です。これを<b>欲求の二重の一致</b>と呼びます。</p>
+<div class="memo"><span class="who">メモ：漁師とパン屋</span>魚をとった漁師がパンを食べたい。でも、パン屋が欲しいのは魚ではなく靴。漁師はまず「魚が欲しくて靴を持っている人」を探し、靴を手に入れてから、ようやくパン屋へ行くことになる。貨幣があれば、魚を売ってお金にし、そのお金でパンを買うだけで済む。相手を探す手間（取引の費用）が大きく減ります。</div>
+<h3>計算の単位：交換比率がいくつも要らなくなる</h3>
+<p>物々交換の世界で、コメ（財A）と酒（財B）、酒と衣服（財C）の交換比率が決まっているとします。このとき、コメと衣服の交換比率は自由には決まりません。</p>
+<div class="eq"><span class="f">r<sub>a,c</sub> = r<sub>a,b</sub> × r<sub>b,c</sub></span><span class="no">テキスト p.135</span></div>
+<p class="eq-read">衣服1着と交換できるコメの量 ＝（酒1本と交換できるコメの量）×（衣服1着と交換できる酒の量）</p>
+<div class="num"><span class="h">数値例（説明のための架空の値）</span>
+<table class="calc-t">
+<tr><td>酒1本 ＝ コメ 3kg（r<sub>a,b</sub> = 3）</td><td></td></tr>
+<tr><td>衣服1着 ＝ 酒 4本（r<sub>b,c</sub> = 4）</td><td></td></tr>
+<tr><td>したがって 衣服1着 ＝ コメ 3 × 4</td><td class="r">12kg</td></tr>
+</table></div>
+<p>もし市場で「衣服1着 ＝ コメ10kg」だったら、衣服を直接コメと換えるより、いったん酒4本に換え、それをコメ12kgに換えたほうが得になります。こうした「回り道で得をする」ことがないように、交換比率はつじつまが合っていなければなりません。</p>
+<p>貨幣という<b>共通の物差し</b>があれば、すべての財に「何円」という値段を1つずつ付けるだけで済み、どの2つの財の交換比率もすぐに計算できます。</p>
+<div class="tw"><table>
+<thead><tr><th>財の種類 n</th><th>物々交換で必要な交換比率の数 n(n−1)/2</th><th>貨幣で測った値段の数 n</th></tr></thead>
+<tbody>
+<tr><td class="r">3</td><td class="r">3</td><td class="r">3</td></tr>
+<tr><td class="r">10</td><td class="r">45</td><td class="r">10</td></tr>
+<tr><td class="r">100</td><td class="r">4,950</td><td class="r">100</td></tr>
+<tr><td class="r">1,000</td><td class="r">499,500</td><td class="r">1,000</td></tr>
+</tbody></table></div>
+<p class="sm">この表は理解を助けるための補足で、教科書にはありません。</p>
+<h3>価値の保蔵</h3>
+<p>お金は使わずに取っておけば、将来の買い物に使えます。教科書は、この機能は説明不要としています。ただし後で見るように、お金を持っておくことには「費用」がかかります（<a href="#s8" data-goto="s8">第8節</a>）。</p>
+<div class="point"><p>貨幣は、交換手段・計算の単位・価値の保蔵の3つの機能を持つ。物々交換に必要な「欲求の二重の一致」をなくし、取引の費用を大きく下げる。</p></div>
+<div class="memo"><span class="who">メモ：理論の「貨幣」は現実の何？</span>理論モデルの「貨幣」が、現実の世界でどれに当たるか（現金だけか、預金も含むか）は、はっきりしません。この問題はパート4で扱います。</div>
+</section>
+</div>
+
+<!-- ===================== パート2 ===================== -->
+<div class="part" id="suryo" data-title="貨幣数量説" data-desc="「物価水準は貨幣の量で決まる」という貨幣数量説を、数量方程式 MV = PY から説明します。インフレの原因、古典派の二分法、貨幣の中立性までを数値例で確かめます。">
+
+<section id="s3" data-t="数量方程式と流通速度">
+<h2><span class="sn">3</span>数量方程式と貨幣の流通速度</h2>
+<p>貨幣数量説の出発点は、次の<b>数量方程式</b>です。</p>
+<div class="eq"><span class="f">MV = PT</span><span class="no">テキスト (6.1)</span></div>
+<p class="eq-read">貨幣の量 × 1年に使われる回数 ＝ 物価 × 取引の量（＝ 取引の総額）</p>
+<div class="tw"><table>
+<thead><tr><th>記号</th><th>意味</th></tr></thead>
+<tbody>
+<tr><td><span class="v">M</span></td><td>貨幣残高（正確には、期間中の平均の貨幣残高）</td></tr>
+<tr><td><span class="v">V</span></td><td><b>貨幣の流通速度</b>：貨幣1単位が一定期間に平均何回使われたか</td></tr>
+<tr><td><span class="v">P</span></td><td>物価水準</td></tr>
+<tr><td><span class="v">T</span></td><td>一定期間の取引総量（実質）。GDP と違い、中間生産物の取引も含む</td></tr>
+</tbody></table></div>
+<p>(6.1) 式は、方程式というより、流通速度 <span class="v">V</span> の<b>定義</b>です。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>V</i> ≡ <span class="frac"><span><i>PT</i></span><span><i>M</i></span></span></span></span><span class="no">テキスト (6.2)</span></div>
+<p class="eq-read">流通速度 ＝ 取引の総額（名目）÷ 貨幣残高。≡ は「定義によって等しい」という記号</p>
+<div class="num"><span class="h">数値例（テキスト p.136）</span>
+<table class="calc-t">
+<tr><td>1年間の取引総額 <span class="v">PT</span></td><td class="r">1,000兆円</td></tr>
+<tr><td>貨幣残高 <span class="v">M</span></td><td class="r">500兆円</td></tr>
+<tr><td>流通速度 <span class="v">V</span> ＝ 1,000 ÷ 500</td><td class="r">2.0回</td></tr>
+</table></div>
+<div class="memo"><span class="who">メモ：村をめぐる1枚の千円札</span>村にお金は千円札が1枚だけ。ある日、それでパン屋がパンを買い、魚屋がその千円で野菜を買い、八百屋がその千円で道具を買った。取引の総額は3,000円、お金は1,000円。お金は1日に3回まわったので、流通速度は3。お金が少なくても、よくまわれば多くの取引をまかなえます。</div>
+<div class="point"><p>流通速度 V は「お金が一定期間に何回まわったか」。数量方程式 MV = PT は、V の定義なので常に成り立つ（恒等式）。</p></div>
+</section>
+
+<section id="s4" data-t="MV = PY と物価水準の決定">
+<h2><span class="sn">4</span>MV = PY：物価水準は貨幣の量で決まる</h2>
+<p>取引量 <span class="v">T</span> と実質 GDP <span class="v">Y</span> には、少なくとも短期的には安定した関係があると考えられます（生産の構造が変わらなければ、中間取引と最終生産物の比率はほぼ一定）。そこで (6.1) 式の <span class="v">T</span> を <span class="v">Y</span> に置き換えます。</p>
+<div class="eq"><span class="f">MV = PY</span><span class="no">テキスト (6.3)</span></div>
+<p class="eq-read">貨幣の量 × 流通速度 ＝ 名目 GDP。ここでの V を<b>所得流通速度</b>と呼ぶことがある</p>
+<p>これも、このままでは恒等式です。古典派は次の2つの仮定を加えて、<span class="mk">物価を決める式</span>として読みます。</p>
+<ul class="dots">
+<li>流通速度は、その時点の<b>決済技術</b>で決まる。短期には大きく変わらないので一定：<span class="v">V = V̄</span></li>
+<li>実質 GDP は、古典派モデルで<b>完全雇用</b>の水準に決まる：<span class="v">Y = Ȳ</span></li>
+</ul>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>M</i><i>V̄</i> = <i>P</i><i>Ȳ</i>　　すなわち　<i>P</i> = <span class="frac"><span><i>V̄</i></span><span><i>Ȳ</i></span></span> × <i>M</i></span></span><span class="no">テキスト p.137</span></div>
+<p class="eq-read">V も Y も動かないので、M が増えれば P が同じ割合で上がるしかない</p>
+<div class="num"><span class="h">数値例（説明のための架空の値。単位は兆円）</span>
+<table class="calc-t">
+<tr><td>実質 GDP <span class="v">Ȳ</span> ＝ 500、流通速度 <span class="v">V̄</span> ＝ 2</td><td></td></tr>
+<tr><td>貨幣 <span class="v">M</span> ＝ 250 のとき　<span class="v">P</span> ＝ 250 × 2 ÷ 500</td><td class="r">1.0</td></tr>
+<tr><td>貨幣が10%増えて <span class="v">M</span> ＝ 275 のとき　<span class="v">P</span> ＝ 275 × 2 ÷ 500</td><td class="r">1.1</td></tr>
+<tr><td>物価の上昇率</td><td class="r minus">＋10%</td></tr>
+</table></div>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="qt" data-s="0" aria-pressed="true">変化前（M = 250）</button><button type="button" data-g="qt" data-s="1" aria-pressed="false">変化後（M = 275）</button></div>
+  <svg id="gQT" viewBox="0 0 520 330" role="img" aria-label="貨幣の量と物価水準の関係を表す原点を通る直線"></svg>
+  <p class="gcap" id="gQT-cap"></p>
+</div>
+<h3>動かして確かめる：数量方程式の計算機</h3>
+<div class="calc">
+  <div class="sl" style="grid-template-columns:9.5em 1fr 4.4em"><label for="qm">貨幣 M</label><input type="range" id="qm" min="150" max="400" step="5" value="250"><output id="vqm" for="qm"></output></div>
+  <div class="sl" style="grid-template-columns:9.5em 1fr 4.4em"><label for="qv">流通速度 V</label><input type="range" id="qv" min="1" max="3" step="0.1" value="2"><output id="vqv" for="qv"></output></div>
+  <div class="sl" style="grid-template-columns:9.5em 1fr 4.4em"><label for="qy">実質 GDP Y</label><input type="range" id="qy" min="400" max="600" step="10" value="500"><output id="vqy" for="qy"></output></div>
+  <div class="meter">
+    <div><small>名目 GDP MV ＝ PY</small><strong id="qpy"></strong></div>
+    <div><small>物価水準 P ＝ MV ÷ Y</small><strong id="qp"></strong></div>
+    <div><small>M ＝ 250 のときと比べた P</small><strong id="qpc"></strong></div>
+  </div>
+  <p class="sm" id="qmsg"></p>
+</div>
+<div class="point"><p>V と Y が一定なら、MV = PY から物価水準 P は貨幣の量 M に比例する。古典派の体系では、M が P を決める。</p></div>
+</section>
+
+<section id="s5" data-t="成長率の式：インフレの原因">
+<h2><span class="sn">5</span>成長率で書く：インフレは貨幣的現象</h2>
+<p>(6.3) 式は、「1年でどれだけ変わったか」という<b>成長率</b>の式に書き直せます。<span class="v">Δx</span> は1年間の <span class="v">x</span> の増加分なので、<span class="v">Δx/x</span> は <span class="v">x</span> の成長率です。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="frac"><span>Δ<i>M</i></span><span><i>M</i></span></span> + <span class="frac"><span>Δ<i>V</i></span><span><i>V</i></span></span> = <span class="frac"><span>Δ<i>P</i></span><span><i>P</i></span></span> + <span class="frac"><span>Δ<i>Y</i></span><span><i>Y</i></span></span></span></span><span class="no">テキスト (6.4)</span></div>
+<p class="eq-read">貨幣の伸び率 ＋ 流通速度の伸び率 ＝ インフレ率 ＋ 実質経済成長率</p>
+<div class="memo"><span class="who">メモ：かけ算は、伸び率では足し算になる</span>たとえば M が10%増え、V が変わらなければ、左辺 MV は約10%増える。右辺 PY も10%増えなければならない。Y が2%増えるなら、残りの約8%は P の上昇（インフレ）で埋まる。「かけ算の式は、伸び率で見ると足し算になる」と覚えておくと便利です（教科書の脚注3では、変化後の式から MV = PY を引き、小さな項を無視して導いています）。</div>
+<p>流通速度が一定（<span class="v">ΔV/V = 0</span>）で、完全雇用の実質 GDP の成長率も一定だとすると、(6.4) 式は次のようになります。</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><span class="frac"><span>Δ<i>P</i></span><span><i>P</i></span></span> = <span class="frac"><span>Δ<i>M</i></span><span><i>M</i></span></span> + const.</span></span><span class="no">テキスト (6.5)</span></div>
+<p class="eq-read">インフレ率 ＝ 貨幣の伸び率 ＋ 一定の値（ここでは −実質経済成長率）</p>
+<div class="tw"><table>
+<thead><tr><th>貨幣の伸び率</th><th>実質経済成長率</th><th>流通速度の伸び率</th><th>インフレ率</th></tr></thead>
+<tbody>
+<tr><td class="r">10%</td><td class="r">2%</td><td class="r">0%</td><td class="r minus">8%（インフレ）</td></tr>
+<tr><td class="r">2%</td><td class="r">2%</td><td class="r">0%</td><td class="r">0%（物価は安定）</td></tr>
+<tr><td class="r">0%</td><td class="r">2%</td><td class="r">0%</td><td class="r plus">−2%（デフレ）</td></tr>
+</tbody></table></div>
+<p class="sm">説明のための架空の値。</p>
+<p>貨幣数量説によれば、<span class="mk">インフレの原因は貨幣の伸び率が高すぎること、デフレの原因は低すぎること</span>です。「インフレやデフレは貨幣的現象である」というのが、この説の考え方です。</p>
+<h3>フリードマンの k% ルール</h3>
+<p>フリードマンは、その時々の判断で行う（裁量的な）金融政策に反対し、<b>貨幣の伸び率を一定の k% に保つ</b>ルールで政策を縛るべきだと主張しました（<b>k% ルール</b>）。ケインジアンの「金融政策で景気を細かく調整（ファインチューニング）できるし、すべきだ」という考えへの反論です。上の表でいえば、実質経済成長率が2%なら k = 2 にすれば物価は安定します。</p>
+<div class="point"><p>流通速度と実質成長率が一定なら、インフレ率は貨幣の伸び率で決まる。インフレもデフレも貨幣的現象。</p></div>
+</section>
+
+<section id="s6" data-t="古典派の二分法と貨幣の中立性">
+<h2><span class="sn">6</span>古典派の二分法と貨幣の中立性</h2>
+<p>ここまでをまとめると、古典派モデルの経済は2つの部分に分かれます。</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>実物の部分</th><th>貨幣の部分</th></tr></thead>
+<tbody>
+<tr><td>決まるもの</td><td>実質 GDP、雇用量、実質利子率、実質賃金</td><td>物価水準、インフレ率（名目の値）</td></tr>
+<tr><td>決め手</td><td>生産関数、労働市場、財市場・貸付資金市場（第3〜5章）</td><td>貨幣の量（貨幣数量説）</td></tr>
+</tbody></table></div>
+<ul class="dots">
+<li><b>古典派の二分法</b>：実物変数は実物の部分で決まり、物価水準は貨幣の量で決まる、という考え方。</li>
+<li><b>貨幣の中立性</b>：貨幣の量は実物変数に影響せず、名目変数（物価水準）だけに影響する、という性質。</li>
+</ul>
+<div class="memo"><span class="who">メモ：お札の「単位」を変えても豊かさは変わらない</span>ある日、すべてのお札の額面と、すべての値札と給料が2倍になったとする。財布の中身は2倍でも、買えるモノの量は変わらない。貨幣の量が変わっても名目の数字が変わるだけ、というのが中立性のイメージです。</div>
+<div class="point"><p>古典派の二分法：実物は実物で、物価は貨幣で決まる。貨幣の中立性：貨幣の量は物価だけを動かし、実物変数は動かさない。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート3 ===================== -->
+<div class="part" id="rishi" data-title="名目利子率" data-desc="古典派モデルでは、実質利子率は実物の世界で、インフレ率は貨幣の量で決まります。2つを足したものが名目利子率です。お金を持つ「費用」と、フリードマン・ルールまで考えます。">
+
+<section id="s7" data-t="フィッシャー方程式">
+<h2><span class="sn">7</span>フィッシャー方程式：名目利子率の決まり方</h2>
+<p>古典派モデルで決まる利子率は<b>実質利子率</b> <span class="v">r</span> でした。また、インフレ率 <span class="v">π</span> は貨幣数量説により貨幣の伸び率で決まります。名目利子率 <span class="v">i</span> は、次の<b>フィッシャー方程式</b>で決まると考えます（第2章でも学びました）。</p>
+<div class="eq"><span class="f">i = r + π<sup>e</sup></span><span class="no">テキスト (6.6)</span></div>
+<p class="eq-read">名目利子率 ＝ 実質利子率 ＋ 予想インフレ率（時点 t から t+1 にかけて予想されるインフレ率）</p>
+<p>人々が将来を正しく予想するなら、予想インフレ率 <span class="v">π<sup>e</sup></span> は実際のインフレ率 <span class="v">π</span> に等しくなります。</p>
+<div class="num"><span class="h">数値例（説明のための架空の値）</span>
+<table class="calc-t">
+<tr><td>実質利子率 <span class="v">r</span>（貸付資金市場で決まる）</td><td class="r">2%</td></tr>
+<tr><td>インフレ率 <span class="v">π</span> ＝ 貨幣の伸び率 10% − 実質成長率 2%</td><td class="r">8%</td></tr>
+<tr><td>名目利子率 <span class="v">i</span> ＝ 2 + 8</td><td class="r">10%</td></tr>
+</table></div>
+<div class="gwrap">
+  <svg id="gFi" viewBox="0 0 520 330" role="img" aria-label="インフレ率と名目利子率の関係を表す右上がりの直線"></svg>
+  <p class="gcap" id="gFi-cap"></p>
+</div>
+<h3>動かして確かめる：インフレ率と名目利子率の計算機</h3>
+<div class="calc">
+  <div class="sl" style="grid-template-columns:10.5em 1fr 4.4em"><label for="fm">貨幣の伸び率</label><input type="range" id="fm" min="-4" max="16" step="0.5" value="10"><output id="vfm" for="fm"></output></div>
+  <div class="sl" style="grid-template-columns:10.5em 1fr 4.4em"><label for="fy">実質経済成長率</label><input type="range" id="fy" min="0" max="5" step="0.5" value="2"><output id="vfy" for="fy"></output></div>
+  <div class="sl" style="grid-template-columns:10.5em 1fr 4.4em"><label for="fv">流通速度の伸び率</label><input type="range" id="fv" min="-3" max="3" step="0.5" value="0"><output id="vfv" for="fv"></output></div>
+  <div class="sl" style="grid-template-columns:10.5em 1fr 4.4em"><label for="fr">実質利子率 r</label><input type="range" id="fr" min="0" max="5" step="0.5" value="2"><output id="vfr" for="fr"></output></div>
+  <div class="meter">
+    <div><small>インフレ率 π (6.4)</small><strong id="fpi"></strong></div>
+    <div><small>名目利子率 i ＝ r + π</small><strong id="fii"></strong></div>
+    <div><small>お金を1万円持つ1年の費用</small><strong id="fcost"></strong></div>
+  </div>
+  <p class="sm" id="fmsg"></p>
+</div>
+<div class="point"><p>名目利子率 ＝ 実質利子率（実物の世界で決まる）＋ 予想インフレ率（貨幣の伸び率で決まる）。貨幣の伸び率が上がると、名目利子率は同じだけ上がる。</p></div>
+</section>
+
+<section id="s8" data-t="貨幣保有の機会費用">
+<h2><span class="sn">8</span>お金を持つことの費用：貨幣保有の機会費用</h2>
+<p>古典派の体系でも、名目の値が実際の経済活動に影響する道筋があります。手がかりは、<span class="mk">貨幣（現金）は利子を生まない</span>ということです。</p>
+<p>お金を手元に置いておくと、もし国債などの他の金融資産で持っていれば得られたはずの利子をあきらめることになります。これが<b>貨幣保有の機会費用</b>です。</p>
+<div class="eq"><span class="f">貨幣保有の機会費用 ＝ i − 0 ＝ i</span><span class="no">テキスト p.139</span></div>
+<p class="eq-read">他の金融資産の利子率と貨幣の利子率（0%）の差。だから機会費用は名目利子率に等しい</p>
+<div class="memo"><span class="who">メモ：財布の1万円の値段</span>名目利子率が10%のとき、1万円を1年間財布に入れておくと、国債で持っていれば受け取れた1,000円の利子をあきらめたことになる。お金を持つのはタダではない、というのがこの節のポイントです。</div>
+<p>預金には利子が付きますが、現金化しにくい他の資産に比べれば低い利子です。教科書の脚注4は、この意味で「貨幣」の利子率は低い、と説明しています。</p>
+<h3>インフレが高いと何が起こるか</h3>
+<ol class="steps">
+<li>予想インフレ率が高い → フィッシャー方程式で名目利子率が高い</li>
+<li>名目利子率が高い → お金を持つ機会費用が高い</li>
+<li>人々はお金を持つのを節約しようとする（こまめに預金を引き出す、など）</li>
+<li>その結果、貨幣の<b>交換手段としての機能</b>が損なわれる</li>
+</ol>
+<div class="point"><p>現金は利子を生まないので、お金を持つ機会費用は名目利子率 i。インフレが高いほど i が高く、人々はお金を節約し、貨幣の便利さが損なわれる。</p></div>
+</section>
+
+<section id="s9" data-t="フリードマン・ルール">
+<h2><span class="sn">9</span>フリードマン・ルール：望ましいインフレ率は？</h2>
+<p>一方、中央銀行が貨幣を供給する費用（限界費用）は、ほぼ0です。紙幣を印刷する費用は無視できるほど小さいからです。</p>
+<p>お金の持ち方を最適にするには、<span class="mk">お金を持つ機会費用（i）を、お金を供給する限界費用（≒ 0）に等しくする</span>必要があります。そうでなければ、税が資源配分をゆがめるのと同じようなゆがみが、お金の持ち方に生じます。</p>
+<p>フリードマンは、お金を持つ機会費用を最小にするインフレ率が望ましいと考えました。予想が正しい（<span class="v">π<sup>e</sup> = π</span>）とすると、フィッシャー方程式で <span class="v">i = 0</span> とおいて、</p>
+<div class="eq"><span class="f">0 = r + π　⇒　π = −r</span><span class="no">テキスト p.140</span></div>
+<p class="eq-read">実質利子率と同じ大きさのデフレを起こせば、名目利子率が0%になり、お金を持つ機会費用が0になる</p>
+<p>これを<b>フリードマン・ルール</b>と呼びます。実質利子率がプラスなら、<span class="mk">マイルドなデフレ</span>が望ましいことになります。</p>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="fr" data-s="0" aria-pressed="true">インフレ 8%</button><button type="button" data-g="fr" data-s="1" aria-pressed="false">フリードマン・ルール</button></div>
+  <svg id="gFR" viewBox="0 0 520 330" role="img" aria-label="フィッシャー方程式の直線上で、名目利子率が0になる点を示すグラフ"></svg>
+  <p class="gcap" id="gFR-cap"></p>
+</div>
+<div class="num"><span class="h">数値例（説明のための架空の値）</span>
+<table class="calc-t">
+<tr><td>実質利子率 <span class="v">r</span></td><td class="r">2%</td></tr>
+<tr><td>フリードマン・ルールのインフレ率 <span class="v">π</span> ＝ −r</td><td class="r plus">−2%</td></tr>
+<tr><td>必要な貨幣の伸び率 ＝ π ＋ 実質成長率 ＝ −2 + 2</td><td class="r">0%</td></tr>
+</table></div>
+<div class="trap"><b>注意</b>　インフレでもデフレでも、物価の変動は一般に財の相対価格を変え、生産や消費をゆがめると考えられます。この点を考えると、フリードマン・ルールは厳密には成り立たない、と教科書は述べています。</div>
+<div class="point"><p>貨幣の供給費用は0なので、お金を持つ機会費用 i も0にするのが望ましい。i = r + π = 0 から π = −r（実質利子率と同じ大きさのデフレ）。これがフリードマン・ルール。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート4 ===================== -->
+<div class="part" id="kyokyu" data-title="貨幣の尺度と供給" data-desc="現実の「貨幣」には、現金だけでなく預金も含まれます。日本銀行の貨幣の指標（M1・M2・M3）を確かめ、銀行が預金を通じてお金を増やすしくみ（信用創造）と貨幣乗数を学びます。">
+
+<section id="s10" data-t="貨幣の尺度（マネーストック）">
+<h2><span class="sn">10</span>現実の「貨幣」はどこまでか：貨幣の尺度</h2>
+<p>紙幣と硬貨の合計を<b>現金通貨</b>と呼びます。ただ、支払いは現金だけではありません。クレジットカードの代金や公共料金は銀行口座から引き落とされ、企業どうしは振込や手形で支払います。ですから、すぐに支払いに使える<b>預金</b>（要求払預金：当座預金、普通預金など）も貨幣の役割を果たしています。</p>
+<p>貨幣がモノと交換されるときの容易さを<b>流動性</b>と呼びます。</p>
+<div class="bars">
+  <div class="brow"><span class="lab">流動性が高い</span><div class="track"><div class="seg y" style="left:0;width:31%">現金通貨</div><div class="seg b" style="left:31%;width:31%">要求払預金</div><div class="seg ri" style="left:62%;width:38%">定期預金・CD など</div></div></div>
+  <p class="cap">左ほどすぐに支払いに使える。定期預金はすぐには使えないが、一定期間後に現金にできるので、流動性はやや低いが貨幣とみなせる。</p>
+</div>
+<div class="tw"><table>
+<thead><tr><th colspan="2">表 6.1　貨幣の尺度（旧）</th></tr></thead>
+<tbody>
+<tr><td>M1</td><td>現金通貨 ＋ 預金通貨（要求払預金）</td></tr>
+<tr><td>M2</td><td>M1 ＋ 準通貨（定期預金など）</td></tr>
+<tr><td>M2 + CD</td><td>M2 ＋ 譲渡性預金（CD）</td></tr>
+<tr><td>M3</td><td>M2 ＋ 郵便局・農漁協の預貯金</td></tr>
+<tr><td>M3 + CD</td><td>M3 ＋ CD</td></tr>
+</tbody></table></div>
+<p>どの尺度がもっともらしいかについての理論はなく、経験的に M2+CD が重視されてきました。日本銀行は2008年に指標を見直し、「マネーサプライ（貨幣供給量）」という呼び方を<b>マネーストック</b>に改めました。</p>
+<div class="tw"><table>
+<thead><tr><th colspan="2">表 6.2　貨幣の尺度（新）</th><th>旧指標との関係</th></tr></thead>
+<tbody>
+<tr><td>M1</td><td>現金通貨 ＋ 預金通貨</td><td>対象を、ゆうちょ銀行・農協・信用組合を含む全預金取扱機関に広げた</td></tr>
+<tr><td>M2</td><td>従来の M2+CD に相当</td><td>ゆうちょ銀行などは含まない</td></tr>
+<tr><td>M3</td><td>M1 ＋ 準通貨 ＋ CD</td><td>M1 と同じ機関が対象。旧 M3+CD に近い</td></tr>
+</tbody></table></div>
+<p>このほか、流動性のある金融商品のほとんどを含む「広義流動性」という指標もあります。</p>
+<div class="point"><p>現実の貨幣には現金だけでなく預金も含まれる。流動性の違いで M1・M2・M3 などの尺度がある。どれが理論の「貨幣」に当たるかは、はっきりしない。</p></div>
+</section>
+
+<section id="s11" data-t="部分準備制度と信用創造">
+<h2><span class="sn">11</span>部分準備制度と銀行の信用創造</h2>
+<p>貨幣数量説によれば、貨幣の伸び率を一定に抑えれば物価は安定します。しかし、中央銀行は貨幣の量を完全にコントロールできるでしょうか。預金も貨幣の役割を果たし、しかも<span class="mk">銀行が預金を生み出す</span>からです。</p>
+<h3>部分準備制度</h3>
+<p>銀行は、預かった預金を全額金庫に置いておく必要はありません。一部だけを<b>準備金</b>として持ち、残りは資金を必要とする人に貸し出します。これを<b>部分準備制度</b>と呼びます（全額を持つことを義務付ける制度は <b>100% 準備制度</b>）。</p>
+<div class="memo"><span class="who">メモ：みんなが同じ日に引き出すことはない</span>預金者が1万人いても、ある日に預金を引き出すのはその一部。人数が多ければ、引き出される金額は預金総額のほぼ一定の割合に落ち着く（大数の法則）。保険会社が、加入者全員の事故に同時に備えなくてよいのと同じ理屈です。</div>
+<h3>信用創造のしくみ</h3>
+<ol class="steps">
+<li>中央銀行が、人々の持つお金（ベースマネー）を増やす</li>
+<li>人々はその一部を現金で持ち、残りを銀行に預ける</li>
+<li>銀行は預金の一部を準備金として残し、残りを企業に貸す</li>
+<li>借りた企業も一部を現金で持ち、残りを（どこかの銀行に）預金する</li>
+<li>銀行はまたその一部を貸す……この繰り返しで、預金が次々に生まれる</li>
+</ol>
+<p>こうして経済全体では、<span class="mk">最初に増えた現金より多くの「貨幣」が生み出されます</span>。これを銀行の<b>信用創造</b>と呼びます。100% 準備制度では、銀行は貸し出せないので信用創造は起こりません。</p>
+<div class="num"><span class="h">数値例（説明のための架空の値）：ベースマネーが10増え、現金通貨・預金比率 c = 0.25、準備率 r = 0.05 のとき</span>
+<div class="tw"><table>
+<thead><tr><th>段階</th><th>現金 ΔC</th><th>預金 ΔD</th><th>準備金 ΔR</th><th>貸出 ΔL</th></tr></thead>
+<tbody id="roundTbl"></tbody>
+</table></div></div>
+<div class="gwrap">
+  <svg id="gCr" viewBox="0 0 540 320" role="img" aria-label="信用創造の各段階で増える貨幣を積み上げた棒グラフ"></svg>
+  <p class="gcap" id="gCr-cap"></p>
+</div>
+<h3>動かして確かめる：貨幣乗数の計算機</h3>
+<div class="calc">
+  <div class="sl" style="grid-template-columns:11.5em 1fr 4.4em"><label for="mc">現金通貨・預金比率 c</label><input type="range" id="mc" min="0.05" max="1" step="0.05" value="0.25"><output id="vmc" for="mc"></output></div>
+  <div class="sl" style="grid-template-columns:11.5em 1fr 4.4em"><label for="mr">準備率 r</label><input type="range" id="mr" min="0.01" max="0.5" step="0.01" value="0.05"><output id="vmr" for="mr"></output></div>
+  <div class="meter">
+    <div><small>貨幣乗数 m ＝ (c+1)/(c+r)</small><strong id="mm"></strong></div>
+    <div><small>ベースマネー ΔB</small><strong>10</strong></div>
+    <div><small>貨幣の増加 ΔM ＝ mΔB</small><strong id="mdm"></strong></div>
+  </div>
+  <p class="sm" id="mmsg"></p>
+</div>
+<p class="sm">この計算機の記号 r は準備率です。利子率の r とは別物なので注意してください（教科書も同じ文字を使っています）。</p>
+<div class="point"><p>部分準備制度では、銀行は預金の一部を貸し出し、それがまた預金になる。この繰り返しで、最初に増えた現金より多くの貨幣が生まれる（信用創造）。</p></div>
+</section>
+
+<section id="s12" data-t="貨幣乗数">
+<h2><span class="sn">12</span>貨幣乗数（信用乗数）を式で表す</h2>
+<p>貨幣残高 <span class="v">M</span> は、現金通貨 <span class="v">C</span> と預金 <span class="v">D</span> の合計です。一方、中央銀行がコントロールできるのは<b>ベースマネー</b> <span class="v">B</span>（マネタリーベース、ハイパワードマネー）で、現金通貨と銀行の準備金 <span class="v">R</span> の合計です。</p>
+<div class="eq"><span class="f">M = C + D,　　B = C + R</span><span class="no">テキスト p.144</span></div>
+<p class="eq-read">貨幣 ＝ 現金 ＋ 預金。ベースマネー ＝ 現金 ＋ 準備金</p>
+<p><span class="v">M</span> が <span class="v">B</span> の何倍かを<b>貨幣乗数</b>（信用乗数）と呼び、<span class="v">m</span> で表します。分子と分母を <span class="v">D</span> で割ると、</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>m</i> = <span class="frac"><span><i>M</i></span><span><i>B</i></span></span> = <span class="frac"><span><i>C</i> + <i>D</i></span><span><i>C</i> + <i>R</i></span></span> = <span class="frac"><span><i>C</i>/<i>D</i> + 1</span><span><i>C</i>/<i>D</i> + <i>R</i>/<i>D</i></span></span></span></span><span class="no">テキスト (6.7)</span></div>
+<p class="eq-read">貨幣乗数は、現金通貨・預金比率 C/D と、準備率 R/D の2つで決まる</p>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>m</i> = <span class="frac"><span><i>c</i> + 1</span><span><i>c</i> + <i>r</i></span></span></span></span><span class="no">テキスト (6.8)</span></div>
+<p class="eq-read">c ＝ 現金通貨・預金比率、r ＝ 準備率。c が小さいほど、r が小さいほど、乗数は大きい</p>
+<h3>なぜこの式になるのか：段階を足し合わせる</h3>
+<p>ベースマネーが <span class="v">ΔB</span> 増えると、1段階目で現金が <span class="v">[c/(1+c)]ΔB</span>、預金が <span class="v">[1/(1+c)]ΔB</span> 増えます。銀行は預金の <span class="v">r</span> を準備金にし、残り <span class="v">(1−r)</span> を貸します。貸したお金はまた現金と預金に分かれるので、2段階目の増え方は1段階目の <span class="v">(1−r)/(1+c)</span> 倍、3段階目はさらにその倍……となります（<a href="#s11" data-goto="s11">前の節の表</a>）。</p>
+<div class="eq mxeq"><span class="f"><span class="mx">1 + <span class="frac"><span>1 − <i>r</i></span><span>1 + <i>c</i></span></span> + <span>(</span><span class="frac"><span>1 − <i>r</i></span><span>1 + <i>c</i></span></span><span>)</span><sup>2</sup> + ⋯ = <span class="frac"><span>1</span><span>1 − (1 − <i>r</i>)/(1 + <i>c</i>)</span></span> = <span class="frac"><span>1 + <i>c</i></span><span><i>r</i> + <i>c</i></span></span></span></span><span class="no">テキスト p.145</span></div>
+<p class="eq-read">公比 (1−r)/(1+c) が1より小さいので、無限に続く足し算の合計は一定の値に落ち着く（無限等比級数の和）</p>
+<div class="eq mxeq"><span class="f"><span class="mx">Δ<i>C</i> = <span class="frac"><span><i>c</i></span><span><i>r</i> + <i>c</i></span></span>Δ<i>B</i>,　Δ<i>D</i> = <span class="frac"><span>1</span><span><i>r</i> + <i>c</i></span></span>Δ<i>B</i>,　Δ<i>M</i> = Δ<i>C</i> + Δ<i>D</i> = <span class="frac"><span>1 + <i>c</i></span><span><i>c</i> + <i>r</i></span></span>Δ<i>B</i></span></span><span class="no">テキスト p.146</span></div>
+<div class="num"><span class="h">数値例（c = 0.25、r = 0.05、ΔB = 10。説明のための架空の値）</span>
+<table class="calc-t">
+<tr><td>貨幣乗数 m ＝ 1.25 ÷ 0.30</td><td class="r">約 4.17</td></tr>
+<tr><td>現金の増加 ΔC ＝ 0.25 ÷ 0.30 × 10</td><td class="r">約 8.33</td></tr>
+<tr><td>預金の増加 ΔD ＝ 1 ÷ 0.30 × 10</td><td class="r">約 33.33</td></tr>
+<tr><td>準備金の増加 ΔR ＝ 0.05 × 33.33</td><td class="r">約 1.67</td></tr>
+<tr><td>貨幣の増加 ΔM ＝ ΔC + ΔD</td><td class="r">約 41.67</td></tr>
+</table></div>
+<p>最初に増えたベースマネーは、最後には現金か準備金のどちらかの形で持たれています。実際、<span class="v">ΔC + ΔR</span> ＝ 8.33 + 1.67 ＝ 10 ＝ <span class="v">ΔB</span> になります（教科書の「確かめてみよ」）。</p>
+<div class="point"><p>貨幣乗数 m = (c+1)/(c+r)。現金で持つ割合 c や準備率 r が小さいほど、同じベースマネーから多くの貨幣が生まれる。</p></div>
+</section>
+
+<section id="s13" data-t="貨幣量を決めるもの">
+<h2><span class="sn">13</span>貨幣量を決めるもの：中央銀行の手段</h2>
+<p><span class="v">ΔM = mΔB</span> なので、貨幣の量は<b>ベースマネーの大きさ</b>と<b>貨幣乗数の大きさ</b>で決まります。</p>
+<div class="tw"><table>
+<thead><tr><th>手段</th><th>しくみ</th><th>貨幣の量への効果</th></tr></thead>
+<tbody>
+<tr><td>公開市場操作</td><td>中央銀行が国債を市場で売り買いする。買いオペでベースマネーが増え、売りオペで減る</td><td>B が動き、M = mB が変わる</td></tr>
+<tr><td>必要準備率の変更</td><td>銀行が持たなければならない準備金の下限。引き上げると準備率 r が上がる</td><td>引き上げ → m が下がる。ただし実際にはほとんど使われない</td></tr>
+<tr><td>公定歩合の変更</td><td>中央銀行が銀行に貸すときの利子率。上げると銀行は貸出に慎重になり r が上がる</td><td>引き上げ → m が下がる</td></tr>
+</tbody></table></div>
+<p class="sm">公定歩合は現在「基準割引率および基準貸付利率」と呼ばれます。1994年に金利が自由化されてからは政策上の重要性が薄れ、日本銀行は短期金融市場の金利を政策金利としています（教科書の脚注6）。</p>
+<h3>現実の貨幣乗数は安定しているか</h3>
+<p>現実の貨幣乗数は、必ずしも安定していません。教科書によると、アベノミクスの金融緩和で2013年春以降、ベースマネーの伸び率（前年同期比）は10%程度から40〜60%に急増しましたが、M1 の伸び率は5%程度から7%程度に増えただけでした。</p>
+<div class="bars">
+  <div class="brow"><span class="lab">ベースマネーの伸び率</span><div class="track"><div class="seg b" style="left:0;width:16.7%">約10%</div><div class="seg gap-p" style="left:16.7%;width:83.3%">2013年春以降 40〜60% へ急増</div></div></div>
+  <div class="brow"><span class="lab">M1 の伸び率</span><div class="track"><div class="seg b" style="left:0;width:8.3%">5%</div><div class="seg gap-p" style="left:8.3%;width:3.4%"></div><span class="seg-lab" style="left:calc(11.7% + 8px)">7% 程度へ増えただけ</span></div></div>
+  <p class="cap">数字は教科書 p.147 による（幅は目安）。その結果、M1 ÷ ベースマネーで測った貨幣乗数は 4.0 程度から 2.0 を下回るまで下がった。</p>
+</div>
+<div class="point"><p>貨幣の量は、中央銀行が動かすベースマネーと、人々や銀行の行動で決まる貨幣乗数で決まる。乗数は安定しないので、中央銀行が貨幣の量を思いどおりにできるとは限らない。</p></div>
+</section>
+</div>
+
+<!-- ===================== パート5 ===================== -->
+<div class="part" id="matome" data-title="まとめと演習" data-desc="章全体の要点を振り返り、確認問題で理解を確かめます。理解できたら、次のタブで練習問題に挑戦しましょう。">
+<section id="s14" data-t="まとめ">
+<h2><span class="sn">14</span>まとめ</h2>
+<div class="tw"><table>
+<thead><tr><th>テーマ</th><th>要点</th><th>式</th></tr></thead>
+<tbody>
+<tr><td>貨幣の機能</td><td>交換手段・計算の単位・価値の保蔵。欲求の二重の一致を不要にする</td><td></td></tr>
+<tr><td>流通速度</td><td>お金が一定期間に何回使われたか</td><td><span class="v">V ≡ PT/M</span></td></tr>
+<tr><td>貨幣数量説</td><td>V と Y が一定なら、物価は貨幣の量に比例する</td><td><span class="v">MV̄ = PȲ</span></td></tr>
+<tr><td>インフレの原因</td><td>インフレ率 ＝ 貨幣の伸び率 − 実質成長率（V 一定）</td><td><span class="v">ΔM/M + ΔV/V = ΔP/P + ΔY/Y</span></td></tr>
+<tr><td>二分法・中立性</td><td>実物は実物で、物価は貨幣で決まる。貨幣は実物を動かさない</td><td></td></tr>
+<tr><td>名目利子率</td><td>実質利子率 ＋ 予想インフレ率</td><td><span class="v">i = r + π<sup>e</sup></span></td></tr>
+<tr><td>機会費用</td><td>現金は利子を生まないので、お金を持つ費用は名目利子率</td><td><span class="v">i − 0 = i</span></td></tr>
+<tr><td>フリードマン・ルール</td><td>名目利子率を0にするデフレが望ましい</td><td><span class="v">π = −r</span></td></tr>
+<tr><td>貨幣の尺度</td><td>M1・M2・M3。日本銀行は2008年に指標を見直し、マネーストックと呼ぶ</td><td></td></tr>
+<tr><td>貨幣乗数</td><td>部分準備制度のもとで銀行が貨幣を創造する</td><td><span class="v">m = (c+1)/(c+r)</span></td></tr>
+<tr><td>貨幣量の決定</td><td>公開市場操作で B、必要準備率・公定歩合で m を動かす</td><td><span class="v">ΔM = mΔB</span></td></tr>
+</tbody></table></div>
+<p class="sm">教科書の Keywords：貨幣の役割、交換手段・計算の単位・価値貯蔵手段としての貨幣、欲望の二重の一致、貨幣数量説、貨幣の流通速度、k% ルール、古典派の二分法、貨幣の中立性、フィッシャー方程式、貨幣保有の機会費用、フリードマン・ルール、マネーストック（M1、M2、M3）、流動性、貨幣乗数（信用乗数）、部分準備制度、ベースマネー（マネタリーベース、ハイパワードマネー）、公開市場操作。</p>
+</section>
+
+<section id="s15" data-t="確認問題">
+<h2><span class="sn">15</span>確認問題</h2>
+<p>答えを考えてから「解答を見る」を押してください。</p>
+<div class="q"><div class="qq"><span class="qn">Q1</span><span>名目 GDP が 600兆円、貨幣残高が 200兆円のとき、所得流通速度はいくら？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>V ＝ PY ÷ M ＝ 600 ÷ 200 ＝ 3。お金は1年に平均3回まわった。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q2</span><span>V = 2、Y = 500 で一定のとき、貨幣が 250 から 300 に増えると、物価水準は何%上がる？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>P は 250×2÷500 ＝ 1.0 から 300×2÷500 ＝ 1.2 へ。M と同じく20%上がる。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q3</span><span>貨幣の伸び率 6%、実質経済成長率 1%、流通速度は一定。インフレ率はいくら？　実質利子率が 3% なら名目利子率は？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>インフレ率 ＝ 6 − 1 ＝ 5%。名目利子率 ＝ 3 + 5 ＝ 8%（予想が正しいとき）。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q4</span><span>実質利子率が 3% のとき、フリードマン・ルールが求めるインフレ率は？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>π ＝ −r ＝ −3%（3%のデフレ）。名目利子率が0になり、お金を持つ機会費用が0になる。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q5</span><span>現金通貨・預金比率 c = 0.5、準備率 r = 0.1 のとき、貨幣乗数は？　ベースマネーが 6 増えると貨幣はいくら増える？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>m ＝ (0.5+1) ÷ (0.5+0.1) ＝ 1.5 ÷ 0.6 ＝ 2.5。ΔM ＝ 2.5 × 6 ＝ 15。</div></div>
+<div class="q"><div class="qq"><span class="qn">Q6</span><span>中央銀行が買いオペを行い、同時に人々が現金を多めに持つようになった（c が上がった）。貨幣の量への効果は、それぞれどちら向き？</span></div><button class="show" type="button">解答を見る</button><div class="ans" hidden>買いオペはベースマネー B を増やし、M を増やす。c の上昇は貨幣乗数 m を下げ、M を減らす。合計の効果は大きさしだい（アベノミクス期の乗数の低下も、こうした動きの一例）。</div></div>
+</section>
+<p class="src">出典：麻生良文『マクロ経済学入門』第6章「物価水準の決定」（pp.133–148）をもとに、初学者向けに再構成しました（予習版。講義スライドの公開後に更新します）。数値例は、特に断りのないものは説明のための架空の値です。</p>
+</div>
+
+<!-- ===================== パート6 ===================== -->
+<div class="part" id="kadai" data-title="練習問題に挑戦" data-desc="教科書の章末にある復習問題（p.148）の5問を、予習用の練習問題として、ヒントから順に解いていきます。解説と答案例は、表示スイッチがオンのときだけ見られます。">
+
+<section id="s16" data-t="練習問題の設定と準備">
+<h2><span class="sn">16</span>練習問題の設定と準備</h2>
+<div class="yoshu-note"><b>予習版</b>これは予習用の練習問題で、講義の課題とは異なります。講義の課題は、スライドの公開後に差し替えます。</div>
+<div class="ansSwitch">
+  <label class="sw-l" for="ansToggle"><input type="checkbox" id="ansToggle" role="switch"><span class="sw-ui" aria-hidden="true"></span><span>解説と答案例を表示する</span></label>
+  <span class="sw-note" id="ansNote">オフ：問題とヒントだけを表示しています。</span>
+</div>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch6.docx" download="第6章練習問題_解答例_予習版.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+<div class="kq"><span class="lab">練習問題（教科書 p.148「復習問題」）</span>
+<p><b>問1</b>　貨幣の流通速度（所得流通速度）とは何か説明せよ。</p>
+<p><b>問2</b>　貨幣数量説による物価水準の決定理論を説明せよ。</p>
+<p><b>問3</b>　古典派モデルの枠組みで実質利子率がきまる場合、名目利子率はどのように決まるのか説明せよ。</p>
+<p><b>問4</b>　貨幣を保有することの費用はなぜ名目利子率なのだろうか。</p>
+<p><b>問5</b>　フリードマンはマイルドなデフレを起こすことが望ましいという主張をしたことがある。その理由を説明せよ。</p>
+</div>
+<h3>問題文の言葉を確かめる</h3>
+<div class="tw"><table>
+<thead><tr><th>言葉</th><th>意味</th></tr></thead>
+<tbody>
+<tr><td>流通速度（所得流通速度）</td><td>お金1単位が一定期間に何回使われたか。取引総額で測るのが流通速度、名目 GDP で測るのが所得流通速度</td></tr>
+<tr><td>貨幣数量説</td><td>物価水準は貨幣の量で決まる、という理論</td></tr>
+<tr><td>古典派モデルの枠組みで実質利子率がきまる</td><td>実質利子率は、財市場・貸付資金市場という実物の世界で決まる（第3〜5章）</td></tr>
+<tr><td>貨幣を保有することの費用</td><td>お金を持つことで、あきらめた収益（機会費用）</td></tr>
+<tr><td>マイルドなデフレ</td><td>物価がゆるやかに下がり続けること。インフレ率がマイナス</td></tr>
+</tbody></table></div>
+<h3>この練習問題で使う道具</h3>
+<div class="tw"><table>
+<thead><tr><th>問題</th><th>使う道具</th><th>復習</th></tr></thead>
+<tbody>
+<tr><td>問1</td><td>数量方程式 MV = PT、V ≡ PT/M、MV = PY</td><td><a href="#s3" data-goto="s3">第3節</a>・<a href="#s4" data-goto="s4">第4節</a></td></tr>
+<tr><td>問2</td><td>MV̄ = PȲ、成長率の式 (6.4)、古典派の二分法</td><td><a href="#s4" data-goto="s4">第4節</a>〜<a href="#s6" data-goto="s6">第6節</a></td></tr>
+<tr><td>問3</td><td>フィッシャー方程式 i = r + π<sup>e</sup></td><td><a href="#s7" data-goto="s7">第7節</a></td></tr>
+<tr><td>問4</td><td>機会費用、現金の利子率は0</td><td><a href="#s8" data-goto="s8">第8節</a></td></tr>
+<tr><td>問5</td><td>貨幣の供給費用、フリードマン・ルール π = −r</td><td><a href="#s9" data-goto="s9">第9節</a></td></tr>
+</tbody></table></div>
+<h3>解説で使う数値例</h3>
+<p>単位は兆円・%。<b>説明のための架空の値</b>です（解説パートの数値例と同じ）。</p>
+<div class="tw"><table>
+<thead><tr><th>項目</th><th>値</th></tr></thead>
+<tbody>
+<tr><td>実質 GDP <span class="v">Ȳ</span>、流通速度 <span class="v">V̄</span></td><td class="r">500、2</td></tr>
+<tr><td>貨幣 <span class="v">M</span>（変化前 → 変化後）</td><td class="r">250 → 275</td></tr>
+<tr><td>実質経済成長率</td><td class="r">2%</td></tr>
+<tr><td>実質利子率 <span class="v">r</span></td><td class="r">2%</td></tr>
+<tr><td>貨幣の伸び率（問3：変化前 → 変化後）</td><td class="r">6% → 10%</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s17" data-t="問1 貨幣の流通速度">
+<h2><span class="sn">17</span>問1：貨幣の流通速度とは何か</h2>
+<div class="kq"><span class="lab">問題</span><p>貨幣の流通速度（所得流通速度）とは何か説明せよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>数量方程式 MV = PT を V について解くと、V は何を何で割ったものになるでしょうか。T を実質 GDP Y に置き換えると、何が変わるでしょうか。「お金が1年に何回まわるか」という言い方で説明してみましょう。</div>
+<p class="xref">復習：<a href="#s3" data-goto="s3">パート2「数量方程式と流通速度」</a>、<a href="#s4" data-goto="s4">「MV = PY と物価水準の決定」</a></p>
+<p class="locked">解説と答案例は、表示スイッチをオンにすると見られます。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>言葉を確かめる</h3>
+<p>「流通速度」は、速さ（km/時）ではなく<b>回数</b>のことです。お金1単位が、一定期間（ふつうは1年）のうちに平均して何回支払いに使われたかを表します。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>式で書く</h3>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>V</i> ≡ <span class="frac"><span><i>PT</i></span><span><i>M</i></span></span>　（流通速度）　　<i>V</i> = <span class="frac"><span><i>PY</i></span><span><i>M</i></span></span>　（所得流通速度）</span></span><span class="no">テキスト (6.2)・(6.3)</span></div>
+<p>分子の <span class="v">PT</span> は中間生産物も含むすべての取引の総額、<span class="v">PY</span> は名目 GDP です。所得流通速度は「名目 GDP を生み出すのに、お金が何回まわったか」を表します。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>数字で確かめる</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="q1" data-s="0" aria-pressed="true">流通速度（取引総額）</button><button type="button" data-g="q1" data-s="1" aria-pressed="false">所得流通速度（名目 GDP）</button></div>
+  <svg id="gQ1" viewBox="0 0 540 250" role="img" aria-label="貨幣残高を何回分重ねると取引総額や名目GDPになるかを示す帯"></svg>
+  <p class="gcap" id="gQ1-cap"></p>
+</div>
+<div class="num"><span class="h">数値例</span>
+<table class="calc-t">
+<tr><td>取引総額 1,000兆円 ÷ 貨幣残高 500兆円（テキスト p.136）</td><td class="r">V ＝ 2</td></tr>
+<tr><td>名目 GDP 500兆円 ÷ 貨幣残高 250兆円（架空の値）</td><td class="r">V ＝ 2</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「MV = PY は経済の法則である」と書いてしまうこと。この式は V の定義なので、いつでも成り立つ恒等式です。物価を決める理論になるのは、V や Y について仮定を加えたとき（問2）です。</div>
+<div class="point ketsu"><p>流通速度とは、貨幣1単位が一定期間に平均して何回取引に使われたか（回転したか）を表す。V ≡ PT/M。T を実質 GDP Y に置き換えた V = PY/M を所得流通速度という。決済技術で決まり、短期的にはほぼ一定と考えられる。</p></div>
+<div class="answer">
+<p>貨幣の流通速度とは、貨幣1単位が一定期間内に平均して何回取引に用いられたか、すなわち何回回転したかを表すものである。数量方程式 MV = PT（M：貨幣残高、P：物価水準、T：中間生産物の取引も含む取引総量）から、V ≡ PT/M と定義される。この式は V の定義式であり、常に成り立つ恒等式である。</p>
+<p>取引量 T と実質 GDP Y の間には短期的に安定した関係があるため、T を Y に置き換えた MV = PY の V、すなわち V = PY/M を所得流通速度という。これは名目 GDP を生み出すために貨幣が平均何回使われたかを表す。たとえば名目 GDP が 500兆円、貨幣残高が 250兆円なら、所得流通速度は 2 である。流通速度はその時点の決済技術から決まり、短期的には一定とみなしてよいと考えられる。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s18" data-t="問2 貨幣数量説による物価の決定">
+<h2><span class="sn">18</span>問2：貨幣数量説による物価水準の決定</h2>
+<div class="kq"><span class="lab">問題</span><p>貨幣数量説による物価水準の決定理論を説明せよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>MV = PY の4つの文字のうち、古典派が「一定」と考えるのはどれとどれでしょうか。それぞれ、なぜ一定と言えるのでしょうか。残った M と P の関係を、水準と伸び率の両方で書いてみましょう。</div>
+<p class="xref">復習：<a href="#s4" data-goto="s4">パート2「MV = PY と物価水準の決定」</a>、<a href="#s5" data-goto="s5">「成長率の式」</a>、<a href="#s6" data-goto="s6">「古典派の二分法」</a></p>
+<p class="locked">解説と答案例は、表示スイッチをオンにすると見られます。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>何が一定で、何が動くか</h3>
+<div class="tw"><table>
+<thead><tr><th>文字</th><th>古典派の扱い</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td>流通速度 V</td><td class="c">一定（V̄）</td><td>決済技術で決まり、短期には大きく変わらない</td></tr>
+<tr><td>実質 GDP Y</td><td class="c">一定（Ȳ）</td><td>古典派モデルで完全雇用の水準に決まる</td></tr>
+<tr><td>貨幣 M</td><td class="c">外から与えられる</td><td>中央銀行の政策などで決まる</td></tr>
+<tr><td>物価 P</td><td class="c minus">これが決まる</td><td>残りの1つとして MV̄ = PȲ から決まる</td></tr>
+</tbody></table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>式で書く</h3>
+<div class="eq mxeq"><span class="f"><span class="mx"><i>P</i> = <span class="frac"><span><i>V̄</i></span><span><i>Ȳ</i></span></span> × <i>M</i>　　　<span class="frac"><span>Δ<i>P</i></span><span><i>P</i></span></span> = <span class="frac"><span>Δ<i>M</i></span><span><i>M</i></span></span> − <span class="frac"><span>Δ<i>Y</i></span><span><i>Y</i></span></span></span></span><span class="no">テキスト p.137・(6.5)</span></div>
+<p>水準で見ると、物価は貨幣の量に比例します。伸び率で見ると、インフレ率は貨幣の伸び率から実質成長率を引いたものです。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフと数字で確かめる</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="q2" data-s="0" aria-pressed="true">変化前（M = 250）</button><button type="button" data-g="q2" data-s="1" aria-pressed="false">変化後（M = 275）</button></div>
+  <svg id="gQ2" viewBox="0 0 520 330" role="img" aria-label="貨幣が増えると物価が比例して上がることを示すグラフ"></svg>
+  <p class="gcap" id="gQ2-cap"></p>
+</div>
+<div class="num"><span class="h">数値例</span>
+<table class="calc-t">
+<tr><td>P ＝ 250 × 2 ÷ 500</td><td class="r">1.0</td></tr>
+<tr><td>M が10%増えて P ＝ 275 × 2 ÷ 500</td><td class="r">1.1（＋10%）</td></tr>
+<tr><td>伸び率：貨幣 10% − 実質成長 2%</td><td class="r">インフレ率 8%</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「賃金や原油価格が上がると物価が上がる」と書いてしまうこと。貨幣数量説では、それは一部の財の相対価格を変えるだけで、物価水準を決めるのは貨幣の量です。</div>
+<div class="point ketsu"><p>V（決済技術で決まる）と Y（完全雇用で決まる）が一定なので、MV̄ = PȲ から物価水準 P は貨幣の量 M に比例して決まる。インフレ率 ＝ 貨幣の伸び率 − 実質成長率。インフレやデフレは貨幣的現象である。</p></div>
+<div class="answer">
+<p>貨幣数量説は、物価水準が貨幣の量によって決まるとする理論である。出発点は数量方程式 MV = PY（M：貨幣残高、V：所得流通速度、P：物価水準、Y：実質 GDP）であるが、これ自体は V の定義から常に成り立つ恒等式にすぎない。</p>
+<p>古典派はこれに2つの仮定を加える。第1に、流通速度は決済技術で決まり、短期的には一定（V = V̄）である。第2に、実質 GDP は古典派モデルの中で完全雇用に対応する水準に決まる（Y = Ȳ）。すると MV̄ = PȲ より P = (V̄/Ȳ)M となり、M が増加すれば P は比例して上昇せざるを得ない。たとえば V̄ = 2、Ȳ = 500 のとき、M が 250 から 275 に10%増えると、P は 1.0 から 1.1 に10%上昇する。</p>
+<p>成長率で表すと ΔM/M + ΔV/V = ΔP/P + ΔY/Y であり、V が一定で実質成長率も一定なら、インフレ率は貨幣残高の成長率で決まる（貨幣の伸び率10%、実質成長率2%ならインフレ率8%）。すなわちインフレやデフレは貨幣的現象である。実物変数は実物の側で、物価水準は貨幣量で決まるという考え方を古典派の二分法、貨幣量が名目変数だけに影響する性質を貨幣の中立性という。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s19" data-t="問3 名目利子率の決まり方">
+<h2><span class="sn">19</span>問3：名目利子率はどう決まるか</h2>
+<div class="kq"><span class="lab">問題</span><p>古典派モデルの枠組みで実質利子率がきまる場合、名目利子率はどのように決まるのか説明せよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>名目利子率、実質利子率、インフレ率を結ぶ式は何でしたか。その式の右辺の2つは、古典派モデルでは、それぞれどこで決まるでしょうか（実物の世界か、貨幣の世界か）。</div>
+<p class="xref">復習：<a href="#s7" data-goto="s7">パート3「フィッシャー方程式」</a>、<a href="#s5" data-goto="s5">パート2「成長率の式」</a></p>
+<p class="locked">解説と答案例は、表示スイッチをオンにすると見られます。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>何がどこで決まるか</h3>
+<div class="tw"><table>
+<thead><tr><th>変数</th><th>決まる場所</th></tr></thead>
+<tbody>
+<tr><td>実質利子率 r</td><td>実物の世界：財市場・貸付資金市場（貯蓄＝投資）</td></tr>
+<tr><td>インフレ率 π</td><td>貨幣の世界：貨幣数量説（貨幣の伸び率 − 実質成長率）</td></tr>
+<tr><td>名目利子率 i</td><td>上の2つを足したもの（フィッシャー方程式）</td></tr>
+</tbody></table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>式で書く</h3>
+<div class="eq"><span class="f">i = r + π<sup>e</sup>,　　π<sup>e</sup> = π（予想が正しいとき）</span><span class="no">テキスト (6.6)</span></div>
+<p>実質利子率 r は貨幣の量に影響されない（貨幣の中立性）ので、貨幣の伸び率が変わると、名目利子率は予想インフレ率と同じだけ動きます。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフと数字で確かめる</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="q3" data-s="0" aria-pressed="true">変化前（貨幣の伸び率 6%）</button><button type="button" data-g="q3" data-s="1" aria-pressed="false">変化後（貨幣の伸び率 10%）</button></div>
+  <svg id="gQ3" viewBox="0 0 520 330" role="img" aria-label="フィッシャー方程式の直線上で名目利子率が上がる様子を示すグラフ"></svg>
+  <p class="gcap" id="gQ3-cap"></p>
+</div>
+<div class="num"><span class="h">数値例（実質利子率 2%、実質成長率 2%）</span>
+<table class="calc-t">
+<tr><td>変化前：π ＝ 6 − 2 ＝ 4%、i ＝ 2 + 4</td><td class="r">6%</td></tr>
+<tr><td>変化後：π ＝ 10 − 2 ＝ 8%、i ＝ 2 + 8</td><td class="r">10%</td></tr>
+<tr><td>実質利子率</td><td class="r">2% のまま</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「お金を増やすと利子率が下がる」と答えてしまうこと。古典派モデルの長い目で見た関係では、貨幣の伸び率が上がると予想インフレ率が上がり、名目利子率はむしろ上がります。実質利子率は変わりません。</div>
+<div class="point ketsu"><p>名目利子率は、フィッシャー方程式 i = r + π<sup>e</sup> で決まる。実質利子率 r は実物の世界で、予想インフレ率は（予想が正しければ）貨幣数量説で貨幣の伸び率から決まる。</p></div>
+<div class="answer">
+<p>古典派モデルでは、実質利子率 r は財市場（貸付資金市場）の均衡によって実物の側で決まり、貨幣量の影響を受けない。一方、物価水準は貨幣数量説に従うので、インフレ率 π は貨幣残高の成長率（から実質経済成長率を引いたもの）によって決まる。</p>
+<p>名目利子率 i は、フィッシャー方程式 i = r + π<sup>e</sup>（π<sup>e</sup>：時点 t から t+1 にかけての予想インフレ率）によって決まる。人々が将来を正しく予想するなら、π<sup>e</sup> は現実のインフレ率を反映する。たとえば実質利子率が 2%、実質成長率が 2% のとき、貨幣の伸び率が 6% から 10% に上がると、インフレ率は 4% から 8% に、名目利子率は 6% から 10% に上昇し、実質利子率は 2% のまま変わらない。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s20" data-t="問4 貨幣保有の費用">
+<h2><span class="sn">20</span>問4：貨幣を持つ費用はなぜ名目利子率か</h2>
+<div class="kq"><span class="lab">問題</span><p>貨幣を保有することの費用はなぜ名目利子率なのだろうか。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>「費用」は機会費用で考えます。お金の代わりに国債を持っていたら、何が得られたでしょうか。お金（現金）自体は、利子をいくら生むでしょうか。「実質利子率ではないのはなぜか」も考えると、答えが深まります。</div>
+<p class="xref">復習：<a href="#s8" data-goto="s8">パート3「貨幣保有の機会費用」</a></p>
+<p class="locked">解説と答案例は、表示スイッチをオンにすると見られます。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>機会費用とは</h3>
+<p>機会費用は「あることを選んだために、あきらめた最大の利益」です（第1章）。お金を持つことを選ぶと、その分を利子の付く資産で持つ機会をあきらめます。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>2つの資産の収益を比べる</h3>
+<div class="tw"><table>
+<thead><tr><th></th><th>名目の収益率</th><th>実質の収益率（物価を考慮）</th></tr></thead>
+<tbody>
+<tr><td>国債などの金融資産</td><td class="r">i</td><td class="r">i − π ＝ r</td></tr>
+<tr><td>貨幣（現金）</td><td class="r">0</td><td class="r">0 − π ＝ −π</td></tr>
+<tr><td><b>差（機会費用）</b></td><td class="r"><b>i − 0 ＝ i</b></td><td class="r"><b>r − (−π) ＝ r + π ＝ i</b></td></tr>
+</tbody></table></div>
+<p>名目で見ても実質で見ても、差は名目利子率 i になります。インフレは国債の実質価値も現金の実質価値も同じだけ減らしますが、<span class="mk">国債にはその分を埋め合わせる名目の利子が付くのに、現金には付かない</span>からです。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフと数字で確かめる</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="q4" data-s="0" aria-pressed="true">i = 6%（π = 4%）</button><button type="button" data-g="q4" data-s="1" aria-pressed="false">i = 10%（π = 8%）</button></div>
+  <svg id="gQ4" viewBox="0 0 540 270" role="img" aria-label="国債と現金の名目収益率を比べる棒グラフ"></svg>
+  <p class="gcap" id="gQ4-cap"></p>
+</div>
+<div class="num"><span class="h">数値例（1万円を1年持つ場合）</span>
+<table class="calc-t">
+<tr><td>i ＝ 6% のとき、あきらめる利子</td><td class="r">600円</td></tr>
+<tr><td>i ＝ 10% のとき、あきらめる利子</td><td class="r minus">1,000円</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「お金を持つ費用は実質利子率」と答えてしまうこと。現金はインフレで実質価値が目減りするので、その分（π）も費用に加わり、r + π ＝ i になります。</div>
+<div class="point ketsu"><p>貨幣（現金）は利子を生まない（名目利子率0%）。貨幣を持つと、他の金融資産で得られた名目利子 i をあきらめることになるので、機会費用は i − 0 ＝ i、つまり名目利子率である。</p></div>
+<div class="answer">
+<p>貨幣を保有することの費用は、貨幣を保有することで失われた所得、すなわち機会費用である。これは、他の金融資産（たとえば国債）の利子率と貨幣の利子率の差に等しい。貨幣（現金通貨）は一般に利子を稼がず、その名目利子率は 0% であるから、貨幣保有の機会費用は i − 0 = i、すなわち名目利子率となる。</p>
+<p>実質で考えても結論は同じである。金融資産の実質収益率は r であるのに対し、貨幣の実質収益率はインフレによる目減りのため −π である。その差は r + π であり、フィッシャー方程式から名目利子率 i に等しい。たとえば名目利子率が 10% のとき、1万円を1年間貨幣で持つと、1,000円の利子をあきらめることになる。期待インフレ率が高いほど名目利子率が高くなり、貨幣保有の機会費用が増加するので、人々は貨幣保有を節約しようとする。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s21" data-t="問5 フリードマン・ルール">
+<h2><span class="sn">21</span>問5：マイルドなデフレが望ましい理由</h2>
+<div class="kq"><span class="lab">問題</span><p>フリードマンはマイルドなデフレを起こすことが望ましいという主張をしたことがある。その理由を説明せよ。</p></div>
+<div class="memo hint"><span class="who">ヒント</span>問4の答え（お金を持つ費用は名目利子率）を使います。中央銀行がお金を1単位多く作る費用はいくらでしょうか。お金を持つ費用と作る費用が等しくなるのは、名目利子率がいくらのときでしょうか。フィッシャー方程式に当てはめましょう。</div>
+<p class="xref">復習：<a href="#s9" data-goto="s9">パート3「フリードマン・ルール」</a>、<a href="#s20" data-goto="s20">問4</a></p>
+<p class="locked">解説と答案例は、表示スイッチをオンにすると見られます。</p>
+<div class="sol">
+<button type="button" class="solbtn" aria-expanded="false">解説を読む（手順を追って説明）</button>
+<div class="solbody" hidden>
+<div class="step"><h3 class="stp"><span class="st">手順1</span>費用と便益を並べる</h3>
+<div class="tw"><table>
+<thead><tr><th></th><th>大きさ</th></tr></thead>
+<tbody>
+<tr><td>人々がお金を持つ費用（機会費用）</td><td>名目利子率 i（問4）</td></tr>
+<tr><td>社会がお金を作る費用（限界費用）</td><td>ほぼ 0（紙幣の印刷費は無視できる）</td></tr>
+</tbody></table></div>
+<p>持つ費用が作る費用より高いと、人々は社会的に見て必要以上にお金を節約します（預金を何度も引き出しに行く、など）。税が資源配分をゆがめるのと同じようなゆがみです。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順2</span>式で書く</h3>
+<div class="eq"><span class="f">i = r + π = 0　⇒　π = −r</span><span class="no">テキスト p.140</span></div>
+<p>予想が正しい（π<sup>e</sup> = π）とすると、名目利子率を0にするには、インフレ率を実質利子率のマイナスにすればよい。実質利子率は正なので、これは<span class="mk">実質利子率と同じ大きさのゆるやかなデフレ</span>です。</p>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順3</span>グラフと数字で確かめる</h3>
+<div class="gwrap">
+  <div class="gsw" role="group" aria-label="表示の切り替え"><button type="button" data-g="q5" data-s="0" aria-pressed="true">インフレ 8%</button><button type="button" data-g="q5" data-s="1" aria-pressed="false">フリードマン・ルール</button></div>
+  <svg id="gQ5" viewBox="0 0 520 330" role="img" aria-label="フィッシャー方程式の直線が横軸と交わる点で名目利子率が0になることを示すグラフ"></svg>
+  <p class="gcap" id="gQ5-cap"></p>
+</div>
+<div class="num"><span class="h">数値例（実質利子率 2%、実質成長率 2%）</span>
+<table class="calc-t">
+<tr><td>名目利子率を0にするインフレ率 π ＝ −r</td><td class="r plus">−2%</td></tr>
+<tr><td>そのための貨幣の伸び率 ＝ −2 + 2</td><td class="r">0%</td></tr>
+<tr><td>お金を持つ機会費用</td><td class="r">0</td></tr>
+</table></div>
+</div>
+<div class="step"><h3 class="stp"><span class="st">手順4</span>結論</h3>
+<div class="trap"><b>よくある間違い</b>　「デフレは景気に悪いから」「物価が下がると消費者が得をするから」と答えてしまうこと。フリードマンの理由は、お金を持つ機会費用（名目利子率）を、お金を作る費用（≒0）に合わせることです。なお、物価の変動は相対価格をゆがめるので、このルールは厳密には成り立たないとも考えられます。</div>
+<div class="point ketsu"><p>貨幣の供給費用はほぼ0なので、貨幣保有の機会費用（名目利子率）も0にするのが望ましい。i = r + π = 0 より π = −r。実質利子率は正なので、実質利子率と同じ大きさのマイルドなデフレが望ましい（フリードマン・ルール）。</p></div>
+<div class="answer">
+<p>貨幣は利子を生まないので、貨幣保有の機会費用は名目利子率に等しい。一方、貨幣を供給するための限界費用はほぼ 0 である（紙幣を印刷する費用は無視できる）。貨幣保有量を最適な水準にするには、貨幣保有の機会費用をその供給の限界費用に等しくする必要がある。名目利子率が正のままだと、人々は貨幣保有を必要以上に節約し、租税が資源配分を攪乱するのと同様の効果が生じ、貨幣の交換手段としての機能が損なわれる。</p>
+<p>そこでフリードマンは、貨幣保有の機会費用を最小にするインフレ率が望ましいと考えた。予想インフレ率が現実のインフレ率と等しいとすると、フィッシャー方程式 i = r + π で i = 0 とすれば π = −r となる。実質利子率は正であるから、実質利子率に等しい率のデフレ、すなわちマイルドなデフレを起こすべきだということになる（フリードマン・ルール）。たとえば実質利子率が 2%、実質成長率が 2% なら、インフレ率を −2% とし、貨幣の伸び率を 0% にすればよい。ただし、物価の変動は一般に財の相対価格を変化させ生産や消費を歪めるので、フリードマン・ルールは厳密には成立しないとも考えられる。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="s22" data-t="練習問題のまとめ">
+<h2><span class="sn">22</span>練習問題のまとめ</h2>
+<div class="tw"><table>
+<thead><tr><th>問題</th><th>結論</th><th>使った式</th></tr></thead>
+<tbody>
+<tr><td>問1 流通速度</td><td>貨幣1単位が一定期間に何回使われたか。PY で測ると所得流通速度</td><td><span class="v">V ≡ PT/M</span>、<span class="v">V = PY/M</span></td></tr>
+<tr><td>問2 貨幣数量説</td><td>V・Y 一定で P は M に比例。インフレは貨幣的現象</td><td><span class="v">MV̄ = PȲ</span></td></tr>
+<tr><td>問3 名目利子率</td><td>実質利子率（実物）＋ 予想インフレ率（貨幣）</td><td><span class="v">i = r + π<sup>e</sup></span></td></tr>
+<tr><td>問4 保有の費用</td><td>現金の利子は0なので、機会費用は名目利子率</td><td><span class="v">i − 0 = i</span></td></tr>
+<tr><td>問5 フリードマン</td><td>機会費用を供給費用（≒0）に合わせる → マイルドなデフレ</td><td><span class="v">π = −r</span></td></tr>
+</tbody></table></div>
+<h3>解くときの問い</h3>
+<ul class="dots">
+<li>その式は「定義（恒等式）」か、それとも仮定を加えた「理論」か。</li>
+<li>その変数は、実物の世界で決まるのか、貨幣の世界で決まるのか。</li>
+<li>名目と実質のどちらで考えているか。インフレによる目減りを入れたか。</li>
+<li>「費用」と言われたら、何をあきらめたか（機会費用）を考えたか。</li>
+</ul>
+<div class="dl">
+  <a class="dlbtn" href="kaitou_ch6.docx" download="第6章練習問題_解答例_予習版.docx"><span class="dlico" aria-hidden="true">W</span><span><b>解答例をダウンロード</b><small>Word（.docx）・A4・編集できます</small></span></a>
+</div>
+</section>
+</div>
+
+<div class="pager" id="pager"></div>
+</main>
+
+<script>
+/* 解説と答案例を最初から表示するときは true に変える */
+const ANSWERS_DEFAULT_ON=false;
+/* 第6章：グラフとシミュレーター */
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const K={ink:"#22252b",sub:"#5e6470",grid:"#e3e7ed",blue:"#1f4e9c",teal:"#0b6b5d",red:"#c8361f",base:"#a9b0bb",marker:"#fde9a8"};
+  const $=id=>document.getElementById(id);
+  const f1=v=>(Math.round(v*10)/10).toFixed(1);
+  const f2=v=>(Math.round(v*100)/100).toFixed(2);
+  const pct=v=>(Math.round(v*10)/10).toString()+"%";
+
+  function plot(id,o){
+    const svg=$(id);while(svg.firstChild)svg.removeChild(svg.firstChild);
+    const vb=svg.viewBox.baseVal,W=vb.width,H=vb.height;
+    const L=o.left||56,R=W-(o.right||24),T=o.top||28,B=H-(o.bottom||42);
+    const X=v=>L+(v-o.xmin)/(o.xmax-o.xmin)*(R-L), Y=v=>B-(v-o.ymin)/(o.ymax-o.ymin)*(B-T);
+    const el=(t,a,txt,fill)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;if(fill)e.style.fill=fill;svg.appendChild(e);return e;};
+    (o.xt||[]).forEach(v=>{el("line",{x1:X(v),x2:X(v),y1:T,y2:B,stroke:K.grid});el("text",{x:X(v),y:B+16,"text-anchor":"middle","font-size":11},String(v)+(o.xu||""),K.sub);});
+    (o.yt||[]).forEach(v=>{el("line",{x1:L,x2:R,y1:Y(v),y2:Y(v),stroke:K.grid});el("text",{x:L-8,y:Y(v)+4,"text-anchor":"end","font-size":11},(o.yf?o.yf(v):String(v))+(o.yu||""),K.sub);});
+    const y0=(o.ymin<0&&o.ymax>0)?Y(0):B, x0=(o.xmin<0&&o.xmax>0)?X(0):L;
+    el("line",{x1:L,y1:y0,x2:R,y2:y0,stroke:K.ink,"stroke-width":1.5});
+    el("line",{x1:x0,y1:B,x2:x0,y2:T-6,stroke:K.ink,"stroke-width":1.5});
+    el("text",{x:x0-8,y:T-12,"text-anchor":o.ylabAnchor||"end","font-size":13,class:o.ylabM===false?"":"m"},o.ylab||"y");
+    el("text",{x:R,y:B+34,"text-anchor":"end","font-size":13,class:o.xlabM===false?"":"m"},o.xlab||"x");
+    return {X,Y,el,L,R,T,B,
+      line:(x1,y1,x2,y2,c,w,d)=>el("line",{x1:X(x1),y1:Y(y1),x2:X(x2),y2:Y(y2),stroke:c||K.ink,"stroke-width":w||2.5,"stroke-dasharray":d||""}),
+      dot:(x,y,c,r)=>el("circle",{cx:X(x),cy:Y(y),r:r||5,fill:c||K.ink}),
+      txt:(x,y,s,a)=>{a=a||{};return el("text",{x:X(x)+(a.dx||0),y:Y(y)+(a.dy||0),"text-anchor":a.anchor||"start","font-size":a.size||13,"font-weight":a.bold?700:400,class:a.m?"m":""},s,a.color);}
+    };
+  }
+  const state={},R={};
+  const caption=(id,t)=>{const e=$(id+"-cap");if(e)e.innerHTML=t;};
+  document.querySelectorAll(".gsw button").forEach(b=>b.addEventListener("click",()=>{const g=b.dataset.g;state[g]=+b.dataset.s;document.querySelectorAll('.gsw button[data-g="'+g+'"]').forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));if(R[g])R[g]();}));
+
+  /* 貨幣と物価（P = V/Y × M） */
+  function drawPM(id,s){
+    const g=plot(id,{xmin:0,xmax:400,ymin:0,ymax:1.6,xt:[100,200,250,275,300,400].filter(v=>v!==275||s),yt:[0.4,0.8,1.0,1.1,1.2,1.6].filter(v=>v!==1.1||s),xlab:"M（貨幣、兆円）",ylab:"P（物価水準）",xlabM:false,ylabM:false,ylabAnchor:"start",left:60,yf:v=>v.toFixed(1)});
+    g.line(0,0,400,1.6,K.blue,3);
+    g.txt(395,0.62,"P = (V̄/Ȳ) × M",{bold:true,color:K.blue,anchor:"end",size:13});
+    g.txt(395,0.62,"V̄ = 2、Ȳ = 500",{dy:18,color:K.sub,anchor:"end",size:12});
+    g.line(250,0,250,1.0,s?K.base:K.sub,1.2,"4 4");g.line(0,1.0,250,1.0,s?K.base:K.sub,1.2,"4 4");
+    g.dot(250,1.0,s?K.base:K.ink);
+    if(!s){g.txt(250,1.0,"M = 250 → P = 1.0",{dx:10,dy:16,bold:true,size:12});
+      caption(id,"変化前：M = 250、V̄ = 2、Ȳ = 500 なので P = 250 × 2 ÷ 500 = 1.0。V と Y が一定なら、P と M の関係は原点を通る直線になる。");}
+    else{g.txt(250,1.0,"変化前",{dx:-8,dy:16,anchor:"end",color:K.sub,size:12});
+      g.line(275,0,275,1.1,K.red,1.4,"4 4");g.line(0,1.1,275,1.1,K.red,1.4,"4 4");g.dot(275,1.1,K.red,6);
+      g.txt(275,1.1,"M = 275 → P = 1.1",{dx:10,dy:16,bold:true,color:K.red,size:12});
+      caption(id,"変化後：貨幣が10%増えて M = 275 になると、P = 275 × 2 ÷ 500 = 1.1。物価も同じ10%上がる。V も Y も動かないので、増えたお金はすべて物価の上昇になる。");}
+  }
+  R.qt=()=>drawPM("gQT",state.qt||0);
+  R.q2=()=>drawPM("gQ2",state.q2||0);
+
+  /* フィッシャー方程式の図（横軸 π、縦軸 i、r = 2%） */
+  function drawFisher(id,pts,opt){
+    opt=opt||{};const r=2;
+    const g=plot(id,{xmin:-4,xmax:14,ymin:-2,ymax:16,xt:[-2,0,2,4,6,8,10,12],yt:[0,2,4,6,8,10,12,14],xu:"%",yu:"%",xlab:"π（インフレ率）",ylab:"i（名目利子率）",ylabAnchor:"start",xlabM:false,ylabM:false,left:58});
+    g.line(-4,-2,14,16,K.blue,3);
+    g.txt(13.8,5,"i = r + π（r = 2%）",{anchor:"end",bold:true,color:K.blue,size:13});
+    g.line(-4,r,14,r,K.teal,1.4,"6 5");g.txt(-3.8,r,"実質利子率 r = 2%",{dy:-6,color:K.teal,size:12});
+    pts.forEach(p=>{
+      const c=p.color||K.ink;
+      g.line(p.pi,0,p.pi,p.pi+r,p.faint?K.base:c,1.2,"4 4");g.line(0,p.pi+r,p.pi,p.pi+r,p.faint?K.base:c,1.2,"4 4");
+      g.dot(p.pi,p.pi+r,p.faint?K.base:c,p.faint?4.5:6);
+      if(p.label)g.txt(p.pi,p.pi+r,p.label,{dx:p.dx||10,dy:p.dy||16,anchor:p.anchor||"start",bold:!p.faint,color:p.faint?K.sub:c,size:12});
+    });
+    if(opt.zero){g.el("rect",{x:g.X(-2)-6,y:g.Y(0)-6,width:12,height:12,fill:"none",stroke:K.red,"stroke-width":2});}
+    return g;
+  }
+  R.fi=function(){
+    const m=+$("fm").value,y=+$("fy").value,v=+$("fv").value,r=+$("fr").value;
+    ["fm","fy","fv","fr"].forEach(k=>$("v"+k).textContent=pct(+$(k).value));
+    const pi=m+v-y,i=r+pi;
+    $("fpi").textContent=pct(pi);$("fii").textContent=pct(i);
+    $("fcost").textContent=i>0?Math.round(10000*i/100).toLocaleString("ja-JP")+"円":"0円";
+    let msg="インフレ率 ＝ "+pct(m)+" + "+pct(v)+" − "+pct(y)+" ＝ "+pct(pi)+"。名目利子率 ＝ "+pct(r)+" + "+pct(pi)+" ＝ "+pct(i)+"。";
+    if(Math.abs(i)<1e-9)msg+="名目利子率が0：フリードマン・ルールの状態です。";
+    else if(i<0)msg+="名目利子率がマイナス。現金は利子0なので、人々は国債より現金を持とうとします（このモデルの外の話になります）。";
+    $("fmsg").textContent=msg;
+    // 図は r の値によらず r = 2% の直線を描き、点は i − r を横軸にとる
+    const p=Math.max(-4,Math.min(14,pi));
+    const g=plot("gFi",{xmin:-4,xmax:14,ymin:-2,ymax:16,xt:[-2,0,2,4,6,8,10,12],yt:[0,2,4,6,8,10,12,14],xu:"%",yu:"%",xlab:"π（インフレ率）",ylab:"i（名目利子率）",ylabAnchor:"start",xlabM:false,ylabM:false,left:58});
+    g.line(-4,-4+r,14,14+r,K.blue,3);g.txt(13.8,r+3,"i = r + π（r = "+pct(r)+"）",{anchor:"end",bold:true,color:K.blue,size:13});
+    g.line(-4,r,14,r,K.teal,1.4,"6 5");g.txt(-3.8,r,"実質利子率 r",{dy:-6,color:K.teal,size:12});
+    const ii=Math.max(-2,Math.min(16,p+r));
+    g.line(p,0,p,ii,K.sub,1.2,"4 4");g.line(0,ii,p,ii,K.sub,1.2,"4 4");g.dot(p,ii,K.red,6);
+    g.txt(p,ii,"π = "+pct(pi)+"、i = "+pct(i),{dx:p>8?-10:10,dy:16,anchor:p>8?"end":"start",bold:true,color:K.red,size:12});
+    caption("gFi","青い直線がフィッシャー方程式 i = r + π。インフレ率が1%上がると、名目利子率も1%上がる。赤い点は計算機の値。");
+  };
+  ["fm","fy","fv","fr"].forEach(k=>$(k).addEventListener("input",R.fi));
+
+  R.fr=function(){
+    const s=state.fr||0;
+    if(!s){drawFisher("gFR",[{pi:8,label:"π = 8%、i = 10%",color:K.ink,dx:-10,anchor:"end",dy:-8}]);
+      caption("gFR","インフレ率8%なら名目利子率は10%。お金を1年持つと、10%の利子をあきらめることになる。");}
+    else{drawFisher("gFR",[{pi:8,label:"変化前",faint:true,dx:-10,anchor:"end",dy:-8},{pi:-2,label:"π = −2%、i = 0",color:K.red,dx:10,dy:-10}],{zero:true});
+      caption("gFR","フリードマン・ルール：直線が横軸（i = 0）と交わる点。π = −r = −2% のデフレで名目利子率が0になり、お金を持つ機会費用が0になる。");}
+  };
+  R.q5=function(){
+    const s=state.q5||0;
+    if(!s){drawFisher("gQ5",[{pi:8,label:"π = 8%、i = 10%",color:K.ink,dx:-10,anchor:"end",dy:-8}]);
+      caption("gQ5","インフレ率8%：名目利子率は10%。お金を持つ費用（10%）が、お金を作る費用（ほぼ0）よりずっと高い。");}
+    else{drawFisher("gQ5",[{pi:8,label:"変化前",faint:true,dx:-10,anchor:"end",dy:-8},{pi:-2,label:"π = −2%、i = 0",color:K.red,dx:10,dy:-10}],{zero:true});
+      caption("gQ5","フリードマン・ルール：π = −r = −2%（マイルドなデフレ）で i = 0。お金を持つ費用が、作る費用（ほぼ0）に等しくなる。");}
+  };
+  R.q3=function(){
+    const s=state.q3||0;
+    if(!s){drawFisher("gQ3",[{pi:4,label:"π = 4%、i = 6%",color:K.ink,dx:-10,anchor:"end",dy:-8}]);
+      caption("gQ3","変化前：貨幣の伸び率6%、実質成長率2%なのでインフレ率4%。名目利子率 ＝ 2 + 4 ＝ 6%。");}
+    else{drawFisher("gQ3",[{pi:4,label:"変化前",faint:true,dx:-10,anchor:"end",dy:-8},{pi:8,label:"π = 8%、i = 10%",color:K.red,dx:-10,anchor:"end",dy:-8}]);
+      caption("gQ3","変化後：貨幣の伸び率が10%に上がるとインフレ率は8%。名目利子率は10%に上がる。実質利子率（緑の破線）は2%のまま。");}
+  };
+
+  /* 信用創造の表と図 */
+  function rounds(c,r,dB,n){
+    const q=(1-r)/(1+c),out=[];
+    for(let k=0;k<n;k++){const f=dB*Math.pow(q,k);out.push({C:c/(1+c)*f,D:f/(1+c),R:r/(1+c)*f,L:(1-r)/(1+c)*f});}
+    return out;
+  }
+  (function(){
+    const rs=rounds(0.25,0.05,10,4),tb=$("roundTbl");
+    rs.forEach((x,k)=>{const tr=document.createElement("tr");tr.innerHTML="<td class='c'>"+(k+1)+"</td><td class='r'>"+f2(x.C)+"</td><td class='r'>"+f2(x.D)+"</td><td class='r'>"+f2(x.R)+"</td><td class='r'>"+f2(x.L)+"</td>";tb.appendChild(tr);});
+    const tr=document.createElement("tr");tr.innerHTML="<td class='c'>…</td><td class='r'>…</td><td class='r'>…</td><td class='r'>…</td><td class='r'>…</td>";tb.appendChild(tr);
+    const s=0.3,t=document.createElement("tr");t.innerHTML="<td class='c'><b>合計</b></td><td class='r'><b>"+f2(0.25/s*10)+"</b></td><td class='r'><b>"+f2(10/s)+"</b></td><td class='r'><b>"+f2(0.05/s*10)+"</b></td><td class='r'></td>";tb.appendChild(t);
+  })();
+  R.cr=function(){
+    const c=+$("mc").value,r=+$("mr").value,dB=10,m=(c+1)/(c+r);
+    $("vmc").textContent=f2(c);$("vmr").textContent=f2(r);$("mm").textContent=f2(m);$("mdm").textContent=f1(m*dB);
+    $("mmsg").textContent="ΔC ＝ "+f2(c/(c+r)*dB)+"、ΔD ＝ "+f2(dB/(c+r))+"、ΔR ＝ "+f2(r/(c+r)*dB)+"。ΔC + ΔR ＝ "+f2((c+r)/(c+r)*dB)+"（＝ ΔB）。c や r を小さくすると乗数が大きくなります。";
+    const n=8,rs=rounds(c,r,dB,n);let cum=0;const bars=rs.map(x=>{cum+=x.C+x.D;return cum;});
+    const total=m*dB,ymax=Math.max(45,Math.ceil(total/10)*10+5);
+    const g=plot("gCr",{xmin:0,xmax:n+2.5,ymin:0,ymax:ymax,yt:Array.from({length:Math.floor(ymax/10)+1},(_,k)=>k*10).filter(v=>v>0&&v<=ymax),xlab:"段階",ylab:"貨幣の増加（累計）",xlabM:false,ylabM:false,ylabAnchor:"start",left:50});
+    const bw=(g.X(1)-g.X(0))*0.62;
+    rs.forEach((x,k)=>{
+      const prev=k?bars[k-1]:0,x0=g.X(k+0.69)-bw/2;
+      if(prev>0)g.el("rect",{x:x0,y:g.Y(prev),width:bw,height:g.Y(0)-g.Y(prev),fill:"#e7eaee",stroke:K.ink,"stroke-width":1});
+      g.el("rect",{x:x0,y:g.Y(bars[k]),width:bw,height:g.Y(prev)-g.Y(bars[k]),fill:k===0?"#dfe8f6":K.marker,stroke:K.ink,"stroke-width":1.2});
+      g.el("text",{x:g.X(k+0.69),y:g.B+16,"text-anchor":"middle","font-size":11},String(k+1),K.sub);
+    });
+    g.el("text",{x:g.X(n+0.69)+bw/2+2,y:g.B+16,"text-anchor":"middle","font-size":11},"…",K.sub);
+    g.line(0,total,n+2.5,total,K.red,1.8,"6 5");g.txt(n+2.45,total,"ΔM = "+f1(total),{anchor:"end",dy:-6,bold:true,color:K.red,size:12});
+    g.line(0,dB,n+2.5,dB,K.blue,1.4,"3 4");g.txt(n+2.45,dB,"ΔB = 10",{anchor:"end",dy:-6,color:K.blue,size:12});
+    caption("gCr","青い破線が最初のベースマネーの増加 ΔB = 10、赤い破線が最終的な貨幣の増加 ΔM。青い棒が1段階目（ΔB = 10 がそのまま貨幣になる）、黄色が各段階で新たに生まれる貨幣（現金＋預金）。c = "+f2(c)+"、r = "+f2(r)+" のとき、段階を重ねるごとに増え方は "+f2((1-r)/(1+c))+" 倍になり、合計は貨幣乗数 "+f2(m)+" × 10 ＝ "+f1(total)+" に近づく。");
+  };
+  ["mc","mr"].forEach(k=>$(k).addEventListener("input",R.cr));
+
+  /* 数量方程式の計算機 */
+  R.qc=function(){
+    const M=+$("qm").value,V=+$("qv").value,Y=+$("qy").value,P=M*V/Y,P0=250*V/Y;
+    $("vqm").textContent=M;$("vqv").textContent=f1(V);$("vqy").textContent=Y;
+    $("qpy").textContent=Math.round(M*V);$("qp").textContent=f2(P);
+    const ch=(P/P0-1)*100;$("qpc").textContent=(ch>0?"+":"")+f1(ch)+"%";
+    $("qmsg").textContent="P ＝ "+M+" × "+f1(V)+" ÷ "+Y+" ＝ "+f2(P)+"。V と Y を固定して M だけを動かすと、P は M と同じ割合で変わります。";
+  };
+  ["qm","qv","qy"].forEach(k=>$(k).addEventListener("input",R.qc));
+
+  /* 問1：流通速度の帯 */
+  R.q1=function(){
+    const s=state.q1||0,svg=$("gQ1");while(svg.firstChild)svg.removeChild(svg.firstChild);
+    const el=(t,a,txt,fill)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!==undefined)e.textContent=txt;if(fill)e.style.fill=fill;svg.appendChild(e);return e;};
+    const d=s?{tot:500,m:250,tl:"名目 GDP PY",ml:"貨幣残高 M",unit:"兆円",cap:"所得流通速度：名目 GDP 500兆円を、250兆円のお金が2回まわってまかなった。V = 500 ÷ 250 = 2（架空の値）。"}
+             :{tot:1000,m:500,tl:"取引総額 PT",ml:"貨幣残高 M",unit:"兆円",cap:"流通速度：取引総額 1,000兆円（中間取引を含む）を、500兆円のお金が2回まわってまかなった。V = 1,000 ÷ 500 = 2（テキスト p.136 の例）。"};
+    const L=130,W=380,sc=W/d.tot;
+    el("text",{x:L-10,y:62,"text-anchor":"end","font-size":13,"font-weight":700},d.tl);
+    el("rect",{x:L,y:40,width:W,height:34,fill:"#dfe8f6",stroke:K.ink,"stroke-width":1.5});
+    el("text",{x:L+W/2,y:62,"text-anchor":"middle","font-size":13},d.tot.toLocaleString("ja-JP")+" "+d.unit);
+    el("text",{x:L-10,y:142,"text-anchor":"end","font-size":13,"font-weight":700},d.ml);
+    for(let k=0;k<2;k++){
+      el("rect",{x:L+k*d.m*sc,y:120,width:d.m*sc,height:34,fill:k?"#fff":K.marker,stroke:k?K.blue:K.ink,"stroke-width":1.5,"stroke-dasharray":k?"6 4":""});
+      el("text",{x:L+(k+0.5)*d.m*sc,y:142,"text-anchor":"middle","font-size":13},(k?"2回目に使われる ":"1回目 ")+d.m.toLocaleString("ja-JP"),k?K.blue:undefined);
+    }
+    el("path",{d:"M"+(L+d.m*sc*0.5)+",116 C"+(L+d.m*sc*0.7)+",92 "+(L+d.m*sc*1.3)+",92 "+(L+d.m*sc*1.5)+",116",fill:"none",stroke:K.blue,"stroke-width":2,"marker-end":"url(#q1a)"});
+    const defs=el("defs",{});defs.innerHTML='<marker id="q1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f4e9c"/></marker>';
+    el("text",{x:L+W/2,y:202,"text-anchor":"middle","font-size":15,"font-weight":700},"V ＝ "+d.tot.toLocaleString("ja-JP")+" ÷ "+d.m.toLocaleString("ja-JP")+" ＝ 2（回）",K.red);
+    caption("gQ1",d.cap);
+  };
+
+  /* 問4：国債と現金の収益（左：名目、右：実質） */
+  R.q4=function(){
+    const s=state.q4||0,i=s?10:6,pi=s?8:4,r=2;
+    const g=plot("gQ4",{xmin:0,xmax:4,ymin:-10,ymax:12,yt:[-8,-4,0,4,8,12],yu:"%",xlab:" ",ylab:"収益率",xlabM:false,ylabM:false,ylabAnchor:"start",left:56,bottom:34});
+    const w=(g.X(1)-g.X(0))*0.55;
+    const bar=(x,v,fill,stroke,lab)=>{const y1=g.Y(Math.max(v,0)),y2=g.Y(Math.min(v,0));g.el("rect",{x:g.X(x)-w/2,y:y1,width:w,height:Math.max(2,y2-y1),fill,stroke,"stroke-width":1.5});g.el("text",{x:g.X(x),y:v>=0?y1-6:y2+16,"text-anchor":"middle","font-size":12,"font-weight":700},lab,stroke);};
+    bar(0.6,i,"#dfe8f6",K.blue,"国債 "+i+"%");
+    bar(1.4,0,"#fff",K.ink,"現金 0%");
+    bar(2.6,r,"#d6efe9",K.teal,"国債 "+r+"%");
+    bar(3.4,-pi,"#f8ddd7",K.red,"現金 −"+pi+"%");
+    g.el("line",{x1:g.X(2),x2:g.X(2),y1:g.T,y2:g.B,stroke:"#c9cfd8","stroke-dasharray":"3 4"});
+    g.el("text",{x:g.X(1),y:g.B+22,"text-anchor":"middle","font-size":12,"font-weight":700},"名目：差 "+i+" − 0 ＝ "+i+"%");
+    g.el("text",{x:g.X(3),y:g.B+22,"text-anchor":"middle","font-size":12,"font-weight":700},"実質：差 "+r+" − (−"+pi+") ＝ "+i+"%");
+    caption("gQ4","左は名目の収益率（国債 "+i+"%、現金 0%）、右はインフレ "+pi+"% を差し引いた実質の収益率（国債 "+r+"%、現金 −"+pi+"%）。どちらで比べても差は "+i+"% ＝ 名目利子率。");
+  };
+
+  R.qt();R.q2();R.fi();R.fr();R.q3();R.q5();R.cr();R.qc();R.q1();R.q4();
+})();
+
+/* lily 共通：タブ・目次・前後ナビ・確認問題・内部タブ・解説スイッチ・相互リンク
+   各章のHTMLは、.part（data-title, data-desc）と section（data-t, h2 .sn）を並べるだけでよい。
+   パートが表示されたときに "partshown" イベント（detail.id）を発行する。 */
+(function(){
+  const parts=[...document.querySelectorAll(".part")];
+  const tabs=document.getElementById("tabs");
+  const drawerList=document.getElementById("drawerList");
+  const body=document.body, menuBtn=document.getElementById("menuBtn"), drawer=document.getElementById("drawer");
+  let current=0;
+
+  parts.forEach((p,i)=>{
+    p.setAttribute("role","tabpanel");
+    const secs=[...p.querySelectorAll("section")];
+    const head=document.createElement("div");head.className="part-head";
+    head.innerHTML='<div class="ph-main"><div class="pn">Part '+(i+1)+' / '+parts.length+'</div><h1>'+p.dataset.title+'</h1><p>'+p.dataset.desc+'</p></div>';
+    const mini=document.createElement("div");mini.className="toc-mini";
+    secs.forEach(s=>{const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>s.scrollIntoView({behavior:"smooth",block:"start"}));mini.appendChild(b);});
+    head.querySelector(".ph-main").appendChild(mini);p.prepend(head);
+
+    const t=document.createElement("button");t.type="button";t.className="tab";t.setAttribute("role","tab");t.id="tab-"+p.id;t.setAttribute("aria-controls",p.id);
+    t.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;
+    t.addEventListener("click",()=>go(i,true));
+    t.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%parts.length;go(k,true);tabs.children[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+parts.length)%parts.length;go(k,true);tabs.children[k].focus();}});
+    tabs.appendChild(t);p.setAttribute("aria-labelledby",t.id);
+
+    const h=document.createElement("h4");const hb=document.createElement("button");hb.type="button";hb.innerHTML='<span class="n">'+(i+1)+'</span>'+p.dataset.title;hb.addEventListener("click",()=>{go(i,true);closeMenu();});h.appendChild(hb);drawerList.appendChild(h);
+    const ul=document.createElement("ul");
+    secs.forEach(s=>{const li=document.createElement("li");const b=document.createElement("button");b.type="button";b.textContent=s.querySelector(".sn").textContent+". "+s.dataset.t;b.addEventListener("click",()=>{go(i,false);closeMenu();setTimeout(()=>s.scrollIntoView({block:"start"}),30);});li.appendChild(b);ul.appendChild(li);});
+    drawerList.appendChild(ul);
+  });
+
+  function go(i,top){
+    current=i;
+    parts.forEach((p,k)=>p.classList.toggle("on",k===i));
+    [...tabs.children].forEach((t,k)=>{t.setAttribute("aria-selected",k===i?"true":"false");t.tabIndex=k===i?0:-1;});
+    [...drawerList.querySelectorAll("h4")].forEach((h,k)=>h.classList.toggle("cur",k===i));
+    tabs.children[i].scrollIntoView({block:"nearest",inline:"nearest"});
+    const pg=document.getElementById("pager");pg.innerHTML="";
+    if(i>0){const b=document.createElement("button");b.type="button";b.innerHTML="<small>前のパート</small>← "+parts[i-1].dataset.title;b.addEventListener("click",()=>go(i-1,true));pg.appendChild(b);}
+    if(i<parts.length-1){const b=document.createElement("button");b.type="button";b.className="next";b.innerHTML="<small>次のパート</small>"+parts[i+1].dataset.title+" →";b.addEventListener("click",()=>go(i+1,true));pg.appendChild(b);}
+    try{if(location.hash!=="#"+parts[i].id)history.replaceState(null,"","#"+parts[i].id);}catch(e){}
+    if(top)window.scrollTo(0,0);
+    document.dispatchEvent(new CustomEvent("partshown",{detail:{id:parts[i].id}}));
+  }
+  function openMenu(){body.classList.add("menu-open");drawer.setAttribute("aria-hidden","false");menuBtn.setAttribute("aria-expanded","true");document.getElementById("closeBtn").focus();}
+  function closeMenu(){body.classList.remove("menu-open");drawer.setAttribute("aria-hidden","true");menuBtn.setAttribute("aria-expanded","false");}
+  menuBtn.addEventListener("click",openMenu);
+  document.getElementById("closeBtn").addEventListener("click",()=>{closeMenu();menuBtn.focus();});
+  document.getElementById("scrim").addEventListener("click",closeMenu);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&body.classList.contains("menu-open")){closeMenu();menuBtn.focus();}});
+  window.addEventListener("hashchange",()=>{const k=parts.findIndex(p=>"#"+p.id===location.hash);if(k>=0&&k!==current)go(k,true);});
+
+  /* 内部タブ（.itabs の button[aria-controls]） */
+  document.querySelectorAll(".itabs").forEach(box=>{
+    const bs=[...box.querySelectorAll("button")];
+    const sel=i=>bs.forEach((b,k)=>{b.setAttribute("aria-selected",k===i?"true":"false");b.tabIndex=k===i?0:-1;document.getElementById(b.getAttribute("aria-controls")).hidden=k!==i;});
+    bs.forEach((b,i)=>{b.addEventListener("click",()=>sel(i));b.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){const k=(i+1)%bs.length;sel(k);bs[k].focus();}if(e.key==="ArrowLeft"){const k=(i-1+bs.length)%bs.length;sel(k);bs[k].focus();}});});
+    sel(0);
+  });
+
+  /* 確認問題・ヒント（.q の .show で .ans を開閉） */
+  document.querySelectorAll(".q").forEach(q=>{const b=q.querySelector(".show"),a=q.querySelector(".ans");if(!b||!a)return;const lab=b.textContent;b.setAttribute("aria-expanded","false");b.addEventListener("click",()=>{a.hidden=!a.hidden;b.textContent=a.hidden?lab:"閉じる";b.setAttribute("aria-expanded",a.hidden?"false":"true");});});
+
+  /* 解説と答案例の表示スイッチ */
+  const tg=document.getElementById("ansToggle"),note=document.getElementById("ansNote");
+  if(tg){
+    const setAns=on=>{document.body.classList.toggle("ans-off",!on);tg.checked=on;if(note)note.textContent=on?"オン：解説と答案例を表示しています。":"オフ：問題とヒントだけを表示しています。";};
+    tg.addEventListener("change",()=>setAns(tg.checked));
+    setAns(typeof ANSWERS_DEFAULT_ON!=="undefined"&&ANSWERS_DEFAULT_ON);
+  }
+
+  /* 解説の開閉 */
+  document.querySelectorAll(".solbtn").forEach(b=>b.addEventListener("click",()=>{const bd=b.nextElementSibling;bd.hidden=!bd.hidden;b.setAttribute("aria-expanded",bd.hidden?"false":"true");b.textContent=bd.hidden?"解説を読む（手順を追って説明）":"解説を閉じる";document.dispatchEvent(new CustomEvent("solopen"));}));
+
+  /* 相互リンク */
+  document.addEventListener("click",e=>{const a=e.target.closest("[data-goto]");if(!a)return;e.preventDefault();const t=document.getElementById(a.dataset.goto);if(!t)return;const k=parts.findIndex(p=>p.contains(t));if(k<0)return;go(k,false);setTimeout(()=>t.scrollIntoView({block:"start"}),30);});
+
+  const start=parts.findIndex(p=>"#"+p.id===location.hash);
+  go(start>=0?start:0,false);
+})();
+
+</script>
+<a class="totop" href="../" aria-label="トップページへ戻る" title="トップページへ戻る"><img src="../assets/back_to_top.webp" alt="TOPへ戻る" width="240" height="428"></a>
+</body>
+</html>
